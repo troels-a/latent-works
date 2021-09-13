@@ -1,0 +1,19 @@
+{
+  "name": "hardhat-project",
+  "scripts": {
+    "test": "npx hardhat compile; npx hardhat test; echo 'Generating jpgs from svgs'; svgexport preview/svgexport.json"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.4.6",
+    "hardhat": "^2.6.4"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.3.1",
+    "base64-sol": "^1.0.1",
+    "svgexport": "^0.4.2"
+  }
+}
