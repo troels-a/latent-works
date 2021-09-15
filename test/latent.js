@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path').dirname(__dirname);
 
 const _ = {
+  premint: ['0x3827014F2236519f1101Ae2E136985E0e603Be79']
 };
 
 async function writeSVG(tokenId, iteration){
@@ -28,10 +29,11 @@ async function makePreview(tokenIds){
   await Promise.all(tokenIds.map(async tokenId => {
     
     let i = 1;
-    const cap = await getCapForID(tokenId)
+    const supply = await totalSupply(tokenId)
+    // console.log('Supply', supply)
     let htmlstring = '';
 
-    while(i <= cap){
+    while(i <= supply){
       await writeSVG(tokenId, i);
       dataItems[tokenIds] = {
         input: [
@@ -55,8 +57,7 @@ async function makePreview(tokenIds){
         ${htmlstring}
         </div>
         <pre>
-        Name: ${metadata.name}
-        Description: ${metadata.description}
+        ${JSON.stringify(metadata, null, 2)}
         </pre>
     </div>`;
 
@@ -85,89 +86,135 @@ async function getCapForID(tokenId){
   return cap.toNumber();
 }
 
+async function totalSupply(tokenId){
+  const totalSupply = await _.contract.totalSupply(tokenId);
+  return totalSupply.toNumber();
+}
+
+async function getCreated(){
+  const created = await _.contract.getCreated();
+  return created.toNumber();
+}
+
+async function balanceOf(address, tokenId){
+  const totalSupply = await _.contract.balanceOf(address, tokenId);
+  return totalSupply.toNumber();
+}
+
+
+async function checkInitBalance(){
+
+    let check = true;
+    for (let index = 0; index < _.premint.length; index++) {
+      const address = _.premint[index];
+      const balance = await balanceOf(address, index+1);
+      if(balance < 1){
+        check = false;
+        break;
+      }
+    }
+
+    expect(check).to.equal(true);
+
+}
+
+async function createToken(){
+        
+  const create_tx = await _.contract.create();
+  const create_receipt = await create_tx.wait();
+  const id = create_receipt.events[0].args.id.toNumber();
+  expect(id).to.be.greaterThan(0);
+  return id;
+  
+}
+
 
 describe("Contract", async function(){
 
   it(`should deploy`, async function(){
-    
-    Latent = await ethers.getContractFactory("Latent");
-    _.contract = await Latent.deploy();
+
+
+    Latent = await ethers.getContractFactory("LatentWorks");
+    _.contract = await Latent.deploy(_.premint);
+
     expect(_.contract).to.be.an('object')
 
   });
 
+  describe('construct()', function(){
+    it('should premint for all addresses', checkInitBalance)
+  })
+
+  describe('create()', function(){
+    it(`should create 1`, createToken);
+  })
+
+
   async function testToken(tokenId){
 
-    it(`should create`, async function(){
-        
-      const create_tx = await _.contract.create();
-      const create_receipt = await create_tx.wait();
-      const id = create_receipt.events[0].args.id.toNumber();
-      expect(id).to.equal(tokenId);
+    it(`should create`, createToken);
 
-    });
+    // describe('getCapForID()', function(){
 
-    describe('getCapForID()', function(){
+    //   it('should return a number larger than 0', async function(){
+    //     const cap = await getCapForID(tokenId)
+    //     expect(cap).to.be.greaterThan(0);
+    //   })
 
-      it('should return a number larger than 0', async function(){
-        const cap = await getCapForID(tokenId)
-        expect(cap).to.be.greaterThan(0);
-      })
+    // });
 
-    });
-
-    describe('getAvailableToMint()', function(){
+    // describe('getAvailableToMint()', function(){
       
-      it('should return a number', async function(){
+    //   it('should return a number', async function(){
       
-        const cap = await getCapForID(tokenId)
-        const remaining = await getAvailableToMint(tokenId);
-        expect(remaining).to.be.lessThan(cap)
+    //     const cap = await getCapForID(tokenId)
+    //     const remaining = await getAvailableToMint(tokenId);
+    //     expect(remaining).to.be.lessThan(cap)
   
-      });
+    //   });
   
-      it('should be less than capacity', async function(){
+    //   it('should be less than capacity', async function(){
       
-        const cap = await getCapForID(tokenId)
-        const remaining = await getAvailableToMint(tokenId);
-        expect(remaining).to.be.lessThan(cap)
+    //     const cap = await getCapForID(tokenId)
+    //     const remaining = await getAvailableToMint(tokenId);
+    //     expect(remaining).to.be.lessThan(cap)
   
-      });
+    //   });
   
-    })
+    // })
 
 
-    it(`Mint remaining editions`, async function(){
+    // it(`Mint remaining editions`, async function(){
 
-      const cap = await getCapForID(tokenId);
+    //   const cap = await getCapForID(tokenId);
 
-      while(await getAvailableToMint(tokenId) > 0){
-        await _.contract.mint(tokenId)
-        // console.log(`${await getAvailableToMint(tokenId)} mints left for token ${tokenId} with cap ${cap}`);
-      }
+    //   while(await getAvailableToMint(tokenId) > 0){
+    //     await _.contract.mint(tokenId)
+    //     // console.log(`${await getAvailableToMint(tokenId)} mints left for token ${tokenId} with cap ${cap}`);
+    //   }
 
-      expect(await getAvailableToMint(tokenId)).to.equal(0);
+    //   expect(await getAvailableToMint(tokenId)).to.equal(0);
 
-    });
+    // });
 
 
-    it(`Revert on attempt to mint more editions than available`, async function(){
+    // it(`Revert on attempt to mint more editions than available`, async function(){
 
-      try {
+    //   try {
 
-        let i = 1;
-        const remaining = await getAvailableToMint(tokenId)+1;
-        while(i <= remaining){
-          await _.contract.mint(tokenId);
-          i++
-        }
+    //     let i = 1;
+    //     const remaining = await getAvailableToMint(tokenId)+1;
+    //     while(i <= remaining){
+    //       await _.contract.mint(tokenId);
+    //       i++
+    //     }
 
-      }
-      catch(error){
-        expect(error).to.be.an('error');
-      }
+    //   }
+    //   catch(error){
+    //     expect(error).to.be.an('error');
+    //   }
             
-    });
+    // });
 
 
     it(`Read tokenURI for ID ${tokenId}`, async function(){
@@ -181,13 +228,21 @@ describe("Contract", async function(){
 
   }
 
-  describe("Token 1", async () => await testToken(1))
-  describe("Token 2", async () => await testToken(2))
-  describe("Token 3", async () => await testToken(3))
-  describe('Make preview', async function(){
-    it('should work', async function(){
-      await makePreview([1,2,3]);
-    });
-  })
+  // const tokensMinted = [];
+  // const totalMint = 2;
+  // let i = await getCreated();
+
+  // while(i <= totalMint){
+  //   describe("Token "+i, async () => await testToken(i))
+  //   tokensMinted.push(i);
+  //   i++;
+  // }
+
+  // describe('Make preview', async function(){
+  //   it('should work', async function(){
+  //     this.timeout(1000*60*5);
+  //     await makePreview(tokensMinted);
+  //   });
+  // })
 
 });

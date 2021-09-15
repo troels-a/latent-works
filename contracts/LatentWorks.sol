@@ -7,18 +7,30 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import 'base64-sol/base64.sol';
 import 'hardhat/console.sol';
 
 /**
-LATENT
+
+
+6C 61 74 65 6E 74  77 6F 72 6B 73
+
+
+author: Troels Abrahamsen
+year: 2021
+type: in-chain
+description: 77 tokens with 7 possible editions, each affecting the resulting artwork when minted.
+
 */
 
-contract Latent is ERC1155, ERC1155Supply, Ownable {
+contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
     // Tokens
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIDTracker;
+    uint private _maxTokens = 7;
+    uint private _waitTime = (60*60*7);
 
     // Atttributes
     struct Attributes {
@@ -36,23 +48,19 @@ contract Latent is ERC1155, ERC1155Supply, Ownable {
     uint private _palette_count = 3;
     mapping(uint256 => string[]) private _palettes;
 
+    constructor(address[] memory initialMint) ERC1155("") {
 
-    constructor() ERC1155("") {
-
-      // _palettes[1] = ['red', 'green', 'blue', 'black', 'purple', 'teal', 'blue'];
       _palettes[1] = ["#82968c","#6a706e","#ffd447","#ff5714","#170312","#0cf574","#f9b4ed"];
-      // _palettes[2] = ['black', '#888', '#666', '#222', '#111', '#444', 'pink'];
       _palettes[2] = ["#f59ca9","#775253","#01fdf6","#cff27e","#294d4a","#0cf574","#0e103d"];
       _palettes[3] = ['rgba(90, 232, 89, 0.706)', 'rgba(255, 98, 98, 0.706)', 'rgba(79, 42, 109, 0.706)', 'rgba(0, 255, 208, 0.769)', 'pink', '#888', 'black'];
 
+      for (uint256 index = 0; index < initialMint.length; index++) {
+        _createForAddress(initialMint[index]);
+      }
+
     }
 
-
-    function indexFor(string memory input, uint256 length) internal pure returns (uint256){
-      return uint256(keccak256(abi.encodePacked(input))) % length;
-    }
-
-    function _getRandomSeed(uint256 tokenId, string memory seedFor) internal view returns (string memory) {
+    function _getRandomSeed(uint256 tokenId, string memory seedFor) private view returns (string memory) {
       return string(abi.encodePacked(seedFor, Strings.toString(tokenId), block.timestamp, block.difficulty));
     }
 
@@ -61,18 +69,15 @@ contract Latent is ERC1155, ERC1155Supply, Ownable {
       return num >= min ? num : min;
     }
 
-
-    function generateAttribute(string memory salt, string[] memory items) internal pure returns (uint8){
-      return uint8(indexFor(string(salt), items.length));
-    }
-
-    function setURI(string memory uri) public onlyOwner {
-        _setURI(uri);
+    function create() public onlyOwner {
+      _createForAddress(msg.sender);
     }
 
 
-    function create() public returns(uint256) {
+    function _createForAddress(address addr) private returns(uint256) {
         
+        require((_tokenIDTracker.current() <= _maxTokens), 'Max tokens created');
+
         // Increment token ID
         _tokenIDTracker.increment();
 
@@ -87,7 +92,7 @@ contract Latent is ERC1155, ERC1155Supply, Ownable {
         //console.log("Palette", paletteIndex);
 
         // Set the available tokens that can be minted
-        uint cap = 7;//_getRandomNumber(_getRandomSeed(tokenId, 'cap'), 3, 7);
+        uint cap = 7; //_getRandomNumber(_getRandomSeed(tokenId, 'cap'), 3, 7);
         
         //console.log("Cap", cap);
 
@@ -121,28 +126,50 @@ contract Latent is ERC1155, ERC1155Supply, Ownable {
         
         emit Create(tokenId, attrs);
 
-        mint(tokenId);
+        _mintForAddress(tokenId, addr);
         
         return tokenId;
+
     }
 
-    function getAvailableToMint(uint256 id) public view returns (uint256) {
-        return getCapForID(id) - totalSupply(id);
+    function getCreated() public view returns (uint){
+      return _tokenIDTracker.current();
     }
 
-    function getCapForID(uint256 id) public view returns (uint256){
-        return _attributes[id].cap;
+    function getAvailableToMint(uint256 tokenId) public view returns (uint256) {
+        return getCapForID(tokenId) - totalSupply(tokenId);
     }
 
-    function mint(uint256 id) public {
-        // console.log("Try mint of tokenId:", id);
-        require(getAvailableToMint(id) > 0, "Not available!");
-        _mint(msg.sender, id, 1, "");
+    function getCapForID(uint256 tokenId) public view returns (uint256){
+        return _attributes[tokenId].cap;
+    }
+
+
+    function mint(uint256 tokenId) public {
+      return _mintForAddress(tokenId, msg.sender);
+    }
+
+
+    function _mintForAddress(uint256 tokenId, address addr) private {
+
+        console.log("");
+        
+        // console.log("Try mint of tokentokenId:", id);
+        require(getAvailableToMint(tokenId) > 0, "Not available!");
+
+
+        _mint(addr, tokenId, 1, "");
         // console.log("Minted! Remaining:", getAvailableToMint(id));
+
     }
 
 
     function getSVG(uint256 tokenId, uint iteration) public view returns (string memory){
+
+        // console.log("getSVG", iteration);
+        // console.log("Supply", totalSupply(tokenId));
+
+        require(iteration <= totalSupply(tokenId), 'Edition not minted!');
 
         string[3] memory parts;
         string memory tokenString = Strings.toString(tokenId);

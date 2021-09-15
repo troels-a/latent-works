@@ -1,7 +1,7 @@
 {
   "name": "hardhat-project",
   "scripts": {
-    "test": "npx hardhat compile; npx hardhat test; echo 'Generating jpgs from svgs'; svgexport preview/svgexport.json"
+    "test": "clear; npx hardhat compile; npx hardhat test;"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
@@ -9,7 +9,8 @@
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.4.6",
-    "hardhat": "^2.6.4"
+    "hardhat": "^2.6.4",
+    "hardhat-gas-reporter": "^1.0.4"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.1",
