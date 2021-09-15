@@ -13,14 +13,15 @@ import 'hardhat/console.sol';
 
 /**
 
-
-6C 61 74 65 6E 74  77 6F 72 6B 73
+////////////
+LATENT WORKS
+////////////
 
 
 author: Troels Abrahamsen
 year: 2021
 type: in-chain
-description: 77 tokens with 7 possible editions, each affecting the resulting artwork when minted.
+description: 77 tokens advancing through 7 possible editions, each affecting the resulting artwork when minted.
 
 */
 
