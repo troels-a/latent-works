@@ -7,7 +7,6 @@ import {useWallet} from 'use-wallet';
 const Mint = styled.div`
 
 
-
 `
 
 const Section = styled.div`
@@ -21,14 +20,11 @@ export default function Home(){
     return <Page>
 
         <Section>
-            Latent Works is a series of 77*7 <em>extremely</em> on-chain SVG artworks that change with the number of owners. Every token has 7 editions available and each mint advances the output towards its final state.
+            Latent Works is a series of 77*7 <em>solidity generated</em> on-chain artworks that change with the number of mints. All 77 tokens have 7 possible editions and each mint of one advances the shared artwork through a series of predetermined iterations towards its final state.
         </Section>
 
         <Section>
-            <ConnectButton/>
-            {(status == 'connected') && <Mint>
-                Hello minting section    
-            </Mint>}
+            The project is based on the often overlooked ERC1155 standard proposed by by @enjin. being developed by @troels_a and will 
         </Section>
 
 

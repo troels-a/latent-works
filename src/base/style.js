@@ -3,9 +3,8 @@ const theme = {
     colors: {
       main: 'black',
       white: '#fff',
-      text: '#111111',
-      bg: '#ffffff',
-      faded: '#d0d0d0'
+      text: '#9f9f9f',
+      bg: '#000000',
     },
     breakpoints: {
       sm: 0,

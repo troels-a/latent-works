@@ -9,6 +9,8 @@ const GlobalStyle = createGlobalStyle`
   body {
     font-family: 'Xanh Mono', monospace;
     font-size: 1.8vw;
+    background-color: ${theme.colors.bg};
+    color: ${theme.colors.text};
     ${breakpoint('md')`
       font-size: 1.8vw;
     `}
@@ -39,10 +41,10 @@ export default function App({ Component, pageProps }) {
 
   return (
       <UseWalletProvider
-        chainId={process.env.ETH_NETWORK_ID}
+        chainId={parseInt(process.env.NEXT_PUBLIC_NETWORK_ID)}
         connectors={{
           walletconnect:{
-            rpcUrl: process.env.ETH_RPC_URL
+            rpcUrl: process.env.NEXT_PUBLIC_NETWORK_ENDPOINT
           }
         }}
       >

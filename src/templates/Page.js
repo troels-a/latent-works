@@ -71,7 +71,7 @@ export default function Page({children, ...props}){
             <Grid.Unit component={Title} size={{sm: 1/2, md: 1/3}}>
               <Link href="/">
                 <a>
-                  Latent Works
+                Latent Works
                 </a>
               </Link>
             </Grid.Unit>

@@ -13,90 +13,84 @@ import 'hardhat/console.sol';
 
 /**
 
-////////////
-LATENT WORKS
-////////////
-
+          ___  ___      ___        __   __        __  
+|     /\   |  |__  |\ |  |   |  | /  \ |__) |__/ /__` 
+|___ /~~\  |  |___ | \|  |  .|/\| \__/ |  \ |  \ .__/ 
+                                                      
 
 author: Troels Abrahamsen
 year: 2021
-type: in-chain
-description: 77 tokens advancing through 7 possible editions, each affecting the resulting artwork when minted.
+description: Work determined by code, brought to being by people
 
 */
 
 contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
+    uint public constant MAX_WORKS = 77;
+    uint public constant MAX_EDITIONS = 7;
+
     // Tokens
     using Counters for Counters.Counter;
-    Counters.Counter private _tokenIDTracker;
-    uint private _maxTokens = 7;
-    uint private _waitTime = (60*60*7);
+    Counters.Counter private _token_id_tracker;
+    uint private _released = MAX_WORKS;
+    uint private _editions = 1;
+    uint private _created = 0;
+    uint private _minted = 0;
+    uint private _total = MAX_WORKS*MAX_EDITIONS;
+    uint private _price = 0.02 ether;
 
-    // Atttributes
-    struct Attributes {
-        uint cap;
+    // Works
+    struct Work {
         string[7] colors;
         uint[7] X;
         uint[7] Y;
         uint[7] R;
     }
-    mapping(uint256 => Attributes) private _attributes;
-    event Create(uint256 id, Attributes);
+    mapping(uint256 => Work) private _works;
+    address[] private _creators;
+    event Create(uint256 id, Work);
 
     // Canvas
-    uint private _size = 500;
+    uint private _size = 777;
     uint private _palette_count = 3;
     mapping(uint256 => string[]) private _palettes;
 
-    constructor(address[] memory initialMint) ERC1155("") {
+    constructor() ERC1155("") {
 
       _palettes[1] = ["#82968c","#6a706e","#ffd447","#ff5714","#170312","#0cf574","#f9b4ed"];
       _palettes[2] = ["#f59ca9","#775253","#01fdf6","#cff27e","#294d4a","#0cf574","#0e103d"];
       _palettes[3] = ['rgba(90, 232, 89, 0.706)', 'rgba(255, 98, 98, 0.706)', 'rgba(79, 42, 109, 0.706)', 'rgba(0, 255, 208, 0.769)', 'pink', '#888', 'black'];
+      
+      // for(uint256 index = 0; index < initialMint.length; index++){
+      //   _mintTo(initialMint[index]);
+      // }
 
-      for (uint256 index = 0; index < initialMint.length; index++) {
-        _createForAddress(initialMint[index]);
-      }
+      // uint i = 0;
+      // while(i <= MAX_WORKS){
+      //   _create(i);
+      //   i++;
+      // }
 
     }
-
+    
+    // Return random seed string
     function _getRandomSeed(uint256 tokenId, string memory seedFor) private view returns (string memory) {
       return string(abi.encodePacked(seedFor, Strings.toString(tokenId), block.timestamp, block.difficulty));
     }
 
+    // Return random number between min and max based on seed
     function _getRandomNumber(string memory seed, uint min, uint max) private view returns (uint) {
       uint num = uint(keccak256(abi.encodePacked(seed, block.difficulty, block.timestamp))) % max;
       return num >= min ? num : min;
     }
 
-    function create() public onlyOwner {
-      _createForAddress(msg.sender);
-    }
-
-
-    function _createForAddress(address addr) private returns(uint256) {
-        
-        require((_tokenIDTracker.current() <= _maxTokens), 'Max tokens created');
-
-        // Increment token ID
-        _tokenIDTracker.increment();
-
-        // Get the new token ID;
-        uint256 tokenId = _tokenIDTracker.current();
-
-        //console.log("Create one latent", tokenId);
+    // Create a work and set attributes for all editions on it
+    function _create(uint tokenId) private {
 
         // Choose a palette
         uint paletteIndex = _getRandomNumber(_getRandomSeed(tokenId, 'palette'), 1, _palette_count);
         string[] memory palette = _palettes[paletteIndex]; // Save palette in memory to save gas
-        //console.log("Palette", paletteIndex);
-
-        // Set the available tokens that can be minted
-        uint cap = 7; //_getRandomNumber(_getRandomSeed(tokenId, 'cap'), 3, 7);
         
-        //console.log("Cap", cap);
-
         // Set attributes
         uint index;
         uint colorPicker;
@@ -106,7 +100,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
         uint[7] memory Y;
         uint[7] memory R;
 
-        while(index < cap){
+        while(index < MAX_EDITIONS){
           
           //console.log(index);
 
@@ -122,45 +116,73 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
         }
         
-        Attributes memory attrs = Attributes(cap, colors, X, Y, R);
-        _attributes[tokenId] = attrs;
+        Work memory work = Work(colors, X, Y, R);
+        _works[tokenId] = work;
         
-        emit Create(tokenId, attrs);
+        emit Create(tokenId, work);
 
-        _mintForAddress(tokenId, addr);
-        
-        return tokenId;
+    }
 
+    function getAvailable() public view returns (uint){
+      return (_released - _minted);
     }
 
     function getCreated() public view returns (uint){
-      return _tokenIDTracker.current();
+      return _created;
     }
 
-    function getAvailableToMint(uint256 tokenId) public view returns (uint256) {
-        return getCapForID(tokenId) - totalSupply(tokenId);
+    function getCurrentEdition() public view returns(uint){
+      return _editions;
     }
 
-    function getCapForID(uint256 tokenId) public view returns (uint256){
-        return _attributes[tokenId].cap;
+    function releaseEdition() public onlyOwner returns (uint){
+      require(_released <= _total, 'Max editions reached');
+      _released = _released+MAX_WORKS;
+      _editions++;
     }
 
-
-    function mint(uint256 tokenId) public {
-      return _mintForAddress(tokenId, msg.sender);
+    function create() public {
+      require((_created < MAX_WORKS), "All 77 works have been created");
+      _created++;
+      _create(_created);
+      _mintTo(msg.sender);
+      _creators.push(msg.sender);
     }
 
+    function getCreators() public view  returns(address[] memory){
+      return _creators;
+    }
 
-    function _mintForAddress(uint256 tokenId, address addr) private {
+    function mint() public payable returns (uint) {
+      require(msg.value >= _price, "Send more ETH");
+      require(_created == MAX_WORKS, "All 77 artworks need to be created before minting editions");
+      require(((_released - _minted) > 0 && _editions < 7), "Not available");
+      return _mintTo(msg.sender);
+    }
 
-        console.log("");
-        
-        // console.log("Try mint of tokentokenId:", id);
-        require(getAvailableToMint(tokenId) > 0, "Not available!");
+    function _mintTo(address to) private returns(uint){
+      
 
+      // Increment token ID
+      _token_id_tracker.increment();
 
-        _mint(addr, tokenId, 1, "");
-        // console.log("Minted! Remaining:", getAvailableToMint(id));
+      // Get the new token ID;
+      uint256 tokenId = _token_id_tracker.current();
+
+      if(tokenId == MAX_WORKS){
+
+        /**
+        Token ID has reached MAX_WORKS so we reset
+        to let next edition mint start from 1
+        */
+
+        _token_id_tracker.reset();
+
+      }
+
+      _minted++;
+      _mint(to, tokenId, 1, "");
+      return tokenId;
 
     }
 
@@ -173,13 +195,11 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
         require(iteration <= totalSupply(tokenId), 'Edition not minted!');
 
         string[3] memory parts;
-        string memory tokenString = Strings.toString(tokenId);
         
-        uint cap = _attributes[tokenId].cap;
-        string[7] memory colors = _attributes[tokenId].colors;
-        uint[7] memory X = _attributes[tokenId].X;
-        uint[7] memory Y = _attributes[tokenId].Y;
-        uint[7] memory R = _attributes[tokenId].R;
+        string[7] memory colors = _works[tokenId].colors;
+        uint[7] memory X = _works[tokenId].X;
+        uint[7] memory Y = _works[tokenId].Y;
+        uint[7] memory R = _works[tokenId].R;
 
         uint index;
         string memory elements;
@@ -188,15 +208,11 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
           index++;
         }
 
-        // Save size here and make three strings with 100%, 10% and 1% size for use in SVG
         uint size = _size;
-        string memory size_100  = Strings.toString(size);
+        string memory view_box_size  = Strings.toString(size);
         string memory blur = Strings.toString(size/(iteration));
-        // string memory size_50   = Strings.toString((size/2));
-        // string memory size_25   = Strings.toString((size/4));
-        // string memory size_10   = Strings.toString((size/10));
 
-        parts[0] = string(abi.encodePacked('<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ',size_100,' ',size_100,'"><defs><filter id="f0" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="',blur,'"/></filter></defs><rect width="100%" height="100%" fill="#fff" />'));
+        parts[0] = string(abi.encodePacked('<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ',view_box_size,' ',view_box_size,'"><defs><filter id="f0" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="',blur,'"/></filter></defs><rect width="100%" height="100%" fill="#fff" />'));
         parts[1] = elements;
         parts[2] = '</svg>';
 
@@ -218,6 +234,16 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
         return output;
 
+    }
+
+
+    // Balance
+    function setPrice(uint256 newPrice) public onlyOwner {
+      _price = newPrice;
+    }
+
+    function withdrawAll() public payable onlyOwner {
+      require(payable(msg.sender).send(address(this).balance));
     }
 
 

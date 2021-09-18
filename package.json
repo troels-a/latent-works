@@ -1,7 +1,7 @@
 {
   "name": "latent-works",
   "scripts": {
-    "test": "clear; cd sol; npx hardhat compile; npx hardhat test;",
+    "test": "npx hardhat compile; npx hardhat test;",
     "dev": "next",
     "build": "next build",
     "serve": "next build && next export && serve out",
@@ -32,6 +32,7 @@
     "web3": "^1.3.6"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-etherscan": "^2.1.6",
     "@openzeppelin/contracts": "^4.3.1",
     "babel-plugin-inline-react-svg": "^2.0.1",
     "babel-plugin-styled-components": "^1.8.0",

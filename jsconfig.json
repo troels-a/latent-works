@@ -1,7 +1,7 @@
 {
-    "baseUrl": "./src",
+    "baseUrl": "./src/",
     "compilerOptions": {
-        "baseUrl": "./src",
+        "baseUrl": "./src/"
     }
      
 }
