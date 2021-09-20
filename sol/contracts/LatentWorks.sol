@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import 'base64-sol/base64.sol';
-
+import 'hardhat/console.sol';
 /**
 
           ___  ___      ___        __   __        __  
@@ -17,18 +17,20 @@ import 'base64-sol/base64.sol';
 |___ /~~\  |  |___ | \|  |  .|/\| \__/ |  \ |  \ .__/ 
                                                       
 
-author: Troels Abrahamsen
-year: 2021
-description: Determined by code, brought to being by people
+Troels Abrahamsen, 2021
+troelsabrahamsen.eth
 
 */
 
 contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
+    // Constants
+    string public constant NAME = "Latent Works";
+    string public constant DESCRIPTION = "Determined by code, brought to being by people";
     uint public constant MAX_WORKS = 77;
     uint public constant MAX_EDITIONS = 7;
 
-    // Tokens
+    // Works
     using Counters for Counters.Counter;
     Counters.Counter private _token_id_tracker;
     uint private _released = 0;
@@ -36,10 +38,9 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     uint private _minted = 0;
     uint private _total = MAX_WORKS*MAX_EDITIONS;
     uint private _price = 0.07 ether;
-    
-    // Works
     mapping(uint => string) private _seeds;
-    address[] private _creators;
+    mapping(uint => mapping(uint => address)) private _minters;
+    mapping(address => bool) private _has_minted;
 
     // Canvas
     uint private _size = 777;
@@ -71,6 +72,20 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
       return _editions;
     }
 
+    function getCurrentEdition() public view returns(uint){
+      return ((_minted/10)/MAX_EDITIONS)+1;
+    }
+    
+    function getMinter(uint token_id, uint edition) public view returns(address){
+      return _minters[token_id][edition];
+    }
+
+    function _getPalette(uint token_id) private view returns(uint){
+      require(exists(token_id), "Work does not exist");
+      string memory token_seed = _seeds[token_id];
+      return _getRandomNumber(string(abi.encodePacked(token_seed, 'P')), 1, _palette_count);
+    }
+
     function releaseEdition() public onlyOwner {
       require(_released <= _total, 'Max editions reached');
       _released = _released+MAX_WORKS;
@@ -88,8 +103,9 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
       _token_id_tracker.increment();
 
       uint256 token_id = _token_id_tracker.current();
+      uint edition = getCurrentEdition();
 
-      if(_editions == 1){
+      if(edition == 1){
         _seeds[token_id] = string(abi.encodePacked(Strings.toString(token_id), block.timestamp, block.difficulty));
       }
 
@@ -97,17 +113,19 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
         _token_id_tracker.reset();
       }
 
-      _minted++;
       _mint(to, token_id, 1, "");
+      _minted++;
+
+      _minters[token_id][edition] = to;
 
       return token_id;
 
     }
 
 
-    function _getElement(string memory token_seed, uint iteration, uint palette, string memory filter) private view returns(string memory){
+    function _getElement(string memory token_seed, uint edition, uint palette, string memory filter) private view returns(string memory){
       
-      string memory svgSeed = string(abi.encodePacked(token_seed, Strings.toString(iteration)));
+      string memory svgSeed = string(abi.encodePacked(token_seed, Strings.toString(edition)));
       string memory C = _palettes[palette][_getRandomNumber(string(abi.encodePacked(svgSeed, 'C')), 1, 7)];
       uint X = _getRandomNumber(string(abi.encodePacked(svgSeed, 'X')), 10, 90);
       uint Y = _getRandomNumber(string(abi.encodePacked(svgSeed, 'Y')), 10, 90);
@@ -118,9 +136,9 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     }
 
 
-    function getSVG(uint256 token_id, uint iteration) public view returns (string memory){
+    function getSVG(uint256 token_id, uint edition) public view returns (string memory){
 
-        require(iteration <= totalSupply(token_id), 'NOT_MINTED');
+        require(edition <= totalSupply(token_id), 'Edition not minted');
 
         string[3] memory parts;
 
@@ -131,48 +149,42 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
         string memory elements = string(abi.encodePacked(_getElement(token_seed, 70, palette, "f1"), _getElement(token_seed, 700, palette, "f1")));
 
-        while(index < iteration){
+        while(index < edition){
           elements = string(abi.encodePacked(elements, _getElement(token_seed, index, palette, "f0")));
           index++;
         }
 
         uint size = _size;
         string memory view_box_size = Strings.toString(size);
-        string memory blur = Strings.toString(size/(iteration));
+        string memory blur = Strings.toString(size/(edition));
 
         parts[0] = string(abi.encodePacked('<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ',view_box_size,' ',view_box_size,'"><defs><filter id="f0" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="',blur,'"/></filter><filter id="f1" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="700"/></filter></defs><rect width="100%" height="100%" fill="#fff" />'));
         parts[1] = elements;
         parts[2] = '</svg>';
 
-        string memory output = string(abi.encodePacked(parts[0], parts[1], parts[2]));
+        string memory output = string(abi.encodePacked('data:image/svg+xml;base64,', Base64.encode(bytes(string(abi.encodePacked(parts[0], parts[1], parts[2]))))));
 
         return output;
 
     }
 
-
-    function tokenURI(uint256 token_id) virtual public view returns (string memory) {
+    function uri(uint256 token_id) virtual public view override returns (string memory) {
         
         require(exists(token_id), 'INVALID_ID');
 
-        string memory output = getSVG(token_id, totalSupply(token_id));
+        string memory svg = getSVG(token_id, totalSupply(token_id));
+        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "', NAME,' #',Strings.toString(token_id),'", "description": "',DESCRIPTION,'", "image": "', svg, '"}'))));
 
-        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "#',Strings.toString(token_id),'", "description": "Participatory ERC1155 contract", "image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '"}'))));
-        output = string(abi.encodePacked('data:application/json;base64,', json));
-
-        return output;
+        return string(abi.encodePacked('data:application/json;base64,', json));
 
     }
 
-
-    // Balance
     function withdrawAll() public payable onlyOwner {
       require(payable(msg.sender).send(address(this).balance));
     }
 
 
-    // Overrides
-
+    // Required overrides
     function _mint(address account, uint256 id, uint256 amount, bytes memory data) internal override (ERC1155, ERC1155Supply) {
         super._mint(account, id, amount, data);
     }

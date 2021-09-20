@@ -7,14 +7,15 @@ const _ = {
 };
 
 async function writeSVG(contract, tokenId, iteration){
-  const svg = await contract.getSVG(tokenId, iteration);
+  let svg = await contract.getSVG(tokenId, iteration);
   const svgDir = `./preview/svg/${tokenId}`;
+  svg = Buffer.from(svg.replace(/^data\:image\/svg\+xml\;base64\,/, ''), 'base64').toString('utf-8');
   await fs.promises.mkdir(svgDir, { recursive: true }).catch(console.error);
   await fs.writeFileSync(`${svgDir}/${iteration}.svg`, svg, {flag: 'w'});
 }
 
-async function getMetaData(tokenId){
-  let metadata = await _.contract.tokenURI(tokenId);
+async function getMetaData(contract, tokenId){
+  let metadata = await contract.tokenURI(tokenId);
   metadata = Buffer.from(metadata.replace(/^data\:application\/json\;base64\,/, ''), 'base64');
   metadata = metadata.toString('utf-8');
   return JSON.parse(metadata);
@@ -51,7 +52,7 @@ async function makePreview(contract){
       i++;
     }
 
-    const metadata = await contract.tokenURI(tokenId);
+    let metadata = await getMetaData(contract, tokenId);
 
     htmlItems[tokenId] = `<div>
         <div style="padding: 2vw; display: flex;">
@@ -120,7 +121,7 @@ describe("LatentWorks", async function(){
     
         while(i <= max){
           await minter1.mint({
-            value: ethers.utils.parseEther("0.02"),
+            value: ethers.utils.parseEther("0.07"),
           });
           i++;
         }
@@ -145,7 +146,7 @@ describe("LatentWorks", async function(){
     
         while(i <= max){
           await minter1.mint({
-            value: ethers.utils.parseEther("0.02"),
+            value: ethers.utils.parseEther("0.07"),
           });
           i++;
         }
@@ -195,7 +196,7 @@ describe("LatentWorks", async function(){
     
         while(i <= max){
           await minter1.mint({
-            value: ethers.utils.parseEther("0.02"),
+            value: ethers.utils.parseEther("0.07"),
           });
           i++;
         }
@@ -205,10 +206,10 @@ describe("LatentWorks", async function(){
     
       });
 
-      it('should generate preview', async function(){
-        this.timeout(120000);
-        await makePreview(contract);
-      });
+      // it('should generate preview', async function(){
+      //   this.timeout(120000);
+      //   await makePreview(contract);
+      // });
 
 
   // it('should release edition '+_edition, async function(){
@@ -226,7 +227,7 @@ describe("LatentWorks", async function(){
 
   //   while(i <= max){
   //     await minter1.mint({
-  //       value: ethers.utils.parseEther("0.02"),
+  //       value: ethers.utils.parseEther("0.07"),
   //     });
   //     i++;
   //   }
@@ -251,7 +252,7 @@ describe("LatentWorks", async function(){
 
   //   while(i <= max){
   //     await minter2.mint({
-  //       value: ethers.utils.parseEther("0.02"),
+  //       value: ethers.utils.parseEther("0.07"),
   //     });
   //     expect(await minter2.balanceOf(wallet1.address, i)).to.equal(1);
   //     i++;
