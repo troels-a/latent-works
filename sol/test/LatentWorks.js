@@ -107,114 +107,172 @@ describe("LatentWorks", async function(){
     minter2 = await contract.connect(wallet2);
     minter3 = await contract.connect(wallet3);
     max_works = await contract.MAX_WORKS();
-    max_editions = await contract.MAX_editions();
+    max_editions = await contract.MAX_EDITIONS();
 
-    expect(max_editions).to.be.an('integer');
-    expect(max_works).to.be.an('integer');
-    expect(await contract.getCurrentEdition()).to.equal('');
+    expect(max_editions).to.equal(7);
+    expect(max_works).to.equal(77);
+    expect(await contract.getCurrentEdition()).to.equal(1);
+
+  });
+
+  // it('should revert when non-owner tries to releaseEdition', async function () {
+  //   expect(await minter2.releaseEdition()).to.be.reverted();
+  // });
+
+
+  it('release edition 1', async function(){
+
+    await contract.releaseEdition();
+    const current_edition = await contract.getEditions();
+
+    expect(current_edition).to.equal(1);
+    expect(await contract.getAvailable()).to.equal(77*current_edition);
+
+  });
+  
+  it(`mint entire first edition`, async function(){
+    
+    let i = 1;
+    const max = await minter1.getAvailable();
+  
+    while(i <= max){
+      await minter1.mint({
+        value: ethers.utils.parseEther("0.07"),
+      });
+      i++;
+    }
+  
+    expect(await contract.getMinted()).to.equal(max);
+    expect(await contract.getAvailable()).to.equal(0);
+  
+  });
+
+  it('edition 2 should be released', async function(){
+    await contract.releaseEdition();
+    const editions = await contract.getEditions();
+    expect(editions).to.equal(2);
+    expect(await contract.getAvailable()).to.equal(77*_edition);
+  });
+
+  it('current edition should be 2', async function(){
+    // console.log(await contract.getCurrentEdition())
+    expect(await contract.getCurrentEdition()).to.equal(2);
+  });
+
+  it(`mint half of what's available`, async function(){
+    
+    let i = 1;
+    const available = await minter1.getAvailable();
+    expect(available).to.equal(77);
+
+    const mint = Math.floor(available/2);
+
+    while(i <= mint){
+      await minter1.mint({
+        value: ethers.utils.parseEther("0.07"),
+      });
+      i++;
+    }
+  
+    expect(await contract.getMinted()).to.equal(mint+77);
+    expect(await contract.getAvailable()).to.equal(available - mint);
+    expect(await contract.getCurrentEdition()).to.equal(2);
+
+  });
+
+  it('current edition should be 2', async function(){
+    // console.log(await contract.getCurrentEdition())
+    expect(await contract.getCurrentEdition()).to.equal(2);
+  });
+
+  it(`mint remaining of what's available`, async function(){
+    
+    let i = 1;
+    const available = await minter1.getAvailable();
+
+    while(i <= available){
+      await minter1.mint({
+        value: ethers.utils.parseEther("0.07"),
+      });
+      i++;
+    }
+  
+    expect(await contract.getAvailable()).to.equal(0);
+    expect(await contract.getCurrentEdition()).to.equal(3);
 
   });
 
 
-      it('edition 1 should be released', async function(){
-        await contract.releaseEdition();
-        const current_edition = await contract.getEditions();
-        expect(current_edition).to.equal(1);
-        expect(await contract.getAvailable()).to.equal(77*_edition);
+
+  it('remaining editions should be released', async function(){
+
+    let i = 1;
+    let editions = 5;
+    while(i <= editions){
+      await contract.releaseEdition();
+      const editions = await contract.getEditions();
+      expect(editions).to.equal(i+2);
+      expect(await contract.getAvailable()).to.equal(77*i);
+      i++;
+    }
+
+  });
+
+  it(`mint rest`, async function(){
+    
+    let i = 1;
+    const max = await minter1.getAvailable();
+    const minted = await contract.getMinted();
+    expect(max).to.equal(77*5);
+  
+    while(i <= max){
+      await minter1.mint({
+        value: ethers.utils.parseEther("0.07"),
       });
+      const __minted = await contract.getMinted();
+      const __current_edition = await contract.getCurrentEdition();
+      // console.log(__minted.toNumber(), __current_edition.toNumber());
+      i++;
+    }
+
+    expect(await contract.getCurrentEdition()).to.equal(7);
+    expect(await contract.getMinted()).to.equal(77*7);
+    expect(await contract.getAvailable()).to.equal(0);
+  
+  });
+
+  it('should revert on trying to releaseEdition', async function(){
+    expect(contract.releaseEdition()).to.be.revertedWith("MAX_EDITIONS_RELEASED");
+  });
+
+  it('should revert on trying to mint', async function(){
+    expect(contract.mint({
+      value: ethers.utils.parseEther("0.07"),
+    })).to.be.revertedWith("NOT_AVAILABLE");
+  });
+
+
+  it('should have deterministic output', async function(){
+
+    const i = 1;
+    const uri1 = await contract.uri(i);
+    const uri2 = await contract.uri(i);
+    expect(uri1).to.match(/^data:/);
+    expect(uri2).to.match(/^data:/);
+
+    const [pre1, base64_1] = uri1.split(",");
+    const [pre2, base64_2] = uri2.split(",");
+    const json1 = JSON.parse(Buffer.from(base64_1, "base64").toString("utf-8"));
+    const json2 = JSON.parse(Buffer.from(base64_2, "base64").toString("utf-8"));
+    expect(json1["image"]).to.equal(json2["image"]);
     
-      it(`should be mintable by anyone`, async function(){
-        
-        let i = 1;
-        const max = await minter1.MAX_WORKS();
-        expect(max).to.equal(77);
-    
-        while(i <= max){
-          await minter1.mint({
-            value: ethers.utils.parseEther("0.07"),
-          });
-          i++;
-        }
-    
-        expect(await contract.getMinted()).to.equal(max);
-        expect(await contract.getAvailable()).to.equal(0);
-    
-      });
+  });
 
-      it('edition 2 should be released', async function(){
-        await contract.releaseEdition();
-        const current_edition = await contract.getEditions();
-        expect(current_edition).to.equal(2);
-        expect(await contract.getAvailable()).to.equal(77*_edition);
-      });
+  it('should revert when non-owner tries to withdraw', async function(){
+    expect(minter1.withdrawAll()).to.be.reverted();
+    expect(minter2.withdrawAll()).to.be.reverted();
+  });
 
-      it(`should be mintable by anyone`, async function(){
-        
-        let i = 1;
-        const max = await minter1.getAvailable();
-        expect(max).to.equal(77);
-    
-        while(i <= max){
-          await minter1.mint({
-            value: ethers.utils.parseEther("0.07"),
-          });
-          i++;
-        }
-    
-        expect(await contract.getMinted()).to.equal(max*2);
-        expect(await contract.getAvailable()).to.equal(0);
-    
-      });
-
-
-      it('should have deterministic output', async function(){
-
-        const i = 1;
-        const uri1 = await contract.tokenURI(i);
-        const uri2 = await contract.tokenURI(i);
-        expect(uri1).to.match(/^data:/);
-        expect(uri2).to.match(/^data:/);
-
-        const [pre1, base64_1] = uri1.split(",");
-        const [pre2, base64_2] = uri2.split(",");
-        const json1 = JSON.parse(Buffer.from(base64_1, "base64").toString("utf-8"));
-        const json2 = JSON.parse(Buffer.from(base64_2, "base64").toString("utf-8"));
-        expect(json1["image"]).to.equal(json2["image"]);
-        
-      });
-
-
-      it('remaining editions should be released', async function(){
-
-        let i = 1;
-        let tokens = 5;
-        while(i <= tokens){
-          await contract.releaseEdition();
-          const current_edition = await contract.getEditions();
-          expect(current_edition).to.equal(i+2);
-          expect(await contract.getAvailable()).to.equal(77*i);
-          i++;
-        }
-
-      });
-
-      it(`should be mintable by anyone`, async function(){
-        
-        let i = 1;
-        const max = await minter1.getAvailable();
-        expect(max).to.equal(77*5);
-    
-        while(i <= max){
-          await minter1.mint({
-            value: ethers.utils.parseEther("0.07"),
-          });
-          i++;
-        }
-
-        expect(await contract.getMinted()).to.equal(77*7);
-        expect(await contract.getAvailable()).to.equal(0);
-    
-      });
 
       // it('should generate preview', async function(){
       //   this.timeout(120000);
