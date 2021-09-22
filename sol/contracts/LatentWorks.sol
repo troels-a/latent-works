@@ -36,7 +36,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     uint private _released = 0;
     uint private _editions = 0;
     uint private _minted = 0;
-    uint private _total = MAX_WORKS*MAX_EDITIONS;
+    uint private _minted_editions = 0;
     uint private _price = 0.07 ether;
     mapping(uint => string) private _seeds;
     mapping(uint => mapping(uint => address)) private _minters;
@@ -73,7 +73,11 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     }
 
     function getCurrentEdition() public view returns(uint){
-      return ((_minted/10)/MAX_EDITIONS)+1;
+      uint edition = _minted/MAX_WORKS;
+      if(edition == MAX_EDITIONS)
+        return MAX_EDITIONS;
+      else
+        return edition+1;
     }
     
     function getMinter(uint token_id, uint edition) public view returns(address){
@@ -87,7 +91,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     }
 
     function releaseEdition() public onlyOwner {
-      require(_released <= _total, 'Max editions reached');
+      require(_editions < MAX_EDITIONS, 'Max editions reached');
       _released = _released+MAX_WORKS;
       _editions++;
     }
@@ -111,6 +115,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
       if(token_id == MAX_WORKS){
         _token_id_tracker.reset();
+        _minted_editions++;
       }
 
       _mint(to, token_id, 1, "");

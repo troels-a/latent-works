@@ -87,6 +87,8 @@ describe("LatentWorks", async function(){
 
   let contract;
   let owner;
+  let max_works;
+  let max_editions;
   let wallet1;
   let wallet2;
   let wallet3;
@@ -97,12 +99,20 @@ describe("LatentWorks", async function(){
   let _edition = 1;
 
   it('should deploy', async function () {
+
     const LatentWorks = await hre.ethers.getContractFactory("LatentWorks");
     contract = await LatentWorks.deploy();
     [owner, wallet1, wallet2, wallet3] = await hre.ethers.getSigners();
     minter1 = await contract.connect(wallet1);
     minter2 = await contract.connect(wallet2);
     minter3 = await contract.connect(wallet3);
+    max_works = await contract.MAX_WORKS();
+    max_editions = await contract.MAX_editions();
+
+    expect(max_editions).to.be.an('integer');
+    expect(max_works).to.be.an('integer');
+    expect(await contract.getCurrentEdition()).to.equal('');
+
   });
 
 
