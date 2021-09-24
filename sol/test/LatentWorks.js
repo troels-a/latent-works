@@ -15,7 +15,7 @@ async function writeSVG(contract, tokenId, iteration){
 }
 
 async function getMetaData(contract, tokenId){
-  let metadata = await contract.tokenURI(tokenId);
+  let metadata = await contract.uri(tokenId);
   metadata = Buffer.from(metadata.replace(/^data\:application\/json\;base64\,/, ''), 'base64');
   metadata = metadata.toString('utf-8');
   return JSON.parse(metadata);
@@ -111,22 +111,23 @@ describe("LatentWorks", async function(){
 
     expect(max_editions).to.equal(7);
     expect(max_works).to.equal(77);
-    expect(await contract.getCurrentEdition()).to.equal(1);
+    expect(await contract.getCurrentEdition()).to.equal(0);
+    expect(await contract.getEditions()).to.equal(0);
 
   });
 
-  // it('should revert when non-owner tries to releaseEdition', async function () {
-  //   expect(await minter2.releaseEdition()).to.be.reverted();
-  // });
+  it('should revert when non-owner tries to releaseEdition', async function () {
+    expect(minter2.releaseEdition()).to.be.revertedWith('Ownable: caller is not the owner');
+  });
 
 
   it('release edition 1', async function(){
 
     await contract.releaseEdition();
-    const current_edition = await contract.getEditions();
+    const editions = await contract.getEditions();
 
-    expect(current_edition).to.equal(1);
-    expect(await contract.getAvailable()).to.equal(77*current_edition);
+    expect(editions).to.equal(1);
+    expect(await contract.getAvailable()).to.equal(77*editions);
 
   });
   
@@ -154,10 +155,6 @@ describe("LatentWorks", async function(){
     expect(await contract.getAvailable()).to.equal(77*_edition);
   });
 
-  it('current edition should be 2', async function(){
-    // console.log(await contract.getCurrentEdition())
-    expect(await contract.getCurrentEdition()).to.equal(2);
-  });
 
   it(`mint half of what's available`, async function(){
     
@@ -180,10 +177,6 @@ describe("LatentWorks", async function(){
 
   });
 
-  it('current edition should be 2', async function(){
-    // console.log(await contract.getCurrentEdition())
-    expect(await contract.getCurrentEdition()).to.equal(2);
-  });
 
   it(`mint remaining of what's available`, async function(){
     
@@ -198,7 +191,7 @@ describe("LatentWorks", async function(){
     }
   
     expect(await contract.getAvailable()).to.equal(0);
-    expect(await contract.getCurrentEdition()).to.equal(3);
+    expect(await contract.getCurrentEdition()).to.equal(2);
 
   });
 
@@ -257,6 +250,7 @@ describe("LatentWorks", async function(){
     const i = 1;
     const uri1 = await contract.uri(i);
     const uri2 = await contract.uri(i);
+
     expect(uri1).to.match(/^data:/);
     expect(uri2).to.match(/^data:/);
 
@@ -269,15 +263,15 @@ describe("LatentWorks", async function(){
   });
 
   it('should revert when non-owner tries to withdraw', async function(){
-    expect(minter1.withdrawAll()).to.be.reverted();
-    expect(minter2.withdrawAll()).to.be.reverted();
+    expect(minter1.withdrawAll()).to.be.reverted;
+    expect(minter2.withdrawAll()).to.be.reverted;
   });
 
 
-      // it('should generate preview', async function(){
-      //   this.timeout(120000);
-      //   await makePreview(contract);
-      // });
+  it('should generate preview', async function(){
+    this.timeout(120000);
+    await makePreview(contract);
+  });
 
 
   // it('should release edition '+_edition, async function(){
@@ -332,7 +326,7 @@ describe("LatentWorks", async function(){
   // it('should have meta data', async function(){
 
   //   const i = 1;
-  //   const uri = await contract.tokenURI(i);
+  //   const uri = await contract.uri(i);
   //   expect(uri).to.match(/^data:/);
 
   //   const [pre, base64] = uri.split(",");
