@@ -9,7 +9,6 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import 'base64-sol/base64.sol';
-import 'hardhat/console.sol';
 
 /**
 
@@ -163,7 +162,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
         parts[0] = string(abi.encodePacked('<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ',view_box_size,' ',view_box_size,'"><defs><filter id="f0" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="',blur,'"/></filter><filter id="f1" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="700"/></filter></defs><rect width="100%" height="100%" fill="#fff" />'));
         parts[1] = elements;
-        parts[2] = mark ? '// Watermark here' : '';
+        parts[2] = mark ? '// TODO: Watermark here' : '';
         parts[3] = '</svg>';
 
         string memory output = string(abi.encodePacked('data:image/svg+xml;base64,', Base64.encode(bytes(string(abi.encodePacked(parts[0], parts[1], parts[2], parts[3]))))));
@@ -176,16 +175,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
         
         require(exists(token_id), 'INVALID_ID');
 
-        // string memory minters = '\\n\\n';
-        // uint edition = totalSupply(token_id);
-
-        // uint i = 1;
-        // while(i <= edition){
-        //   minters = string(abi.encodePacked(minters, 'Edition ', i ,' -> ', _minters[token_id][i]));
-        //   i++;
-        // }
-
-        string memory svg = getSVG(token_id, totalSupply(token_id));
+        string memory svg = getSVG(token_id, totalSupply(token_id), true);
         string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "Latent Work #', Strings.toString(token_id), '", "description": "',DESCRIPTION, '", "image": "', svg, '"}'))));
 
         return string(abi.encodePacked('data:application/json;base64,', json));
