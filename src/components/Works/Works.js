@@ -23,7 +23,7 @@ const editions = [1,2,3,4,5,6,7];
 
 export default function Works(props){
 
-    const work = Math.floor(Math.random() * 77)+1;
+    const work = Math.floor(Math.random() * 7)+1;
 
     return <Wrapper>
         {editions.map(edition => <div>
