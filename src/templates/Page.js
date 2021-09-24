@@ -10,8 +10,8 @@ const Wrapper = styled.div`
 
   min-height: 100vh;
   width: 100%;
-  margin: 2vw 2vw 15vw 2vw;
-
+  padding: 2vw 2vw 15vw 2vw;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
 
@@ -51,6 +51,9 @@ const Title = styled.h1`
 
 const Footer = styled.footer`
   display: flex;
+  > * {
+    margin-right: 2vw;
+  }
 
 `
 
@@ -84,15 +87,15 @@ export default function Page({children, ...props}){
 
           <Footer>
 
-            <Link href="#">
+            <Link href="https://t.co/qRrVVkm0Rh">
               <a>
-                  Etherscan
+                  Discord
               </a>
             </Link>
 
-            <Link href="#">
+            <Link href="https://twitter.com/latent_works">
                 <a>
-                    Github
+                  Twitter
                 </a>
             </Link>
 

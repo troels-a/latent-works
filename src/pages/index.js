@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import Page from 'templates/Page';
 import Link from 'next/link';
 import {useWallet} from 'use-wallet';
+import { getEntryBySlug } from 'base/contentAPI';
+import Works from 'components/Works/Works';
 
 const Mint = styled.div`
 
@@ -11,23 +13,29 @@ const Mint = styled.div`
 
 const Section = styled.div`
     margin-bottom: 2vw;
+    
 `
 
-export default function Home(){
+export default function Home({content, ...props}){
 
     const {status} = useWallet();
 
     return <Page>
 
-        <Section>
-            Latent Works is a series of 77*7 <em>solidity generated</em> on-chain artworks that change with the number of mints. All 77 tokens have 7 possible editions and each mint of one advances the shared artwork through a series of predetermined iterations towards its final state.
-        </Section>
-
-        <Section>
-            The project is based on the often overlooked ERC1155 standard proposed by by @enjin. being developed by @troels_a and will 
-        </Section>
-
+        <Section dangerouslySetInnerHTML={{__html: content}}/>
+        <Works/>
+        <small>Test visualization</small>
 
     </Page>
 
+}
+
+
+export async function getStaticProps(){
+
+    const content = await getEntryBySlug('pages', 'index');
+
+    return {
+        props: content
+    }
 }

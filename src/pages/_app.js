@@ -7,13 +7,17 @@ import { UseWalletProvider } from 'use-wallet'
 const GlobalStyle = createGlobalStyle`
     
   body {
+
     font-family: 'Xanh Mono', monospace;
-    font-size: 1.8vw;
+    font-size: 4vw;
+    letter-spacing: 0.06em;
     background-color: ${theme.colors.bg};
     color: ${theme.colors.text};
+
     ${breakpoint('md')`
-      font-size: 1.8vw;
+      font-size: 2.5vw;
     `}
+
     ${breakpoint('lg')`
       font-size: 1.4vw;
     `}
