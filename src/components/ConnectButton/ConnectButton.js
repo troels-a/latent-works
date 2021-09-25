@@ -1,20 +1,7 @@
 import styled from 'styled-components';
 import {truncate} from 'base/utils';
-import { useWallet } from 'use-wallet'
-
-
-const connectors = [
-  {
-    name: 'walletconnect',
-    id: 'walletconnect',
-    label: 'WalletConnect'
-  },
-  {
-    name: 'metamask',
-    id: 'injected',
-    label: 'Metamask'
-  }
-]
+import { useWeb3React } from '@web3-react/core'
+import { wcConnector, injected } from 'pages/_app';
 
 
 const Button = styled.button`
@@ -27,12 +14,6 @@ const Button = styled.button`
   line-height: 1em;
   padding: 1vw;
 `
-
-export const connect = (wallet, connector) => {
-    const connected = (wallet.status === 'connected');
-    wallet.connect(connector)
-}
-
 
 const Connectors = styled.div`
   display: flex;
@@ -75,24 +56,26 @@ const Logout = styled(p => <span {...p} title="Log out">×</span>)`
 
 
 
-export default function ConnectButton(){
+export default function ConnectButton({ activate, onActivate }) {
 
-    const wallet = useWallet();
-    const connected = (wallet.status === 'connected');
-
-    return <Wrapper>
-
-      {!connected && <>
-        {connectors.map(connector => <ConnectorLogo key={connector.id} name={connector.name} label={connector.label} onClick={() => connect(wallet, connector.id)}/>)}
-      </>}
-      
-      {(connected && wallet.account) && <>
-          <span>{truncate(wallet.account, 6, '')}</span> <Logout onClick={wallet.reset}/>
-      </>}
-      
-      {/* {connector && && <Button href="#" onClick={() => {connect(wallet, connector)}}>{(connected && wallet.account) ? truncate(wallet.account, 10) : 'Connect'}</Button>} */}
-
-    </Wrapper>
-
-
+  return (
+      <Wrapper>
+        <button
+          onClick={() => {
+            onActivate()
+            activate(injected);
+          }}
+          >
+          <span>Metamask</span>
+        </button>
+        <button
+          onClick={() => {
+            onActivate();
+            activate(wcConnector);
+          }}
+        >
+          <span>WalletConnect</span>
+        </button>
+      </Wrapper>
+  );
 }

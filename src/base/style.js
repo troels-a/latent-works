@@ -1,5 +1,6 @@
 
 const theme = {
+    font: "'Xanh Mono', monospace",
     colors: {
       main: 'black',
       white: '#fff',

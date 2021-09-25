@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useState } from "react";
 import styled from "styled-components"
 import {breakpoint} from 'styled-components-breakpoint';
 
@@ -23,7 +25,16 @@ const editions = [1,2,3,4,5,6,7];
 
 export default function Works(props){
 
-    const work = Math.floor(Math.random() * 7)+1;
+    const [work, setWork] = useState(1);
+
+    useEffect(() => {
+        const updater = setInterval(() => {
+            setWork(Math.floor(Math.random() * 7)+1);
+        }, 5000);
+        return () => {
+            clearInterval(updater);
+        }
+    }, []);
 
     return <Wrapper>
         {editions.map(edition => <div>
