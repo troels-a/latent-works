@@ -4,8 +4,8 @@ const theme = {
     colors: {
       main: 'black',
       white: '#fff',
-      text: '#9f9f9f',
-      bg: '#000000',
+      bg: '#ececec',
+      text: '#000000',
     },
     breakpoints: {
       sm: 0,

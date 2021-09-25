@@ -122,8 +122,12 @@ export default function Home(props){
             </Section>
             <Mint>
             {(available > 0) && <div>
-                <Section>{minted} of {editions*77} available work editions minted. {currentEdition > 0 && `Currently minting edition ${currentEdition}.`}</Section>
+                <Section>{minted} of {editions*77} available work editions minted. {(currentEdition > 0) && `Currently minting edition ${currentEdition}.`}</Section>
                 <button onClick={mint}>Mint (0.07 ETH)</button>
+            </div>}
+
+            {(available < 1 && editions > 0 && editions < 7) && <div>
+                All available works have been minted. Please wait for the next edition to be released {moment(props.editions[editions]).fromNow()}
             </div>}
 
             {(available < 1 && editions < 1) && <div>
