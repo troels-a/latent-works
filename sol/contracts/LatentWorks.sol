@@ -8,7 +8,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import 'base64-sol/base64.sol';
+import './base64.sol';
+import './Rando.sol';
 
 /**
 
@@ -23,6 +24,8 @@ troels_a, 2021
 
 contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
+    using Counters for Counters.Counter;
+
     // Constants
     string public constant NAME = "Latent Works";
     string public constant DESCRIPTION = "Determined by code, brought to being by people";
@@ -30,20 +33,26 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     uint public constant MAX_EDITIONS = 7;
 
     // Works
-    using Counters for Counters.Counter;
-    Counters.Counter private _token_id_tracker;
+    Counters.Counter private _id_tracker;
     uint private _released = 0;
     uint private _editions = 0;
     uint private _minted = 0;
-    uint private _current_edition = 0;
+    uint private _curr_edition = 0;
     uint private _price = 0.07 ether;
     mapping(uint => string) private _seeds;
     mapping(uint => mapping(uint => address)) private _minters;
-    mapping(address => bool) private _has_minted;
+    mapping(uint => mapping(uint => uint)) private _timestamps;
+
+    struct Meta {
+      uint token_id;
+      string name;
+      string description;
+      string image;
+      string[7] iterations;
+      string[7] colors;
+    }
 
     // Canvas
-    uint private _size = 777;
-    uint private _palette_count = 3;
     mapping(uint256 => string[]) private _palettes;
 
     constructor() ERC1155("") {
@@ -52,11 +61,6 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
       _palettes[2] = ["#f59ca9","#775253","#01fdf6","#cff27e","#294d4a","#0cf574","#0e103d"];
       _palettes[3] = ['rgba(90, 232, 89, 0.706)', 'rgba(255, 98, 98, 0.706)', 'rgba(79, 42, 109, 0.706)', 'rgba(0, 255, 208, 0.769)', 'pink', '#888', 'black'];
 
-    }
-
-    function _getRandomNumber(string memory seed, uint min, uint max) private pure returns (uint) {
-      uint num = uint(keccak256(abi.encode(seed))) % max;
-      return num >= min ? num : min;
     }
 
     function getAvailable() public view returns (uint){
@@ -72,23 +76,20 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     }
 
     function getCurrentEdition() public view returns(uint){
-        return _current_edition;
+        return _curr_edition;
     }
     
     function getMinter(uint token_id, uint edition) public view returns(address){
       return _minters[token_id][edition];
     }
 
-    function _getPalette(uint token_id) private view returns(uint){
-      require(exists(token_id), "NON_EXISTENT_WORK");
-      string memory token_seed = _seeds[token_id];
-      return _getRandomNumber(string(abi.encodePacked(token_seed, 'P')), 1, _palette_count);
-    }
-
-    function releaseEdition() public onlyOwner {
+    function releaseEdition(address[] memory to) public onlyOwner {
       require(_editions < MAX_EDITIONS, 'MAX_EDITIONS_RELEASED');
       _released = _released+MAX_WORKS;
       _editions++;
+      for(uint256 i = 0; i < to.length; i++){
+        _mintTo(to[i]);
+      }
     }
 
     function mint() public payable returns (uint) {
@@ -99,12 +100,12 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
     function _mintTo(address to) private returns(uint){
       
-      _token_id_tracker.increment();
+      _id_tracker.increment();
 
-      uint256 token_id = _token_id_tracker.current();
+      uint256 token_id = _id_tracker.current();
 
       if(token_id == 1)
-        _current_edition++;
+        _curr_edition++;
 
       uint edition = getCurrentEdition();
 
@@ -115,54 +116,102 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
       _mint(to, token_id, 1, "");
       _minted++;
       _minters[token_id][edition] = to;
+      _timestamps[token_id][edition] = block.timestamp;
 
       if(token_id == MAX_WORKS){
-        _token_id_tracker.reset();
+        _id_tracker.reset();
       }
 
       return token_id;
 
     }
 
+    function _getIterationSeed(uint token_id, uint iteration) private view returns(string memory){
+      return string(abi.encodePacked(_seeds[token_id], Strings.toString(iteration)));
+    }
 
-    function _getElement(string memory token_seed, uint edition, uint palette, string memory filter) private view returns(string memory){
+    function _getPaletteIndex(uint token_id) public view returns(uint) {
+      return Rando.number(string(abi.encodePacked(_seeds[token_id], 'P')), 1, 3);
+    }
+
+    function getPalette(uint token_id) public view returns(string[] memory){
+      uint index = _getPaletteIndex(token_id);
+      return _palettes[index];
+    }
+
+    function getColor(uint token_id, uint iteration) public view returns(string memory){
+      string[] memory palette = getPalette(token_id);
+      return palette[Rando.number(string(abi.encodePacked(_getIterationSeed(token_id, iteration), 'C')), 1, 7)];
+    }
+
+    function getMeta(uint token_id) public view returns(Meta memory){
       
-      string memory svgSeed = string(abi.encodePacked(token_seed, Strings.toString(edition)));
-      string memory C = _palettes[palette][_getRandomNumber(string(abi.encodePacked(svgSeed, 'C')), 1, 7)];
-      uint X = _getRandomNumber(string(abi.encodePacked(svgSeed, 'X')), 10, 90);
-      uint Y = _getRandomNumber(string(abi.encodePacked(svgSeed, 'Y')), 10, 90);
-      uint R = _getRandomNumber(string(abi.encodePacked(svgSeed, 'R')), 5, 70);
+      string[7] memory iterations;
+      string[7] memory colors;
+
+      uint supply = totalSupply(token_id);
+      uint i = 0;
+      while(i < supply){
+        iterations[i] = getSVG(token_id, i+1, true);
+        i++;
+      }
+
+      i = 0;
+      while(i < supply){
+        colors[i] = getColor(token_id, i);
+        i++;
+      }
+
+      return Meta(
+        token_id,
+        string(abi.encodePacked("Latent work #", Strings.toString(token_id))),
+        DESCRIPTION,
+        getSVG(token_id, supply, true),
+        iterations,
+        colors
+      );
+
+    }
+
+
+    function _getElement(uint token_id, uint iteration, string memory filter) private view returns(string memory){
+      
+      string memory svgSeed = _getIterationSeed(token_id, iteration);
+      string memory C = getColor(token_id, iteration);
+      uint X = Rando.number(string(abi.encodePacked(svgSeed, 'X')), 10, 90);
+      uint Y = Rando.number(string(abi.encodePacked(svgSeed, 'Y')), 10, 90);
+      uint R = Rando.number(string(abi.encodePacked(svgSeed, 'R')), 5, 70);
 
       return string(abi.encodePacked('<circle cx="',Strings.toString(X),'%" cy="',Strings.toString(Y),'%" r="',Strings.toString(R),'%" filter="url(#',filter,')" fill="',C,'"></circle>'));
 
     }
 
 
-    function getSVG(uint256 token_id, uint edition, bool mark) public view returns (string memory){
+    function _getWatermark(uint token_id, uint iteration) private view returns (string memory) {
+      return string(abi.encodePacked('<style>.txt{font: normal 12px monospace;fill: white;}</style><rect width="90" height="30" x="0" y="747" fill="#000" class="box"></rect><text x="12" y="766" class="txt">#',(token_id < 10 ? string(abi.encodePacked('0', Strings.toString(token_id))) : Strings.toString(token_id)),' \xe2\x80\xa2 ',Strings.toString(iteration),'/',Strings.toString(MAX_EDITIONS),'</text><text x="103" y="766" class="txt">LATENT WORKS ',Strings.toString(_timestamps[token_id][iteration]),'</text>'));
+    }
 
-        require(edition <= totalSupply(token_id), 'EDITION_NOT_MINTED');
+
+    function getSVG(uint256 token_id, uint iteration, bool mark) public view returns (string memory){
+
+        require(iteration <= totalSupply(token_id), 'EDITION_NOT_MINTED');
 
         string[4] memory parts;
 
-        uint index;
-        string memory token_seed = _seeds[token_id];
-        uint palette = _getRandomNumber(string(abi.encodePacked(token_seed, 'P')), 1, _palette_count);
-        // string memory svgSeed;
-
-        string memory elements = string(abi.encodePacked(_getElement(token_seed, 70, palette, "f1"), _getElement(token_seed, 700, palette, "f1")));
-
-        while(index < edition){
-          elements = string(abi.encodePacked(elements, _getElement(token_seed, index, palette, "f0")));
-          index++;
+        string memory elements = string(abi.encodePacked(_getElement(token_id, 70, "f1"), _getElement(token_id, 700, "f1")));
+        uint i;
+        while(i < iteration){
+          elements = string(abi.encodePacked(elements, _getElement(token_id, i, "f0")));
+          i++;
         }
 
-        uint size = _size;
+        uint size = 777;
         string memory view_box_size = Strings.toString(size);
-        string memory blur = Strings.toString(size/(edition));
+        string memory blur = Strings.toString(size/iteration);
 
-        parts[0] = string(abi.encodePacked('<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ',view_box_size,' ',view_box_size,'"><defs><filter id="f0" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="',blur,'"/></filter><filter id="f1" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="700"/></filter></defs><rect width="100%" height="100%" fill="#fff" />'));
-        parts[1] = elements;
-        parts[2] = mark ? '// TODO: Watermark here' : '';
+        parts[0] = string(abi.encodePacked('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ',view_box_size,' ',view_box_size,'"><defs><rect id="bg" width="100%" height="100%" fill="#fff" /><clipPath id="clip"><use xlink:href="#bg"/></clipPath><filter id="f0" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="',blur,'"/></filter><filter id="f1" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="700"/></filter></defs><rect width="100%" height="100%" fill="#fff" />'));
+        parts[1] = string(abi.encodePacked('<g clip-path="url(#clip)"><use xlink:href="#bg"/>', elements, '</g>'));
+        parts[2] = mark ? _getWatermark(token_id, iteration) : '';
         parts[3] = '</svg>';
 
         string memory output = string(abi.encodePacked('data:image/svg+xml;base64,', Base64.encode(bytes(string(abi.encodePacked(parts[0], parts[1], parts[2], parts[3]))))));
@@ -174,9 +223,11 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     function uri(uint256 token_id) virtual public view override returns (string memory) {
         
         require(exists(token_id), 'INVALID_ID');
+        Meta memory meta = getMeta(token_id);
 
-        string memory svg = getSVG(token_id, totalSupply(token_id), true);
-        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "Latent Work #', Strings.toString(token_id), '", "description": "',DESCRIPTION, '", "image": "', svg, '"}'))));
+        // TODO: properties
+
+        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "Latent Work #', Strings.toString(token_id), '", "description": "', meta.description, '", "image": "', meta.image, '"}'))));
 
         return string(abi.encodePacked('data:application/json;base64,', json));
 
