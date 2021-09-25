@@ -17,7 +17,7 @@ import './Rando.sol';
 |     /\   |  |__  |\ |  |   |  | /  \ |__) |__/ /__` 
 |___ /~~\  |  |___ | \|  |  .|/\| \__/ |  \ |  \ .__/ 
                                                       
-troels_a, 2021
+77x7, troels_a, 2021
 
 
 */
@@ -27,8 +27,8 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     using Counters for Counters.Counter;
 
     // Constants
-    string public constant NAME = "Latent Works";
-    string public constant DESCRIPTION = "Determined by code, brought to being by people";
+    string public constant NAME = "Latent Works \xc2\xb7 77x7";
+    string public constant DESCRIPTION = "Out of the blue and into the black.\\n \\nlatent.works";
     uint public constant MAX_WORKS = 77;
     uint public constant MAX_EDITIONS = 7;
 
@@ -43,7 +43,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     mapping(uint => mapping(uint => address)) private _minters;
     mapping(uint => mapping(uint => uint)) private _timestamps;
 
-    struct Meta {
+    struct Work {
       uint token_id;
       string name;
       string description;
@@ -51,6 +51,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
       string[7] iterations;
       string[7] colors;
     }
+
 
     // Canvas
     mapping(uint256 => string[]) private _palettes;
@@ -63,6 +64,8 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
     }
 
+
+    // State
     function getAvailable() public view returns (uint){
       return (_released - _minted);
     }
@@ -79,10 +82,8 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
         return _curr_edition;
     }
     
-    function getMinter(uint token_id, uint edition) public view returns(address){
-      return _minters[token_id][edition];
-    }
 
+    // Minting
     function releaseEdition(address[] memory to) public onlyOwner {
       require(_editions < MAX_EDITIONS, 'MAX_EDITIONS_RELEASED');
       _released = _released+MAX_WORKS;
@@ -126,11 +127,13 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
     }
 
+
+    // Media and metadata
     function _getIterationSeed(uint token_id, uint iteration) private view returns(string memory){
       return string(abi.encodePacked(_seeds[token_id], Strings.toString(iteration)));
     }
 
-    function _getPaletteIndex(uint token_id) public view returns(uint) {
+    function _getPaletteIndex(uint token_id) private view returns(uint) {
       return Rando.number(string(abi.encodePacked(_seeds[token_id], 'P')), 1, 3);
     }
 
@@ -144,7 +147,11 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
       return palette[Rando.number(string(abi.encodePacked(_getIterationSeed(token_id, iteration), 'C')), 1, 7)];
     }
 
-    function getMeta(uint token_id) public view returns(Meta memory){
+    function getMinter(uint token_id, uint edition) public view returns(address){
+      return _minters[token_id][edition];
+    }
+
+    function getWork(uint token_id) public view returns(Work memory){
       
       string[7] memory iterations;
       string[7] memory colors;
@@ -162,9 +169,9 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
         i++;
       }
 
-      return Meta(
+      return Work(
         token_id,
-        string(abi.encodePacked("Latent work #", Strings.toString(token_id))),
+        string(abi.encodePacked("Latent Work #", Strings.toString(token_id))),
         DESCRIPTION,
         getSVG(token_id, supply, true),
         iterations,
@@ -172,7 +179,6 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
       );
 
     }
-
 
     function _getElement(uint token_id, uint iteration, string memory filter) private view returns(string memory){
       
@@ -188,7 +194,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
 
     function _getWatermark(uint token_id, uint iteration) private view returns (string memory) {
-      return string(abi.encodePacked('<style>.txt{font: normal 12px monospace;fill: white;}</style><rect width="90" height="30" x="0" y="747" fill="#000" class="box"></rect><text x="12" y="766" class="txt">#',(token_id < 10 ? string(abi.encodePacked('0', Strings.toString(token_id))) : Strings.toString(token_id)),' \xe2\x80\xa2 ',Strings.toString(iteration),'/',Strings.toString(MAX_EDITIONS),'</text><text x="103" y="766" class="txt">LATENT WORKS ',Strings.toString(_timestamps[token_id][iteration]),'</text>'));
+      return string(abi.encodePacked('<style>.txt{font: normal 12px monospace;fill: white;}</style><rect width="90" height="30" x="0" y="747" fill="#000" class="box"></rect><text x="12" y="766" class="txt">#',(token_id < 10 ? string(abi.encodePacked('0', Strings.toString(token_id))) : Strings.toString(token_id)),' \xc2\xb7 ',Strings.toString(iteration),'/',Strings.toString(MAX_EDITIONS),'</text><text x="103" y="766" class="txt">',Strings.toString(_timestamps[token_id][iteration]),'</text>'));
     }
 
 
@@ -207,7 +213,7 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
 
         uint size = 777;
         string memory view_box_size = Strings.toString(size);
-        string memory blur = Strings.toString(size/iteration);
+        string memory blur = Strings.toString(size/(iteration+1));
 
         parts[0] = string(abi.encodePacked('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ',view_box_size,' ',view_box_size,'"><defs><rect id="bg" width="100%" height="100%" fill="#fff" /><clipPath id="clip"><use xlink:href="#bg"/></clipPath><filter id="f0" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="',blur,'"/></filter><filter id="f1" width="300%" height="300%" x="-100%" y="-100%"><feGaussianBlur in="SourceGraphic" stdDeviation="700"/></filter></defs><rect width="100%" height="100%" fill="#fff" />'));
         parts[1] = string(abi.encodePacked('<g clip-path="url(#clip)"><use xlink:href="#bg"/>', elements, '</g>'));
@@ -223,16 +229,15 @@ contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
     function uri(uint256 token_id) virtual public view override returns (string memory) {
         
         require(exists(token_id), 'INVALID_ID');
-        Meta memory meta = getMeta(token_id);
+        Work memory work = getWork(token_id);
 
-        // TODO: properties
-
-        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "Latent Work #', Strings.toString(token_id), '", "description": "', meta.description, '", "image": "', meta.image, '"}'))));
+        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "', work.name, '", "description": "', work.description, '", "image": "', work.image, '"}'))));
 
         return string(abi.encodePacked('data:application/json;base64,', json));
 
     }
 
+    // Balance
     function withdrawAll() public payable onlyOwner {
       require(payable(msg.sender).send(address(this).balance));
     }

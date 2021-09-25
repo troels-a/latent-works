@@ -1,8 +1,11 @@
-#Hardhat files
-cache
-artifacts
-temp
-preview 
+# hardhat
+/sol/cache
+/sol/artifacts
+/sol/abi
+/sol/temp
+
+# project
+/preview 
 
 # dependencies
 /node_modules

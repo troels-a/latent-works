@@ -4,8 +4,8 @@ pragma solidity ^0.8.2;
 library Rando {
 
     function number(string memory seed, uint min, uint max) internal pure returns (uint) {
-      uint num = uint(keccak256(abi.encode(seed))) % max;
-      return num >= min ? num : min;
+      if (max <= min) return min;
+        return (uint256(keccak256(abi.encodePacked(seed))) % (max - min)) + min;
     }
 
 }
