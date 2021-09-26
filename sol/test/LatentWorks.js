@@ -2,13 +2,6 @@ const { expect } = require("chai");
 const fs = require('fs');
 const path = require('path').dirname(__dirname);
 const Preview = require('../preview.js');
-console.log(Preview);
-
-const _ = {
-  premint: ['0x3827014F2236519f1101Ae2E136985E0e603Be79']
-};
-
-
 
 describe("LatentWorks", async function(){
 
