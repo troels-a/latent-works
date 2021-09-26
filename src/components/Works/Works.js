@@ -3,6 +3,14 @@ import { useState } from "react";
 import styled from "styled-components"
 import {breakpoint} from 'styled-components-breakpoint';
 
+const Restrain = styled.div`
+    ${breakpoint('sm', 'md')`
+        max-width: 100%;
+        overflow: scroll;
+    `}
+
+`
+
 const Wrapper = styled.div`
     display: flex;
     width: calc(100% + 2vw);
@@ -13,12 +21,12 @@ const Wrapper = styled.div`
     }
 
     ${breakpoint('sm', 'md')`
-        flex-direction: column;
+        flex-wrap: no-wrap;
+        width: 700vw;
         > div {
-            width: 100%;
+            width: 100vw;
         }
     `}
-        
 `
 
 const editions = [1,2,3,4,5,6,7];
@@ -36,10 +44,11 @@ export default function Works(props){
         }
     }, []);
 
-    return <Wrapper>
+    return <Restrain><Wrapper>
         {editions.map(edition => <div>
             <img src={`svg/${work}/${edition}.svg`}/>
         </div>)}
     </Wrapper>
+    </Restrain>
 
 }

@@ -22,7 +22,7 @@ describe("LatentWorks", async function(){
   // Test deploy
   it('should deploy', async function () {
 
-    const LatentWorks = await hre.ethers.getContractFactory("LatentWorks");
+    const LatentWorks = await hre.ethers.getContractFactory("LatentWorks_77x7");
     contract = await LatentWorks.deploy();
     [owner, wallet1, wallet2, wallet3] = await hre.ethers.getSigners();
     minter1 = await contract.connect(wallet1);

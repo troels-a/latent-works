@@ -76,22 +76,11 @@ const GlobalStyle = createGlobalStyle`
 export default function App({ Component, pageProps }) {
 
   return (
-      // <UseWalletProvider
-      //   chainId={parseInt(process.env.NEXT_PUBLIC_NETWORK_ID)}
-      //   connectors={{
-      //     walletconnect:{
-      //       rpcUrl: process.env.NEXT_PUBLIC_NETWORK_ENDPOINT
-      //     }
-      //   }}
-      // >
         <Web3ReactProvider getLibrary={getLibrary}>
         <ThemeProvider theme={theme}>
           <GlobalStyle />
             <Component {...pageProps} />
         </ThemeProvider>
        </Web3ReactProvider>
-
-      // </UseWalletProvider>
-
   )
 }
