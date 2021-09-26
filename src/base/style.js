@@ -5,6 +5,7 @@ const theme = {
       main: 'black',
       white: '#fff',
       bg: '#ececec',
+      altBg: '#cfcfcf',
       text: '#000000',
     },
     breakpoints: {

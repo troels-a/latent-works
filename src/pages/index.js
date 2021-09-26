@@ -12,7 +12,7 @@ import abi from 'base/abi.json';
 import moment from 'moment';
 
 const Mint = styled.div`
-    background-color: grey;
+    background-color: ${p => p.theme.colors.altBg};
     padding: 2vw;
     margin: 2vw 0;
     color: black;
