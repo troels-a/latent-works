@@ -3,11 +3,11 @@
 editions:
     - "26 September 2021 17:10:00 GMT+02:00"
     - "27 September 2021 9:00:00 GMT+02:00"
-    - "28 September 2021 17:00:00 GMT+02:00"
-    - "29 September 2021 17:00:00 GMT+02:00"
-    - "30 September 2021 17:00:00 GMT+02:00"
-    - "31 September 2021 17:00:00 GMT+02:00"
-    - "1 October 2021 17:00:00 GMT+02:00"
+    - "28 September 2021 12:00:00 GMT+02:00"
+    - "29 September 2021 15:00:00 GMT+02:00"
+    - "30 September 2021 18:00:00 GMT+02:00"
+    - "1 October 2021 21:00:00 GMT+02:00"
+    - "2 October 2021 8:00:00 GMT+02:00"
 
 ---
 
