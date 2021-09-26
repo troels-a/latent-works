@@ -1,10 +1,10 @@
 const hre = require("hardhat");
 
 async function main() {
-  const LatentWorks = await hre.ethers.getContractFactory("LatentWorks");
+  const LatentWorks = await hre.ethers.getContractFactory("LatentWorks_77x7");
   const contract = await LatentWorks.deploy();
   await contract.deployed();
-  console.log("LatentWorks deployed to:", contract.address);
+  console.log("LatentWorks 77x7 deployed to:", contract.address);
 }
 
 main()

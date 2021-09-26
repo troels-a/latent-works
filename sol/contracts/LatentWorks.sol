@@ -17,18 +17,18 @@ import './Rando.sol';
 |     /\   |  |__  |\ |  |   |  | /  \ |__) |__/ /__` 
 |___ /~~\  |  |___ | \|  |  .|/\| \__/ |  \ |  \ .__/ 
                                                       
-77x7, troels_a, 2021
+"77x7", troels_a, 2021
 
 
 */
 
-contract LatentWorks is ERC1155, ERC1155Supply, Ownable {
+contract LatentWorks_77x7 is ERC1155, ERC1155Supply, Ownable {
 
     using Counters for Counters.Counter;
 
     // Constants
     string public constant NAME = "Latent Works \xc2\xb7 77x7";
-    string public constant DESCRIPTION = "Out of the blue and into the black.\\n \\nlatent.works";
+    string public constant DESCRIPTION = "latent.works";
     uint public constant MAX_WORKS = 77;
     uint public constant MAX_EDITIONS = 7;
 
