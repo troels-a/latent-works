@@ -50,10 +50,10 @@ export default function SeventySevenBySeven(props){
             >
             {[1,2,3,4,5,6,7].map(iteration => <SwiperSlide>
                 <WorkImage fullScreen={(fullScreen == iteration)} src={`${props.work.image}&edition=${iteration}`}>
-                <Tools><a>Render PNG</a> | <a>Download SVG</a></Tools>
-                <Meta>
+                {/* <Tools><a>Render PNG</a> | <a>Download SVG</a></Tools> */}
+                {/* <Meta>
                     Minted by: 0x3827...Be79
-                </Meta>
+                </Meta> */}
                 </WorkImage>
             </SwiperSlide>)}
             </Swiper>
