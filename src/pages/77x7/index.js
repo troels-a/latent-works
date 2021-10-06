@@ -5,7 +5,7 @@ import Page from 'templates/Page';
 import Link from 'next/link';
 import styled from 'styled-components';
 
-const Work = styled.a`
+const Work = styled.div`
     display: flex;
     width: 100%;
     height: 9.35vw;
