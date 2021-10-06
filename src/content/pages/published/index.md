@@ -1,18 +1,5 @@
 ---
 
-editions:
-    - "26 September 2021 17:10:00 GMT+02:00"
-    - "27 September 2021 9:00:00 GMT+02:00"
-    - "28 September 2021 12:00:00 GMT+02:00"
-    - "29 September 2021 15:00:00 GMT+02:00"
-    - "30 September 2021 18:00:00 GMT+02:00"
-    - "1 October 2021 21:00:00 GMT+02:00"
-    - "2 October 2021 8:00:00 GMT+02:00"
-
 ---
 
-Latent Works is a series of 77 artworks generated and stored entirely on chain. As Latent Works is built on the ERC1155 token standard, each artwork has multiple editions - 7 to be exact. When an edition is minted it advances and evolves the artwork for all holders using a seed generated on the first mint. Latent Works are in this way both individually owned and jointly shared at the same time.
-
-Individual works iterate according to a set course, their fate, which is determined by the time they are first minted. Whether that fate is fulfilled depends on the participants. No mints, no art - only the latent potential remains on chain.
-
-This experiment in shared ownership and evolving generative art is released over the course of 7 days, one edition at a time. Minting is sequential, meaning the contract mints an entire edition of 77 artworks before advancing to the next one, and so on through the 7 editions.
+Latent Works launched it's genesis collection _77x7_ on block 13302102 of the Ethereum blockchain. Over the course of seven days 77 fully in-chain artworks evolved through 7 iterations as they were minted from their [contract](https://etherscan.io/address/0xEF7c89F051ac48885b240eb53934B04fcF3339ab#code)

@@ -13,11 +13,9 @@ const Restrain = styled.div`
 
 const Wrapper = styled.div`
     display: flex;
-    width: calc(100% + 2vw);
-    margin-left: -1vw;
+    width: 100%;
     > div {
         width: ${100/7}%;
-        padding: 0 1vw;
     }
 
     ${breakpoint('sm', 'md')`
@@ -46,7 +44,7 @@ export default function Works(props){
 
     return <Restrain><Wrapper>
         {editions.map(edition => <div>
-            <img src={`svg/${work}/${edition}.svg`}/>
+            <img src={`/api/77x7/image/${work}?edition=${edition}`}/>
         </div>)}
     </Wrapper>
     </Restrain>

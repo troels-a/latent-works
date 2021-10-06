@@ -104,39 +104,13 @@ export default function Home(props){
     
     return <Page>
 
-        {/* {chainId != 1 && <h2>!!!TESTNET!!!</h2>} */}
-
-        <Section>
-            <Works/>
-        </Section>
-    
-        <Section>
-            <ConnectButton activate={activate} onActivate={() => setWorking(true)}/>
-        </Section>
-        
-        {active && <>
-            <Section>
-            {(props.editions[editions]) && <h3>
-                Edition {editions+1} is released {moment(props.editions[editions]).fromNow()} ({moment(props.editions[editions]).calendar()})
-            </h3>}
-            </Section>
-            <Mint>
-            {(available > 0) && <div>
-                <Section>{minted} of {editions*77} available work editions minted. {(currentEdition > 0) && `Currently minting edition ${currentEdition}.`}</Section>
-                <button onClick={mint}>Mint (0.07 ETH)</button>
-            </div>}
-
-            {(available < 1 && editions > 0 && editions < 7) && <div>
-                All available works have been minted. Please wait for the next edition to be released {moment(props.editions[editions]).fromNow()}
-            </div>}
-
-            {(available < 1 && editions < 1) && <div>
-                When the first edition has been released, this is where you'll find the mint button.           
-            </div>}
-
-            </Mint>
-        </>}   
-        <Section dangerouslySetInnerHTML={{__html: props.content}}/>
+    <Section dangerouslySetInnerHTML={{__html: props.content}}/>
+    <Section>
+        <Works/>
+    </Section>
+    <Link href="/77x7" passHref>
+        <a>Read more about 77x7 and browse the works here</a>
+    </Link>
 
     </Page>
     

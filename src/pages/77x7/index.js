@@ -9,6 +9,7 @@ const Work = styled.div`
     display: flex;
     width: 100%;
     height: 9.35vw;
+    cursor: pointer;
     > div {
         width: 14.2%;
     }
@@ -19,7 +20,7 @@ export default function SeventySevenBySeven(props){
     const { activate, active, account, library, chainId} = useWeb3React();
 
     return <Page>
-        
+        <div dangerouslySetInnerHTML={{__html: props.content}}/>
         {props.works.map((work, index) => <Link href={`/77x7/${work.id}`} key={index}><Work>
             {[1,2,3,4,5,6,7].map(iteration => <div>
             <img src={`${work.image}&edition=${iteration}`}></img>   
