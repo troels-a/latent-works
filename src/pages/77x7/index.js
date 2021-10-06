@@ -21,12 +21,12 @@ export default function SeventySevenBySeven(props){
 
     return <Page>
         <div dangerouslySetInnerHTML={{__html: props.content}}/>
-        {props.works.map((work, index) => <Link href={`/77x7/${work.id}`} key={index} passHref><Work>
+        {props.works.map((work, index) => <Link href={`/77x7/${work.id}`} key={index} passHref><a><Work>
             {[1,2,3,4,5,6,7].map(iteration => <div>
             <img src={`${work.image}&edition=${iteration}`}></img>   
             </div>
             )}
-        </Work></Link>)}
+        </Work></a></Link>)}
 
     </Page>
 
