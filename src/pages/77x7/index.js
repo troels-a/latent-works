@@ -5,7 +5,7 @@ import Page from 'templates/Page';
 import Link from 'next/link';
 import styled from 'styled-components';
 
-const Work = styled.div`
+const Work = styled.a`
     display: flex;
     width: 100%;
     height: 9.35vw;
@@ -21,7 +21,7 @@ export default function SeventySevenBySeven(props){
 
     return <Page>
         <div dangerouslySetInnerHTML={{__html: props.content}}/>
-        {props.works.map((work, index) => <Link href={`/77x7/${work.id}`} key={index}><Work>
+        {props.works.map((work, index) => <Link href={`/77x7/${work.id}`} key={index} passHref><Work>
             {[1,2,3,4,5,6,7].map(iteration => <div>
             <img src={`${work.image}&edition=${iteration}`}></img>   
             </div>
