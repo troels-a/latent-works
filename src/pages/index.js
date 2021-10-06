@@ -8,7 +8,7 @@ import Works from 'components/Works/Works';
 import Web3, { utils } from "web3";
 import { useWeb3React } from '@web3-react/core'
 import { useState, useEffect} from 'react';
-import abi from 'base/abi.json';
+import abi from 'base/abi/77x7.json';
 import moment from 'moment';
 
 const Mint = styled.div`
