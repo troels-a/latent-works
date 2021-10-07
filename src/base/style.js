@@ -9,7 +9,7 @@ const theme = {
       text: '#000000',
     },
     breakpoints: {
-      sm: 0,
+      sm: 1,
       md: 768,
       lg: 992
     }
