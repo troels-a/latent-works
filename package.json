@@ -45,6 +45,7 @@
     "babel-plugin-inline-react-svg": "^2.0.1",
     "babel-plugin-styled-components": "^1.8.0",
     "base64-sol": "^1.0.1",
+    "debounce": "^1.2.1",
     "dotenv": "^10.0.0",
     "gray-matter": "^4.0.3",
     "moment": "^2.29.1",

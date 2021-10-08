@@ -16,7 +16,7 @@ const Wrapper = styled.div`
   flex-direction: column;
 
   ${breakpoint('lg')`
-    width: 70vw;
+    width: 80vw;
     text-align: left;
     margin: 0 auto;
   `}

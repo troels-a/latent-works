@@ -51,6 +51,19 @@ const GlobalStyle = createGlobalStyle`
     }
   }
 
+
+  input[type="text"], input[type="number"], input[type="password"], input[type="email"]{
+    border: 0px solid ${theme.colors.text};
+    border-bottom-width: 2px;
+    background-color: transparent;
+    font-family: ${theme.font};
+    font-size: inherit;
+    padding: 1vw 2vw;
+    &:focus {
+      outline: 0;
+    }
+  }
+
   button {
     background-color: ${theme.colors.bg};
     padding: 1vw 2vw;
@@ -65,8 +78,9 @@ const GlobalStyle = createGlobalStyle`
       left: 2px;
       box-shadow: 1px 1px 0px ${theme.colors.text};
     }
-    & + & {
-      margin-left: 2vw;
+    margin-right: 2vw;
+    &:last-child {
+      margin-right: 0;
     }
   }
 

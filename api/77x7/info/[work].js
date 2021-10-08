@@ -11,6 +11,13 @@ export default async (req, res) => {
     const provider  = new ethers.providers.InfuraProvider("homestead", process.env.INFURA_ID);
     const contract  = new ethers.Contract(address, abi, provider);
     const data      = await contract.getWork(parseInt(work));
+    const minters   = [];
+    let i = 1;
+    while(i <= 7){
+        minters.push(await contract.getMinter(parseInt(work), i));
+        i++;
+    }
+
     const resp      = {};
 
     resp.id = data[0].toNumber();
@@ -19,6 +26,7 @@ export default async (req, res) => {
     resp.image = data[3];
     resp.iterations = data[4];
     resp.colors = data[5];
+    resp.minters = minters;
 
     res.setHeader("Cache-Control", "s-maxage=21600, stale-while-revalidate")
     res.setHeader('Content-Type', 'application/json');
