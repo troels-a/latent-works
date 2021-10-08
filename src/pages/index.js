@@ -3,12 +3,10 @@ import { getEntryBySlug } from 'base/contentAPI';
 import { useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import Page from 'templates/Page';
-import 'swiper/css';
 import { useState} from 'react';
 import { useRouter } from 'next/dist/client/router';
 import fetch from 'node-fetch';
 import { useRef } from 'react';
-import debounce from "debounce";
 import Link from 'next/link';
 import {breakpoint} from 'styled-components-breakpoint';
 
