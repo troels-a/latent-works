@@ -53,20 +53,30 @@ const GlobalStyle = createGlobalStyle`
 
 
   input[type="text"], input[type="number"], input[type="password"], input[type="email"]{
+
     border: 0px solid ${theme.colors.text};
     border-bottom-width: 2px;
     background-color: transparent;
     font-family: ${theme.font};
     font-size: inherit;
     padding: 1vw 2vw;
+    ${breakpoint('sm', 'md')`
+      padding: 2vw 3vw;
+    `}
+    border-radius: 0;
+
     &:focus {
       outline: 0;
     }
+
   }
 
   button {
     background-color: ${theme.colors.bg};
     padding: 1vw 2vw;
+    ${breakpoint('sm', 'md')`
+      padding: 2vw 3vw;
+    `}
     border: 2px solid ${theme.colors.text};
     color: ${theme.colors.text};
     font-family: ${theme.font};

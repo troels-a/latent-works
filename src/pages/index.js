@@ -13,7 +13,7 @@ import Link from 'next/link';
 import {breakpoint} from 'styled-components-breakpoint';
 
 const Section = styled.div`
-margin-bottom: 2vw;
+    margin-bottom: 2vw;
 `
 
 const WorkWrap = styled.div`
@@ -77,10 +77,21 @@ const Meta = styled.small`
 const WorksNav = styled.nav`
     display: flex;
     justify-content: flex-start;
+    ${breakpoint('sm', 'md')`
+        justify-content: space-between;
+        margin-bottom: 6vw;
+    `}
 `
 
 const WorkNav = styled.button`
     display: inline-block;
+    ${breakpoint('sm', 'md')`
+
+        &:last-of-type {
+            order: 3;
+        }
+
+    `}
 `
 
 const blink = keyframes`
@@ -116,7 +127,6 @@ const Prompt = styled(({symbol, className, key, ...p}) => <div className={classN
 
 const Minters = styled.div`
 
-    align-self: flex-end;
 
 `
 
