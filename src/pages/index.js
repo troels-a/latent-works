@@ -19,8 +19,7 @@ const Mint = styled.div`
 `
 
 const Section = styled.div`
-margin-bottom: 2vw;
-
+    margin-bottom: 2vw;
 `
 
 export default function Home(props){
