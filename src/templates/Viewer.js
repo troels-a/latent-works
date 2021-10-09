@@ -24,20 +24,13 @@ const Wrapper = styled.div`
 `
 
 const Header = styled(Grid)`
-  /* position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1; */
   padding: 2vw 0;
   height: auto;
   place-items: center;
 `
 
 const Content = styled.main`
-
   margin-bottom: 3vw;
-
 `
 
 const Title = styled.h1`
@@ -54,9 +47,7 @@ const Footer = styled.footer`
   > * {
     margin-right: 2vw;
   }
-
 `
-
 
 
 export default function Viewer({children, ...props}){

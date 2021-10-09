@@ -7,10 +7,6 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
 import { Web3ReactProvider, useWeb3React } from "@web3-react/core";
 
-export const injected = new InjectedConnector({ supportedChainIds: [1, 3, 4, 5, 42] });
-export const wcConnector = new WalletConnectConnector({
-  infuraId: process.env.NEXT_PUBLIC_INFURA_ID,
-});
 
 function getLibrary(provider){
   return new Web3(provider);

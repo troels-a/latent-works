@@ -12,7 +12,7 @@ import Link from 'next/link';
 import {breakpoint} from 'styled-components-breakpoint';
 
 const Section = styled.div`
-    margin-bottom: 2vw;
+    margin-bottom: 4vw;
 `
 
 const WorkWrap = styled.div`
@@ -148,6 +148,7 @@ let navTimeout = false;
 
 export default function SeventySevenBySeven(props){
 
+    
     const {query, basePath, ...router} = useRouter();
     const [workID, setWorkID] = useState(false);
     const [work, setWork] = useState(false);
