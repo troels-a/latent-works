@@ -1,11 +1,12 @@
 import { useWeb3React } from '@web3-react/core';
 import { getEntryBySlug } from 'base/contentAPI';
 import { useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import Page from 'templates/Page';
 import { useState} from 'react';
 import { useRouter } from 'next/dist/client/router';
 import fetch from 'node-fetch';
+import { AbortController } from "node-abort-controller";
 import { useRef } from 'react';
 import Link from 'next/link';
 import {breakpoint} from 'styled-components-breakpoint';
@@ -50,9 +51,17 @@ const WorkImage = styled(({src, children, placeholder, show, ...p}) => <img {...
     `}
 
     ${p => p.placeHolder && `
-        opacity: 0.5;
-        content: '';
-
+        opacity: 0.2;
+        &:before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            display: block;
+            content: '';
+            background-color: ${p.theme.colors.text};
+        }
     `}
 `
 
@@ -101,26 +110,33 @@ const blink = keyframes`
     }
 `
 
-const Prompt = styled(({symbol, className, key, ...p}) => <div className={className} key={key}>
-    <input {...p}/>
-    <span>{symbol}</span>
+const Prompt = styled(({append, prepend, className, key, inputRef, ...p}) => <div className={className} key={key} {...p}>
+    {prepend && <span>{prepend}</span>}
+    <input ref={inputRef} {...p}/>
+    {append && <span>{append}</span>}
 </div>)`
 
     position: relative;
-
+    font-size: 1.5em;
+    
     > input {
-        padding-left: 1vw;
-    }
-    > input:focus + span {
-        animation: ${blink} 500ms infinite;
-    }
-    > span {
-        position: absolute;
-        left: 0;
-        top: 1vw;
         display: inline-block;
-        width: 0;
+        padding: 0.3em 0;
+        border: 0!important;
+        width: 2em;
     }
+
+    > span {
+        top: 0.3em;
+        display: inline-block;
+        ${p => p.animatePrepend && css`animation: ${blink} 500ms infinite;`}
+    }
+
+
+    ${breakpoint('sm', 'md')`
+    margin: 0 auto;
+    `}
+
 `
 
 const Minters = styled.div`
@@ -128,91 +144,121 @@ const Minters = styled.div`
 
 `
 
+let navTimeout = false;
 
 export default function SeventySevenBySeven(props){
 
     const {query, basePath, ...router} = useRouter();
-    const [workID, setWorkID] = useState(1);
+    const [workID, setWorkID] = useState(false);
     const [work, setWork] = useState(false);
-    const [iteration, setIteration] = useState(1);
-    const [loading, setLoading] = useState(false);
+    const [iteration, setIteration] = useState(false);
+    const [loadingID, setLoadingID] = useState(false);
     const [autoplay, setAutoplay] = useState(false);
+    const [typing, setTyping] = useState(false);
 
+    const promptID = useRef();
 
     function updateUrl(key, value){
         query[key] = value;
         const urlParams = new URLSearchParams(query)
         const url = basePath+'?'+urlParams.toString();
-        router.push(url, null, {shallow: true})
+        router.push(url, null, {shallow: true})            
     }
-    
 
     useEffect(() => {
         
-        if(query.work)
-            setWorkID(parseInt(query.work))
-        if(query.edition)
-            setIteration(parseInt(query.edition))
+        if(query.work){
+            const work = parseInt(query.work);
+            if(work > 0 && work <= 77){
+                setLoadingID(work);
+                setWorkID(work);
+            }
+        }
+        else{
+            setLoadingID(1);
+            setWorkID(1);
+        }
+        if(query.edition){
+            const edition = parseInt(query.edition);
+            if(edition > 0 && edition <= 7)
+                setIteration(parseInt(edition))
+        }
+        else{
+            setIteration(1);
+        }
 
     }, [query]);
 
     useEffect(() => {
         
-        async function fetchWork(){
-            const response = await fetch(`/api/77x7/info/${workID}`);
-            const json = await response.json();
-            setWork(json);
-        }
+        if(workID){
+        
+            async function fetchWork(){
+                try{
+                    const response = await fetch(`/api/77x7/info/${workID}`);
+                    const json = await response.json();
+                    setWork(json); 
+                }
+                catch(e){
+                    console.log(e)
+                }   
+            }
 
-        fetchWork();
-        setWork(false);
+            fetchWork();
+
+        }
         
     }, [workID])
 
+
     useEffect(() => {
-        if(work)
-            setLoading(false)
-        else
-            setLoading(true)
-    }, [work])
+        if(promptID.current && loadingID)
+            promptID.current.value = loadingID;
+    }, [loadingID])
 
 
     // Nav functions
-    let navTimeout = false;
 
     function next(){
 
-        let set;
-        if(workID < 77)
-            set = workID+1;
-        else
-            set = 1;
-
         if(navTimeout)
             clearTimeout(navTimeout);
-            
+
+        let set;
+        if(loadingID < 77)
+            set = loadingID+1;
+        else
+            set = 1;
+        
+        setLoadingID(set)
+
         navTimeout = setTimeout(() => {
             updateUrl('edition', 1)
-            updateUrl('work', set)    
-        }, 300);
+            updateUrl('work', set)
+            console.log('Update nav', set)
+
+        }, 500);
 
     }
 
     function prev() {
+        
+        if(navTimeout)
+            clearTimeout(navTimeout);
 
         let set;
-        if(workID > 1)
-            set = workID-1
+        if(loadingID > 1)
+            set = loadingID-1
         else
             set = 77;
 
-        if(navTimeout)
-            clearTimeout(navTimeout);
-            
+        setLoadingID(set)
+
         navTimeout = setTimeout(() => {
             updateUrl('edition', 1)
-            updateUrl('work', set)    
-        }, 300);
+            updateUrl('work', set)  
+            console.log('Update nav', set)
+        }, 500);
 
     }
 
@@ -226,24 +272,22 @@ export default function SeventySevenBySeven(props){
 
     }
 
-    let timeout = false;
     function onPromptID(e){
 
-        if(timeout)
-            clearTimeout(timeout);
         const val = parseInt(e.currentTarget.value);
+        if(!(val && val > 0 && val <= 77)){
+            return false;
+        }
+    
+        if(navTimeout)
+            clearTimeout(navTimeout);
+        
+        setLoadingID(val)
+        navTimeout = setTimeout(() => {
+            updateUrl('work', val);
+            updateUrl('edition', 1);
+        }, 1000)
 
-        if(val){
-            timeout = setTimeout(() => {
-                if(val > 0 && val <= 77){
-                    updateUrl('work', val);
-                    updateUrl('edition', 1);
-                }
-            }, 1000)
-        }
-        else {
-            clearTimeout(timeout);
-        }
     }
     
 
@@ -255,12 +299,12 @@ export default function SeventySevenBySeven(props){
             <WorkNav onClick={prev}>{'<<'}</WorkNav>
             <WorkNav onClick={next}>{'>>'}</WorkNav>
             <div>
-            <Prompt type="text" symbol="#" onChange={onPromptID}/>
+            <Prompt type="text" prepend="LOAD#" animatePrepend={!(loadingID == work.id)} inputRef={promptID} onFocus={() => setTyping(true)} onBlur={() => setTyping(false)} onChange={onPromptID}/>
             </div>
         </WorksNav>
         </Section>
         <WorkWrap>
-            <WorkImages onClick={iterate}>
+            <WorkImages placeHolder={true}  onClick={iterate}>
                 {work ? 
                 [1,2,3,4,5,6,7].map(index => <WorkImage show={iteration == index} key={index} src={work.iterations[index-1]}/>) :
                 <WorkImage placeHolder={true} src="/api/77x7/image/0?edition=0&mark=false"/>
