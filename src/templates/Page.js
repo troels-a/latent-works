@@ -8,16 +8,14 @@ import {breakpoint} from 'styled-components-breakpoint';
 import { useWeb3React } from '@web3-react/core';
 
 const Wrapper = styled.div`
-
-  min-height: 100vh;
   width: 100%;
-  padding: 2vw 2vw 15vw 2vw;
+  overflow-x: hidden;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-
+  justify-content: center;
+  background-color: ${p => p.theme.colors.white};
   ${breakpoint('lg')`
-    width: 80vw;
     text-align: left;
     margin: 0 auto;
   `}
@@ -26,46 +24,32 @@ const Wrapper = styled.div`
 
 const Header = styled(Grid)`
   padding: 0;
-  margin-bottom: 4vw;
+  padding: 2vw 4vw;
   height: auto;
   place-items: center;
 `
 
 const Content = styled.main`
-
-  margin-bottom: 3vw;
-
 `
 
 const Title = styled.h1`
   margin: 0;
   position: relative;
   left: -3px;
+  font-size: 1em;
+  font-style: italic;
+  letter-spacing: 0.1em;
   a {
     text-decoration: none;
   }
 `
 
-const Connect = styled.div`
-  ${breakpoint('sm')`
-    margin: 4vw 0 0 0;
-  `}
-
-  ${breakpoint('md')`
-    margin: 0;
-    > div {
-      justify-content: flex-end;
-    }
-  `}
-
-`
 
 const Footer = styled.footer`
   display: flex;
-  > * {
-    margin-right: 2vw;
-  }
-
+  flex-grow: 1;
+  background-color: ${p => p.theme.colors.emph3};
+  padding: 2vw 4vw;
 `
 
 
@@ -82,16 +66,16 @@ export default function Page({children, ...props}){
 
           <Header>
             
-            <Grid.Unit component={Title} size={{sm: 1/1, md: 1/2}}>
+            <Grid.Unit component={Title} size={{sm: 1/2}}>
               <Link href="/">
                 <a>
-                Latent Works
+                  Latent Works
                 </a>
               </Link>
             </Grid.Unit>
 
-            <Grid.Unit component={Connect} size={{sm: 1/1, md: 1/2}}>
-              <ConnectButton onActivate={() => console.log('activate')}/>
+            <Grid.Unit size={{sm: 1/2}}>
+              <ConnectButton/>
             </Grid.Unit>
 
           </Header>
@@ -100,21 +84,6 @@ export default function Page({children, ...props}){
           {children}
           </Content>
 
-          <Footer>
-
-            <Link href="https://t.co/qRrVVkm0Rh">
-              <a>
-                  Discord
-              </a>
-            </Link>
-
-            <Link href="https://twitter.com/latent_works">
-                <a>
-                  Twitter
-                </a>
-            </Link>
-
-          </Footer>
         </Wrapper>
     </>
 

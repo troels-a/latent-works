@@ -2,4 +2,4 @@
 
 ---
 
-Latent Works launched it's genesis collection _77x7_ on block 13302102 of the Ethereum blockchain. Over the course of seven days 77 fully in-chain artworks evolved through 7 iterations as they were minted from their [contract](https://etherscan.io/address/0xEF7c89F051ac48885b240eb53934B04fcF3339ab#code)
+*Latent Works* is an art project by [troels_a](https://twitter.com/troels_a) exploring permanence, shared ownership and expansive formats in the context of decentralised internet systems.

@@ -17,11 +17,18 @@ const GlobalStyle = createGlobalStyle`
     font-family: ${theme.font};
     font-size: 4vw;
     letter-spacing: 0.06em;
-    background-color: ${theme.colors.bg};
+    background-color: ${p => p.theme.colors.emph3};
     color: ${theme.colors.text};
-
+    margin: 0;
+    padding: 0;
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    > div {
+      width: 100%;
+    }
     ${breakpoint('md')`
-      font-size: 2.5vw;
+      font-size: 1.6vw;
     `}
 
     ${breakpoint('lg')`
@@ -65,21 +72,24 @@ const GlobalStyle = createGlobalStyle`
   }
 
   button {
-    background-color: ${theme.colors.bg};
+    transition: all 150ms;
+    background-color: ${theme.colors.emph2};
     padding: 1vw 2vw;
+    cursor: pointer;
     ${breakpoint('sm', 'md')`
       padding: 2vw 3vw;
     `}
-    border: 2px solid ${theme.colors.text};
+    border: none;
+    /* box-shadow: 0px 0px 20px rgba(0,0,0,0.1); */
     color: ${theme.colors.text};
     font-family: ${theme.font};
     font-size: inherit;
-    box-shadow: 3px 3px 0px ${theme.colors.text};
+    &:hover {
+      background-color: ${theme.colors.emph1};
+    }
     &:active {
-      position: relative;   
-      top: 2px;
-      left: 2px;
-      box-shadow: 1px 1px 0px ${theme.colors.text};
+      background-color: ${theme.colors.emph3};
+      /* box-shadow: 0px 0px 10px rgba(0,0,0,0.1); */
     }
     margin-right: 2vw;
     &:last-child {
