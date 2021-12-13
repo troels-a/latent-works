@@ -40,6 +40,11 @@ module.exports = {
     artifacts: "./sol/artifacts"
   },
   networks: {
+    hardhat: {
+      forking: {
+        url: process.env.MAINNET_ENDPOINT,
+      }
+    },
     mainnet: {
       url: process.env.MAINNET_ENDPOINT,
       accounts: [process.env.PRIVATE_KEY],
