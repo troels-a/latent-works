@@ -8,13 +8,33 @@ import {breakpoint} from 'styled-components-breakpoint';
 import { useWeb3React } from '@web3-react/core';
 
 const Wrapper = styled.div`
+
   width: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: ${p => p.theme.colors.white};
+  background-color: rgba(255,255,255,0.95);
+
+  &:before {
+    content: '';
+    display: block;
+    width: 100%;
+    z-index: -1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    opacity: 0;
+    transition: all 2500ms;
+
+    ${p => p.bgColor && `
+      opacity: 1;
+      background-color: ${p.bgColor};
+    `}
+  }
+
   ${breakpoint('lg')`
     text-align: left;
     margin: 0 auto;
@@ -30,6 +50,7 @@ const Header = styled(Grid)`
 `
 
 const Content = styled.main`
+font-size: 1.5rem;
 `
 
 const Title = styled.h1`
@@ -62,7 +83,7 @@ export default function Page({children, ...props}){
         <title>{TITLE}{props.title && ` >> ${props.title}`}</title> 
         <meta name="description" content={props.description ? props.description : DESCRIPTION}/>
       </Head>
-        <Wrapper>
+        <Wrapper bgColor={props.bgColor}>
 
           <Header>
             

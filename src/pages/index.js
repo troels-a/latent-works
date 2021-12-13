@@ -18,6 +18,7 @@ import WorkDisplay from 'components/WorkDisplay'
 import useWork, { WorkProvider } from 'hooks/useWork';
 import { useSwipeable } from 'react-swipeable';
 import { IoMdPlay, IoMdPause } from 'react-icons/io';
+import { GrPowerCycle, GrNext, GrPrevious } from 'react-icons/Gr';
 
 const Section = styled.div`
     padding: 2vw;
@@ -63,41 +64,26 @@ const WorksNav = styled.nav`
     display: flex;
     justify-content: flex-start;
     ${breakpoint('sm', 'md')`
-        justify-content: space-between;
+        // justify-content: space-between;
         margin-bottom: 6vw;
     `}
 `
 
-const WorkNav = styled.a`
+const WorkNav = styled(({prev, next, ...p}) => <a {...p}>{prev ? <GrPrevious/> : <GrNext/>}</a>)`
 
-    display: inline-block;
-    padding: 0em 0em;
+    padding: 0em 0em 0em 1em;
     cursor: pointer;
-    position: absolute;
-    z-index: 10;
-    top: 32vw;
-
-    &:first-child{
-        left: 2%
-    }
-    &:last-of-type{
-        left: 48%;
+    font-size: 0.8em;
+    position: relative;
+    top: 0.18em;
+    opacity: 0.7;
+    transition: opacity 200ms;
+    &:hover {
+        opacity: 1;
     }
 
     ${breakpoint('sm', 'md')`
-
-        top: 50vw;
-        font-size: 10vw;
-
-        &:first-child{
-            left: 1.5vw;
-        }
-
-        &:last-of-type {
-            left: initial;
-            right: 1vw;
-        }
-
+        top: 0.35em;
     `}
 
 `
@@ -156,15 +142,26 @@ const MinterLink = styled.a`
 
 `
 
-const Tool = styled.span`
-position: relative;
-top: 3px;
-cursor: pointer;
-opacity: 0.75;
-transition: opacity 200ms;
-&:hover {
-    opacity: 1;
-}
+
+const Rotate = keyframes`
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+`
+
+const CycleIcon = styled(GrPowerCycle)`
+    position: relative;
+    top: 0.15em;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 200ms;
+    &:hover {
+        opacity: 1;
+    }
+    ${p => p.rotate && css`animation: ${Rotate} 2500ms infinite`}
 `
 
 let navTimeout = false;
@@ -341,11 +338,9 @@ function SeventySevenBySeven(props){
         setAutoplay(!autoplay);
     }
 
-    return <Page>
+    return <Page bgColor={work && work.colors[iteration]}>
         <Grid>
             <GridUnit size={{sm: 1/1, md: 1/2}}>
-                <WorkNav onClick={prev}>{'<'}</WorkNav>
-                <WorkNav onClick={next}>{'>'}</WorkNav>
                 <WorkDisplay iteration={iteration} {...swipeHandlers} onClick={iterate}/>
             </GridUnit>            
             <GridUnit size={{sm: 1/1, md: 1/2}}>
@@ -356,13 +351,15 @@ function SeventySevenBySeven(props){
                         <h4>
                         Work <Prompt type="text" prepend="#" animatePrepend={!(loadingID == work.id)} inputRef={promptID} onFocus={() => setTyping(true)} onBlur={() => setTyping(false)} onChange={onPromptID}/>
                         </h4>
+                        <WorkNav prev onClick={prev}/>
+                        <WorkNav next onClick={next}/>
                     </WorksNav>
-
+                    
                     {work &&
                     <>
                         
                         <small>
-                            Iteration {iteration}/7 <Tool onClick={event => {event.preventDefault(); toggleAutoPlay()}}>{autoplay ? <IoMdPause/> : <IoMdPlay />}</Tool>
+                            Iteration {iteration}/7 <CycleIcon rotate={autoplay} onClick={event => {event.preventDefault(); toggleAutoPlay()}}/>
                         </small>
                         <hr/>
                         <Minters>{work.minters.map((minter, index) => <MinterLink href="#" $active={(index+1 == iteration)} onClick={(event) => {event.preventDefault(); autoplay && toggleAutoPlay(); updateUrl('edition', index+1)}}><small>{index+1}. {work.colors[index]}</small></MinterLink>)}</Minters>
