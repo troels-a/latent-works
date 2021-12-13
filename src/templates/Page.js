@@ -5,6 +5,7 @@ import { TITLE, DESCRIPTION } from 'base/constants';
 import Grid from 'styled-components-grid';
 import ConnectButton from 'components/ConnectButton';
 import {breakpoint} from 'styled-components-breakpoint';
+import { useWeb3React } from '@web3-react/core';
 
 const Wrapper = styled.div`
 
@@ -24,12 +25,8 @@ const Wrapper = styled.div`
 `
 
 const Header = styled(Grid)`
-  /* position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1; */
-  padding: 2vw 0;
+  padding: 0;
+  margin-bottom: 4vw;
   height: auto;
   place-items: center;
 `
@@ -49,6 +46,20 @@ const Title = styled.h1`
   }
 `
 
+const Connect = styled.div`
+  ${breakpoint('sm')`
+    margin: 4vw 0 0 0;
+  `}
+
+  ${breakpoint('md')`
+    margin: 0;
+    > div {
+      justify-content: flex-end;
+    }
+  `}
+
+`
+
 const Footer = styled.footer`
   display: flex;
   > * {
@@ -60,7 +71,7 @@ const Footer = styled.footer`
 
 
 export default function Page({children, ...props}){
-
+    
     return <>
 
       <Head>
@@ -71,12 +82,16 @@ export default function Page({children, ...props}){
 
           <Header>
             
-            <Grid.Unit component={Title} size={{sm: 1/2, md: 1/3}}>
+            <Grid.Unit component={Title} size={{sm: 1/1, md: 1/2}}>
               <Link href="/">
                 <a>
                 Latent Works
                 </a>
               </Link>
+            </Grid.Unit>
+
+            <Grid.Unit component={Connect} size={{sm: 1/1, md: 1/2}}>
+              <ConnectButton onActivate={() => console.log('activate')}/>
             </Grid.Unit>
 
           </Header>
