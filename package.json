@@ -1,8 +1,7 @@
 {
   "name": "latent-works",
   "scripts": {
-    "test": "npx hardhat compile; npx hardhat test;",
-    "test:watch": "nodemon -x 'npx hardhat compile; npx hardhat test;' -w contracts -w test -e js,sol",
+    "test": "npx hardhat test;",
     "dev": "next",
     "build": "next build",
     "serve": "next build && next export && serve out",
