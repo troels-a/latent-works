@@ -17,8 +17,7 @@ import useInterval from 'base/useInterval';
 import WorkDisplay from 'components/WorkDisplay'
 import useWork, { WorkProvider } from 'hooks/useWork';
 import { useSwipeable } from 'react-swipeable';
-import { IoMdPlay, IoMdPause } from 'react-icons/io';
-import { GrPowerCycle, GrNext, GrPrevious } from 'react-icons/Gr';
+import { GrPowerCycle, GrNext, GrPrevious } from 'react-icons/gr';
 
 const Section = styled.div`
     padding: 2vw;
