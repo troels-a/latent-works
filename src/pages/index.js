@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core';
 import { getEntryBySlug } from 'base/contentAPI';
 import { useEffect } from 'react';
 import styled, { css, keyframes } from 'styled-components';
@@ -6,13 +5,30 @@ import Page from 'templates/Page';
 import { useState} from 'react';
 import { useRouter } from 'next/dist/client/router';
 import fetch from 'node-fetch';
-import { AbortController } from "node-abort-controller";
 import { useRef } from 'react';
 import Link from 'next/link';
 import {breakpoint} from 'styled-components-breakpoint';
+import Grid from 'styled-components-grid/dist/cjs/components/Grid';
+import GridUnit from 'styled-components-grid/dist/cjs/components/GridUnit';
+import theme from 'base/style';
+import { debounce } from 'lodash';
+import { useWeb3React } from '@web3-react/core';
+import useInterval from 'base/useInterval';
+import WorkDisplay from 'components/WorkDisplay'
+import useWork, { WorkProvider } from 'hooks/useWork';
+import { useSwipeable } from 'react-swipeable';
+import { GrPowerCycle, GrNext, GrPrevious } from 'react-icons/gr';
 
 const Section = styled.div`
-    margin-bottom: 4vw;
+    padding: 2vw;
+    ${p => p.$whitespace && 'padding: 10vw 5vw;'}
+    ${p => p.$color && `background-color: ${p.$color};`}
+    ${p => p.$small && `font-size: 0.8em;`}
+
+    ${breakpoint('sm', 'md')`
+        padding: 4vw;
+    `}
+
 `
 
 const WorkWrap = styled.div`
@@ -24,54 +40,16 @@ const WorkWrap = styled.div`
 
 `
 
-const WorkImages = styled.div`
-    position: relative;
-    height: 45vw;
-    width: 45vw;
-    ${breakpoint('sm', 'md')`
-        width: 100%;
-        height: 100vw;
-    `}
-`
-
-const WorkImage = styled(({src, children, placeholder, show, ...p}) => <img {...p} src={src}/>)`
-    cursor: pointer;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    left: 0;
-    opacity: 0;
-    transition: opacity 200ms 200ms;
-    ${p => p.show && `
-        transition: opacity 200ms 0ms;
-        opacity: 1;
-    `}
-
-    ${p => p.placeHolder && `
-        opacity: 0.2;
-        &:before {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            display: block;
-            content: '';
-            background-color: ${p.theme.colors.text};
-        }
-    `}
-`
 
 const WorkDescription = styled.div`
-    margin-left: 3vw;
+    padding: 2vw;
     display: flex;
     flex-direction: column;
+    background-color: ${p => p.theme.colors.emph2};
+    min-height: 22vw;
     ${breakpoint('sm', 'md')`
         width: 100%;
-        margin: 0;
+        padding: 4vw;
     `}
 `
 
@@ -85,20 +63,28 @@ const WorksNav = styled.nav`
     display: flex;
     justify-content: flex-start;
     ${breakpoint('sm', 'md')`
-        justify-content: space-between;
+        // justify-content: space-between;
         margin-bottom: 6vw;
     `}
 `
 
-const WorkNav = styled.button`
-    display: inline-block;
+const WorkNav = styled(({prev, next, ...p}) => <a {...p}>{prev ? <GrPrevious/> : <GrNext/>}</a>)`
+
+    padding: 0em 0em 0em 1em;
+    cursor: pointer;
+    font-size: 0.8em;
+    position: relative;
+    top: 0.18em;
+    opacity: 0.7;
+    transition: opacity 200ms;
+    &:hover {
+        opacity: 1;
+    }
+
     ${breakpoint('sm', 'md')`
-
-        &:last-of-type {
-            order: 3;
-        }
-
+        top: 0.35em;
     `}
+
 `
 
 const blink = keyframes`
@@ -110,24 +96,25 @@ const blink = keyframes`
     }
 `
 
-const Prompt = styled(({append, prepend, className, key, inputRef, ...p}) => <div className={className} key={key} {...p}>
+const Prompt = styled(({append, prepend, animatePrepend, className, key, inputRef, ...p}) => <span className={className} key={key} {...p}>
     {prepend && <span>{prepend}</span>}
     <input ref={inputRef} {...p}/>
     {append && <span>{append}</span>}
-</div>)`
+</span>)`
 
     position: relative;
-    font-size: 1.5em;
+    font-size: 1em;
     
     > input {
         display: inline-block;
-        padding: 0.3em 0;
+        padding: 0;
         border: 0!important;
-        width: 2em;
+        width: 1em;
+        padding: 0!important;
     }
 
     > span {
-        top: 0.3em;
+        position: relative;
         display: inline-block;
         ${p => p.animatePrepend && css`animation: ${blink} 500ms infinite;`}
     }
@@ -144,20 +131,91 @@ const Minters = styled.div`
 
 `
 
+const MinterLink = styled.a`
+    display: block;
+    text-decoration: none;
+    color: ${p => p.$active ? p.theme.colors.main : p.theme.colors.main_dimmed};
+    &:hover {
+        color: ${p => p.theme.colors.main};
+    }
+
+`
+
+
+const Rotate = keyframes`
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+`
+
+const CycleIcon = styled(GrPowerCycle)`
+    position: relative;
+    top: 0.15em;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 200ms;
+    &:hover {
+        opacity: 1;
+    }
+    ${p => p.rotate && css`animation: ${Rotate} 2500ms infinite`}
+`
+
 let navTimeout = false;
 
-export default function SeventySevenBySeven(props){
+function SeventySevenBySeven(props){
 
     
     const {query, basePath, ...router} = useRouter();
     const [workID, setWorkID] = useState(false);
-    const [work, setWork] = useState(false);
+    const work = useWork();
     const [iteration, setIteration] = useState(false);
-    const [loadingID, setLoadingID] = useState(false);
     const [autoplay, setAutoplay] = useState(false);
+    const [loadingID, setLoadingID] = useState(false);
     const [typing, setTyping] = useState(false);
+    
+    useInterval(() => {
+        iterate()
+    }, autoplay ? 2000 : null);
 
     const promptID = useRef();
+
+    const {
+        active,
+        library,
+        account,
+    } = useWeb3React()
+
+    
+    const [connecting, setConnecting] = useState(false);
+    const [resolvingENS, setResolvingENS] = useState(false);
+    const [ENS, setENS] = useState(false);
+
+
+    const debouncedLookup = debounce(async () => {
+    
+        setResolvingENS(true);
+    
+        try {
+          let lookup = account.toLowerCase().substr(2) + '.addr.reverse'
+          var ResolverContract = await library.eth.ens.getResolver(lookup);
+          let nh = namehash.hash(lookup);
+          let name = await ResolverContract.methods.name(nh).call()  
+          console.log(name)
+          setENS(name);
+        } catch(e) {
+          console.log(e)
+        }
+        setResolvingENS(false);
+      }, 1000);
+    
+      useEffect(() => {
+        if(active){
+          debouncedLookup()
+        }
+      }, [active])
 
     function updateUrl(key, value){
         query[key] = value;
@@ -179,10 +237,12 @@ export default function SeventySevenBySeven(props){
             setLoadingID(1);
             setWorkID(1);
         }
+
         if(query.edition){
             const edition = parseInt(query.edition);
-            if(edition > 0 && edition <= 7)
-                setIteration(parseInt(edition))
+            if(edition > 0 && edition <= 7){
+                setIteration(edition)
+            }
         }
         else{
             setIteration(1);
@@ -190,27 +250,12 @@ export default function SeventySevenBySeven(props){
 
     }, [query]);
 
+
+
     useEffect(() => {
-        
-        if(workID){
-        
-            async function fetchWork(){
-                try{
-                    const response = await fetch(`/api/77x7/info/${workID}`);
-                    const json = await response.json();
-                    setWork(json); 
-                }
-                catch(e){
-                    console.log(e)
-                }   
-            }
-
-            fetchWork();
-
-        }
-        
-    }, [workID])
-
+        if(work && promptID.current)
+            promptID.current.value = work.id;
+    }, [work]);
 
     useEffect(() => {
         if(promptID.current && loadingID)
@@ -218,57 +263,53 @@ export default function SeventySevenBySeven(props){
     }, [loadingID])
 
 
+    const swipeHandlers = useSwipeable({
+        onSwipedLeft: (eventData) => prev(),
+        onSwipedRight: (eventData) => next()
+    });
+
     // Nav functions
+    function _goTo(to){
+        
+        setLoadingID(to)
+        setAutoplay(false)
+
+        updateUrl('edition', 1)
+        updateUrl('work', to)
+
+    }
 
     function next(){
-
-        if(navTimeout)
-            clearTimeout(navTimeout);
 
         let set;
         if(loadingID < 77)
             set = loadingID+1;
         else
             set = 1;
-        
-        setLoadingID(set)
 
-        navTimeout = setTimeout(() => {
-            updateUrl('edition', 1)
-            updateUrl('work', set)
-            console.log('Update nav', set)
-
-        }, 500);
+        _goTo(set)
 
     }
 
     function prev() {
         
-        if(navTimeout)
-            clearTimeout(navTimeout);
-
         let set;
         if(loadingID > 1)
             set = loadingID-1
         else
             set = 77;
 
-        setLoadingID(set)
-
-        navTimeout = setTimeout(() => {
-            updateUrl('edition', 1)
-            updateUrl('work', set)  
-            console.log('Update nav', set)
-        }, 500);
+        _goTo(set)
 
     }
 
-    function iterate(){
 
+    const iterate = () => {
+        
         let set = 1;
         if(iteration < 7)
             set = iteration+1;
-        
+
         updateUrl('edition', set)
 
     }
@@ -292,55 +333,92 @@ export default function SeventySevenBySeven(props){
     }
     
 
-    return <Page>
-        
-        <Section dangerouslySetInnerHTML={{__html: props.content}}/>
-        <Section>
-        <WorksNav>
-            <WorkNav onClick={prev}>{'<<'}</WorkNav>
-            <WorkNav onClick={next}>{'>>'}</WorkNav>
-            <div>
-            <Prompt type="text" prepend="LOAD#" animatePrepend={!(loadingID == work.id)} inputRef={promptID} onFocus={() => setTyping(true)} onBlur={() => setTyping(false)} onChange={onPromptID}/>
-            </div>
-        </WorksNav>
-        </Section>
-        <WorkWrap>
-            <WorkImages placeHolder={true}  onClick={iterate}>
-                {work ? 
-                [1,2,3,4,5,6,7].map(index => <WorkImage show={iteration == index} key={index} src={work.iterations[index-1]}/>) :
-                <WorkImage placeHolder={true} src="/api/77x7/image/0?edition=0&mark=false"/>
-                }
-            </WorkImages>
-            <WorkDescription>
-                {work ?
-                <>
-                    <h4>{work.name}</h4>
-                    <p>Edition {iteration}/7</p>
-                    <hr/>
-                    <small><strong>Minters</strong></small>
-                    <Minters>{work.minters.map(minter => <small>{minter}<br/></small>)}</Minters>
-                    <hr/>
-                    <Link href={`https://opensea.io/assets/${process.env.NEXT_PUBLIC_CONTRACT}/${workID}`} passHref>
-                        <a>Opensea</a>
-                    </Link>
-                </> : 
-                <>
-                <h4>Loading...</h4>
-                </>}
-            </WorkDescription>
-        </WorkWrap>            
+    const toggleAutoPlay = () => {
+        setAutoplay(!autoplay);
+    }
 
+    return <Page bgColor={work && work.colors[iteration]}>
+        <Grid>
+            <GridUnit size={{sm: 1/1, md: 1/2}}>
+                <WorkDisplay iteration={iteration} {...swipeHandlers} onClick={iterate}/>
+            </GridUnit>            
+            <GridUnit size={{sm: 1/1, md: 1/2}}>
+
+                <WorkDescription>
+                    
+                    <WorksNav>
+                        <h4>
+                        Work <Prompt type="text" prepend="#" animatePrepend={!(loadingID == work.id)} inputRef={promptID} onFocus={() => setTyping(true)} onBlur={() => setTyping(false)} onChange={onPromptID}/>
+                        </h4>
+                        <WorkNav prev onClick={prev}/>
+                        <WorkNav next onClick={next}/>
+                    </WorksNav>
+                    
+                    {work &&
+                    <>
+                        
+                        <small>
+                            Iteration {iteration}/7 <CycleIcon rotate={autoplay} onClick={event => {event.preventDefault(); toggleAutoPlay()}}/>
+                        </small>
+                        <hr/>
+                        <Minters>{work.minters.map((minter, index) => <MinterLink href="#" $active={(index+1 == iteration)} onClick={(event) => {event.preventDefault(); autoplay && toggleAutoPlay(); updateUrl('edition', index+1)}}><small>{index+1}. {work.colors[index]}</small></MinterLink>)}</Minters>
+                        <hr/>
+                        <Link href={`https://opensea.io/assets/${process.env.NEXT_PUBLIC_CONTRACT}/${workID}`} passHref>
+                            <a>Opensea</a>
+                        </Link>
+                    </>}
+
+                </WorkDescription>
+
+                <Section $small dangerouslySetInnerHTML={{__html: props.page77.content}}/>
+
+            </GridUnit>
+
+            <GridUnit>
+                <Section $whitespace $color={theme.colors.emph3}>
+                    <span dangerouslySetInnerHTML={{__html: props.pageIndex.content}} />
+                    <Link href="https://t.co/qRrVVkm0Rh">
+                        <a target=""_blank>
+                            Discord
+                        </a>
+                    </Link>
+                    ·
+                    <Link href="https://twitter.com/latent_works">
+                        <a target=""_blank>
+                            Twitter
+                        </a>
+                    </Link>
+                    
+                </Section>
+            </GridUnit>
+        </Grid>
     </Page>
 
 }
 
 export async function getStaticProps(){
     
-    const content = await getEntryBySlug('pages', '77x7');
+    const page77 = await getEntryBySlug('pages', '77x7');
+    const pageIndex = await getEntryBySlug('pages', 'index');
 
     return {
         props: {
-            ...content
+            page77: page77,
+            pageIndex: pageIndex
         }
     }
+}
+
+
+export default function Component(props){
+
+    const {query, basePath, ...router} = useRouter();
+
+    return (
+        
+        <WorkProvider workID={query.work ? query.work : 1}>
+            <SeventySevenBySeven {...props}/>
+        </WorkProvider>
+    
+    )
 }
