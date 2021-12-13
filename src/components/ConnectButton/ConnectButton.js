@@ -4,6 +4,7 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
 import { useWeb3React } from '@web3-react/core'
 import { useState } from 'react';
+import {breakpoint} from 'styled-components-breakpoint';
 
 export const injected = new InjectedConnector({ supportedChainIds: [1, 3, 4, 5, 42] });
 export const wcConnector = new WalletConnectConnector({
@@ -14,7 +15,7 @@ export const wcConnector = new WalletConnectConnector({
 const Wrapper = styled.div`
   display: flex;
   justify-content: flex-start;
-  font-size: 1rem;
+  font-size: 1em;
   position: relative;
 `
 
@@ -38,6 +39,10 @@ const Connect = styled.a`
   &:last-child {
     margin-right: 0;
   }
+
+  ${breakpoint('sm', 'md')`
+    margin-right: 4vw;
+  `}
 `
 
 export default function ConnectButton({onActivate }) {
