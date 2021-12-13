@@ -16,6 +16,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   background-color: rgba(255,255,255,0.95);
+  position: relative;
 
   &:before {
     content: '';
@@ -50,7 +51,9 @@ const Header = styled(Grid)`
 `
 
 const Content = styled.main`
-font-size: 1.5rem;
+${breakpoint('sm', 'md')`
+  font-size: 1.5rem;
+`}
 `
 
 const Title = styled.h1`
