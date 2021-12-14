@@ -45,8 +45,15 @@ function parseBool(input){
 
 export default async (req, res) => {
     
-    const {work, edition, format, mark, size} = Object.assign({size: 'medium', edition: 7, format: 'svg', mark: true}, req.query);
+    const {work, edition, format, mark, size} = Object.assign({size: 777, edition: 7, format: 'svg', mark: true}, req.query);
     
+    const sizeInt = parseInt(size);
+
+    if(!(size <= 100 && size >= 1000) && size % 100 !== 0){
+        throw 'Invalid size';
+    }
+        
+
     const address = "0xef7c89f051ac48885b240eb53934b04fcf3339ab";
     const provider = new ethers.providers.InfuraProvider("homestead", process.env.INFURA_ID);
     
@@ -58,7 +65,7 @@ export default async (req, res) => {
         const options = await getOptions(isDev());
         const browser = await core.launch(options);
         const page = await browser.newPage();
-        await page.setViewport({ width: size == 'large' ? 1400 : 700, height: size == 'large' ? 1400 : 700});
+        await page.setViewport({ width: sizeInt, height: sizeInt});
 
         await page.goto(data_url, {
         waitUntil: 'networkidle2',
