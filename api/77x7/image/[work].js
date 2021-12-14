@@ -45,7 +45,7 @@ function parseBool(input){
 
 export default async (req, res) => {
     
-    const {work, edition, format, mark, size} = Object.assign({size: 777, edition: 7, format: 'svg', mark: true}, req.query);
+    const {work, edition, format, mark, size} = Object.assign({size: 700, edition: 7, format: 'svg', mark: true}, req.query);
     
     const sizeInt = parseInt(size);
 
