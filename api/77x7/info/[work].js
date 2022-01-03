@@ -1,14 +1,13 @@
 import { ethers } from 'ethers';
-import abi from '../../../src/base/abi/77x7.json';
-
-
+import { getProvider } from '../../../src/base/utils';
+import abi from '../../../sol/abi/sol/contracts/LatentWorks.sol/LatentWorks_77x7.json';
 
 export default async (req, res) => {
     
     const {work} = Object.assign({}, req.query);
     
-    const address   = "0xef7c89f051ac48885b240eb53934b04fcf3339ab";
-    const provider  = new ethers.providers.InfuraProvider("homestead", process.env.INFURA_ID);
+    const address = process.env.NEXT_PUBLIC_CONTRACT;
+    const provider = getProvider();
     const contract  = new ethers.Contract(address, abi, provider);
     const data      = await contract.getWork(parseInt(work));
     const minters   = [];

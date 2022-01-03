@@ -11,7 +11,6 @@ import {breakpoint} from 'styled-components-breakpoint';
 import Grid from 'styled-components-grid/dist/cjs/components/Grid';
 import GridUnit from 'styled-components-grid/dist/cjs/components/GridUnit';
 import theme from 'base/style';
-import { debounce } from 'lodash';
 import { useWeb3React } from '@web3-react/core';
 import useInterval from 'base/useInterval';
 import WorkDisplay from 'components/WorkDisplay'
@@ -188,34 +187,6 @@ function SeventySevenBySeven(props){
         account,
     } = useWeb3React()
 
-    
-    const [connecting, setConnecting] = useState(false);
-    const [resolvingENS, setResolvingENS] = useState(false);
-    const [ENS, setENS] = useState(false);
-
-
-    const debouncedLookup = debounce(async () => {
-    
-        setResolvingENS(true);
-    
-        try {
-          let lookup = account.toLowerCase().substr(2) + '.addr.reverse'
-          var ResolverContract = await library.eth.ens.getResolver(lookup);
-          let nh = namehash.hash(lookup);
-          let name = await ResolverContract.methods.name(nh).call()  
-          console.log(name)
-          setENS(name);
-        } catch(e) {
-          console.log(e)
-        }
-        setResolvingENS(false);
-      }, 1000);
-    
-      useEffect(() => {
-        if(active){
-          debouncedLookup()
-        }
-      }, [active])
 
     function updateUrl(key, value){
         query[key] = value;

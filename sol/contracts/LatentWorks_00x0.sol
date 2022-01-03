@@ -57,9 +57,9 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable {
     function _mintFor(address for_, uint[] memory works_) public {
 
         _comp_ids.increment();
-        uint comp_id_ = _mint(msg.sender, _comp_ids.current());
-
-        _comp_works[comp_id_] = works_;
+        _mint(for_, _comp_ids.current(), 1, "");
+        
+        _comp_works[_comp_ids.current()] = works_;
 
     }
 

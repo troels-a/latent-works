@@ -1,12 +1,16 @@
 import styled from 'styled-components';
-import {truncate} from 'base/utils';
+import {chainToName, truncate} from 'base/utils';
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
 import { useWeb3React } from '@web3-react/core'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {breakpoint} from 'styled-components-breakpoint';
+import { debounce } from 'lodash';
+import useError from 'hooks/useError';
+import { ethers } from 'ethers';
+import useENS from 'hooks/useENS';
 
-export const injected = new InjectedConnector({ supportedChainIds: [1, 3, 4, 5, 42] });
+export const injected = new InjectedConnector({ supportedChainIds: [1, 4, 31337]});
 export const wcConnector = new WalletConnectConnector({
   infuraId: process.env.NEXT_PUBLIC_INFURA_ID,
 });
@@ -47,15 +51,32 @@ const Connect = styled.a`
 
 export default function ConnectButton({onActivate }) {
   
-  const {activate, active, deactivate} = useWeb3React();
+  const {activate, active, deactivate, account, library, chainId} = useWeb3React();
   const [wantToConnect, setWantToConnect] = useState(false);
-  
+  const err = useError();
+
+  const {ENS, address, resolving, resolve} = useENS();
+  const test = useENS('0x5090c4Fead5Be112b643BC75d61bF42339675448')
+
+  useEffect(() => {
+    if(account){
+      resolve(account, library ? library : false);
+    }
+  }, [account])
+
+  useEffect(() => {
+    if(chainId && chainId != process.env.NEXT_PUBLIC_NETWORK){
+      deactivate();
+      err.setMessage(`Wrong network! Please connect to ${chainToName(process.env.NEXT_PUBLIC_NETWORK)}.`);
+    }
+  }, [chainId])
+
   return (
     <Wrapper>
-
+      
       <ConnectGroup $show={!wantToConnect && active}>
         <Connect onClick={deactivate}>
-          Disconnect
+          Disconnect <small>({ENS && ENS}{(!ENS && account) && (truncate(account, 6, '...')+account.slice(-4))})</small>
         </Connect>
       </ConnectGroup>
 

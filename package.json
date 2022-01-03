@@ -1,8 +1,10 @@
 {
   "name": "latent-works",
   "scripts": {
-    "test": "npx hardhat test;",
-    "dev": "next",
+    "00x0:sol:test": "npx hardhat test;",
+    "00x0:sol:dev": "npx nodemon --watch sol -e sol,js --exec \"npm run 00x0:test\"",
+    "00x0:sol:deploy-local": "npx hardhat run --network localhost sol/scripts/00x0/deploy-local.js ",
+    "website:dev": "npx hardhat run --network localhost sol/scripts/deploy-local.js ",
     "build": "next build",
     "serve": "next build && next export && serve out",
     "start": "next start"
@@ -41,6 +43,7 @@
   "dependencies": {
     "babel-plugin-inline-react-svg": "^2.0.1",
     "babel-plugin-styled-components": "^1.8.0",
+    "colors": "^1.4.0",
     "dotenv": "^10.0.0",
     "gray-matter": "^4.0.3",
     "node-abort-controller": "^3.0.1",

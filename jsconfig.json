@@ -1,7 +1,12 @@
 {
     "baseUrl": "./src/",
     "compilerOptions": {
-        "baseUrl": "./src/"
+        "baseUrl": "./src/",
+        "paths": {
+            "@abi/*": [
+                "sol/abi/sol/contracts/*"
+            ]
+        }
     }
     
 }
