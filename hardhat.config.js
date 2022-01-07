@@ -24,6 +24,11 @@ task("accounts", "Prints the list of accounts", async () => {
  */
 module.exports = {
   solidity: "0.8.4",
+  gasReporter: {
+    currency: 'ETH',
+    gasPrice: 70,
+    coinmarketcap: '430b4c0c-3705-426c-9056-92196dca927a'
+  },
   settings: {
     optimizer: {
       enabled: true,
@@ -42,19 +47,19 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: process.env.MAINNET_ENDPOINT,
+        url: process.env.MAINNET_RPC_URL,
       }
     },
     mainnet: {
-      url: process.env.MAINNET_ENDPOINT,
+      url: process.env.MAINNET_RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
     },
     rinkeby: {
-      url: process.env.RINKEBY_ENDPOINT,
+      url: process.env.RINKEBY_RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
     },
     localhost: {
-      url: process.env.LOCALHOST_ENDPOINT,
+      url: process.env.LOCALHOST_RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
     },
   },
