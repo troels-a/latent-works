@@ -18,6 +18,6 @@ interface ILW77x7 is IERC1155 {
     function getColor(uint token_id, uint iteration) external view returns(string memory);
     function getMinter(uint token_id, uint edition) external view returns(address);
     function getWork(uint token_id) external view returns(Work memory);
-    function getSVG(uint token_id, bool edition_, bool mark_) external view returns(string memory);
+    function getSVG(uint token_id, uint edition_, bool mark_) external view returns(string memory);
 
 }

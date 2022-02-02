@@ -29,14 +29,11 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable {
     using Counters for Counters.Counter;
 
     struct CompInfo {
-        string seed;
-        uint[] works;
-        string id;
-        bytes defs;
-        bytes elements;
-        uint left;
-        uint right;
-        string[2] pos;
+        uint[] works_;
+        bytes elements_;
+        string seed_;
+        string seed2_;
+        string dim_;
     }
 
     string public constant NAME = "Latent Works \xc2\xb7 00x0";
@@ -114,6 +111,34 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable {
         return _comp_works[comp_id_].length - totalSupply(comp_id_);
     }
 
+    // function _getElement(uint comp_id_, uint index_) private view returns(bytes memory){
+
+    //     ILW77x7.Work memory work_ = _77x7.getWork(_comp_works[comp_id_][index_]);
+    //     uint num_works_ = _comp_works[comp_id_].length;
+
+    //     string memory seed_ = string(abi.encodePacked(comp_id_, Strings.toString(index_)));
+    //     string memory X = '50';
+    //     uint D;
+    //     string memory DString;
+    //     string memory C = work_.colors[Rando.number(seed_, 1, 7)];
+    //     bytes memory output_;
+        
+    //     for (uint256 i = 0; i < work_.colors.length; i++) {
+            
+    //         seed_ = string(abi.encodePacked(comp_id_, Strings.toString(index_), Strings.toString(i)));
+    //         D = (1*i+1)*(num_works_ - index_);
+    //         DString = Strings.toString(D);
+    //         // console.log(D);
+    //         // X = Strings.toString(50-(D/2));
+    //         // Y = 35;
+
+    //         output_ = abi.encodePacked(output_, '<radialGradient id="',seed_,'"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="',C,'"/></radialGradient><circle cx="',X,'" cy="',X,'" r="',DString,'" fill="',seed_,'"><animate attributeType="xml" attributeName="fill-opacity" begin="0s" values="0;0.2;0;0.4;1;0" dur="',Strings.toString(Rando.number(seed_, 10, 20)),'s" repeatCount="indefinite"/>',
+    //         '</circle>');
+    //     }
+
+    //     return output_;
+        
+    // }
     
     /// @notice Explain to an end user what this does
     /// @dev Explain to a developer any extra details
@@ -128,72 +153,45 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable {
         // TODO: Do not reveal before mint!
 
         CompInfo memory comp_ = CompInfo(
-            getSeed(comp_id_, ''),
             _comp_works[comp_id_],
-            Strings.toString(comp_id_),
             '',
-            '',
-            0,
-            0,
-            ['', '']
+            getSeed(comp_id_, ''),
+            getSeed(comp_id_, Strings.toString(comp_id_)),
+            ''
         );
 
-        string memory seed0_;
-        string memory seed1_ = getSeed(comp_id_, 'left');
-        string memory seed2_ = getSeed(comp_id_, 'right');
+        uint c = comp_.works_.length;
+        while(c > 0){
 
-        uint start_ = (700/comp_.works.length);
-        console.log(start_);
-        uint last_left_ = Rando.number(seed1_, start_-100, start_);
-        uint last_right_ = Rando.number(seed2_, start_-100, start_);
+            comp_.dim_ = Strings.toString(c*7);
 
-        // string[5] memory test_colors_ = ['red', 'blue', 'green', 'teal', 'pink'];
-
-        for(uint i = 0; i < comp_.works.length; i++) {
-            
-            seed0_ = getSeed(comp_id_, Strings.toString(i));
-            seed1_ = getSeed(comp_id_, string(abi.encodePacked(seed0_, 'left')));
-            seed2_ = getSeed(comp_id_, string(abi.encodePacked(seed0_, 'right')));
-
-            comp_.id = Strings.toString(i+1);
-
-            // comp_.left = Rando.number(seed1_, 0, 1000); //(i+1 == comp_.works.length) ? 100 : Rando.number(seed1_, last_left_+(min), last_left_+max);
-            // comp_.right = Rando.number(seed2_, 0, 1000);//(i+1 == comp_.works.length) ? 100 : Rando.number(seed2_, last_right_+(min), last_right_+max);
-            
-            comp_.left = Rando.number(seed1_, last_left_/10, 1000); //(i+1 == comp_.works.length) ? 100 : Rando.number(seed1_, last_left_+(min), last_left_+max);
-            comp_.right = Rando.number(seed2_, last_right_/2, 1000);//(i+1 == comp_.works.length) ? 100 : Rando.number(seed2_, last_right_+(min), last_right_+max);
-
-            comp_.defs = abi.encodePacked(comp_.defs,
-            '<clipPath id="clip',comp_.id,'"><polygon points="0,',Strings.toString(last_left_),' 0,',Strings.toString(comp_.left),' 1000,',Strings.toString(comp_.right),' 1000,',Strings.toString(last_right_),'" /></clipPath>');
-            
-            comp_.elements = abi.encodePacked(comp_.elements,
-            '<image opacity="1" href="',_77x7.getSVG(comp_.works[i], Rando.number(seed0_, 1, 7), false),'" y="0" x="0" height="1000" width="1000" clip-path="url(#clip',comp_.id,')">',
-            '</image>'
-            );
-
-            last_left_ = comp_.left;
-            last_right_ = comp_.right;
-
+            comp_.elements_ = abi.encodePacked(comp_.elements_,
+            '<radialGradient id="',getSeed(comp_id_, comp_.dim_),'" cx="0.5" cy="0.5" r="1" fx="0.5" fy="0.5" spreadMethod="pad">',
+            '<stop offset="0%" stop-color="',_77x7.getColor(comp_.works_[c-1], 1),'"/><stop offset="100%" stop-color="', (c < comp_.works_.length) ? _77x7.getColor(comp_.works_[c-1], 7) : 'rgba(0,0,0,0)', '"/>',
+            '</radialGradient>',
+            '<rect filter="url(#blur)" fill-opacity="0.3" fill="url(#',getSeed(comp_id_, comp_.dim_),')" width="',comp_.dim_,'" height="',comp_.dim_,'" y="0" x="0">',
+            // '<animate attributeType="xml" attributeName="fill-opacity" begin="0s" values="0.3;0.1;0.3;0.1;0.4;0.1;0.3" dur="',Strings.toString(Rando.number(getSeed(comp_id_, dim_), 8, 20)),'" repeatCount="indefinite" />',
+            '</rect>');
+            c--;
         }
 
-        comp_.pos[0] = Strings.toString(Rando.number(seed1_, 100, 800));
-        comp_.pos[1] = Strings.toString(Rando.number(seed2_, 100, 800));
-
         bytes memory output_ = abi.encodePacked(
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMinYMin meet">',
-            '<defs>',
-            '<g id="main" transform="translate(-5 -5) scale(1.2)" opacity="0.8">',
-            comp_.elements,
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMinYMin meet">',
+            '<defs><radialGradient id="wrap',comp_.seed_,'" cx="0.5" cy="0.5" r="1" fx="0.5" fy="0.5" spreadMethod="pad">',
+                '<stop offset="20%" stop-color="rgba(0,0,0,0)"/>'
+                '<stop offset="100%" stop-color="',_77x7.getColor(comp_.works_[0], 1),'"/>'
+            '</radialGradient>',
+            '<g id="main">',
+            comp_.elements_,
             '</g>',
-            '<filter id="blur" x="0" y="0"><feGaussianBlur in="SourceGraphic" stdDeviation="100"/></filter>',
-            '<rect id="bg" height="1000" width="1000" x="0" y="0"/><clipPath id="clip"><use href="url(#bg)"/></clipPath>',
-            comp_.defs,
-            '</defs>',
+            '<filter id="blur" x="0" y="0" primitiveUnits="objectBoundingBox"><feGaussianBlur in="SourceGraphic" stdDeviation="0.05"/></filter>',
+            '<rect id="bg" height="100%" width="100%" x="0" y="0"/><clipPath id="clip"><use href="url(#bg)"/></clipPath></defs>',
             '<g clip-path="#clip">',
+            // '<use href="#bg" fill="url(#',comp_.seed_,')" fill-opacity="0.3"/>',
             '<use href="#bg" fill="white"/>',
-            '<use href="#main" filter="url(#blur" transform="rotate(90, 500, 500)">',
-            '</use>',
-            '<use href="#main" filter="url(#blur" transform="scale(0.',Strings.toString(Rando.number(seed0_, 3, 6)),') translate(',comp_.pos[0],', ',comp_.pos[1],')"/>',
+            '<use href="#main" transform="rotate(90 50 50)" x="',Strings.toString(Rando.number(comp_.seed_, 10, 60)),'" y="',Strings.toString(Rando.number(comp_.seed_, 10, 60)),'"/>',
+            '<use href="#main" x="',Strings.toString(Rando.number(comp_.seed2_, 10, 60)),'" y="',Strings.toString(Rando.number(comp_.seed2_, 10, 60)),'"/>',
+            '<use href="#bg" fill="url(#wrap',comp_.seed_,')"/>',
             mark_ ? '' : '',
             '</g></svg>'
         );
