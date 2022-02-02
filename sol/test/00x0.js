@@ -33,14 +33,14 @@ describe("00x0", async function(){
         it('should be able to create comps from works', async function(){
             // const seeds = [50, 51, 52, 53, 54, 55];
 
-            //const seeds = [77, 44, 33, 61, 2, 3];
+            // const seeds = [77, 44, 33, 61, 2, 3];
             // const seeds = [5, 25];
             // const seeds = [8, 9, 77];
             // const seeds = [1, 54, 2, 3];
-            const seeds = [11,25,76];
-
+            // const seeds = [11,25,76];
+            // const seeds = [3, 23, 76, 1, 4, 9]
             // const seeds = [4, 53, 5, 2]; !!!
-            // const seeds = [45, 46, 47, 48, 49, 50, 51]; !!!
+            const seeds = [45, 46, 47, 48, 49, 50, 51]; //!!!
             // const seeds = [1, 2, 3, 4, 5, 6, 7]; !!!
             // const seeds = [5,10,50,20]; !!!
             // const seeds = [74,3];
