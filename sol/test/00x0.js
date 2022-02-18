@@ -37,10 +37,10 @@ describe("00x0", async function(){
             // const seeds = [5, 25];
             // const seeds = [8, 9, 77];
             // const seeds = [1, 54, 2, 3];
-            // const seeds = [11,25,76];
+            const seeds = [11,25,76];
             // const seeds = [3, 23, 76, 1, 4, 9]
             // const seeds = [4, 53, 5, 2]; !!!
-            const seeds = [45, 46, 47, 48, 49, 50, 51]; //!!!
+            // const seeds = [45, 46, 47, 48, 49, 50, 51]; //!!!
             // const seeds = [1, 2, 3, 4, 5, 6, 7]; !!!
             // const seeds = [5,10,50,20]; !!!
             // const seeds = [74,3];
@@ -54,9 +54,9 @@ describe("00x0", async function(){
     })
 
     describe('Generates', async function(){
-        it('svg', async function(){
+        it('artwork', async function(){
             this.timeout(120000);
-            await preview.writeSVG(1);
+            await preview.writeArtwork(1);
         });    
     })
 
