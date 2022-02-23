@@ -9,6 +9,7 @@ import { debounce } from 'lodash';
 import useError from 'hooks/useError';
 import { ethers } from 'ethers';
 import useENS from 'hooks/useENS';
+import useEthNet from 'hooks/useEthNet';
 
 export const injected = new InjectedConnector({ supportedChainIds: [1, 4, 31337]});
 export const wcConnector = new WalletConnectConnector({
@@ -49,11 +50,12 @@ const Connect = styled.a`
   `}
 `
 
-export default function ConnectButton({onActivate }) {
+export default function ConnectButton({onActivate}) {
   
   const {activate, active, deactivate, account, library, chainId} = useWeb3React();
   const [wantToConnect, setWantToConnect] = useState(false);
   const err = useError();
+  const net = useEthNet();
 
   const {ENS, address, resolving, resolve} = useENS();
   const test = useENS('0x5090c4Fead5Be112b643BC75d61bF42339675448')
@@ -63,13 +65,6 @@ export default function ConnectButton({onActivate }) {
       resolve(account, library ? library : false);
     }
   }, [account])
-
-  useEffect(() => {
-    if(chainId && chainId != process.env.NEXT_PUBLIC_NETWORK){
-      deactivate();
-      err.setMessage(`Wrong network! Please connect to ${chainToName(process.env.NEXT_PUBLIC_NETWORK)}.`);
-    }
-  }, [chainId])
 
   return (
     <Wrapper>

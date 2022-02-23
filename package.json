@@ -4,7 +4,7 @@
     "00x0:sol:test": "npx hardhat test sol/test/00x0.js;",
     "00x0:sol:dev": "npx nodemon --watch sol -e sol,js --exec \"npm run 00x0:sol:test\"",
     "00x0:sol:deploy-local": "npx hardhat run --network localhost sol/scripts/00x0/deploy-local.js ",
-    "website:dev": "npx hardhat run --network localhost sol/scripts/deploy-local.js ",
+    "website:dev": "vercel dev",
     "build": "next build",
     "serve": "next build && next export && serve out",
     "start": "next start"

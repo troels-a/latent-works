@@ -6,6 +6,9 @@ import Grid from 'styled-components-grid';
 import ConnectButton from 'components/ConnectButton';
 import {breakpoint} from 'styled-components-breakpoint';
 import { useWeb3React } from '@web3-react/core';
+import useEthNet from 'hooks/useEthNet';
+import { useEffect } from 'react';
+import useError from 'hooks/useError';
 
 const Wrapper = styled.div`
 
@@ -80,6 +83,21 @@ const Footer = styled.footer`
 
 export default function Page({children, ...props}){
     
+  const {isChainID, switchNet} = useEthNet();
+  const {active, chainId, deactivate} = useWeb3React();
+  const err = useError();
+  function check(){
+    if(active && !isChainID()){
+      err.send(() => {
+        return <span onClick={switchNet}>Wrong network - click here to change</span>
+      });
+      deactivate();
+    }
+  }
+  useEffect(() => {
+    check()
+  }, [active, chainId])
+
     return <>
 
       <Head>
@@ -97,7 +115,7 @@ export default function Page({children, ...props}){
                 </a>
               </Link>
             </Grid.Unit>
-
+            
             <Grid.Unit size={{sm: 1/2}}>
               <ConnectButton/>
             </Grid.Unit>

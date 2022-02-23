@@ -12,7 +12,7 @@ async function main() {
   console.log('DEPLOYING TO LOCALHOST'.bgGreen);
 
   const OOxO = await hre.ethers.getContractFactory("LatentWorks_00x0");
-  const ooxo = await OOxO.deploy('0xEF7c89F051ac48885b240eb53934B04fcF3339ab');
+  const ooxo = await OOxO.deploy();
   await ooxo.deployed();
 
   console.log("00x0 deployed to:", ooxo.address.green.bold);

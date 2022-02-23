@@ -2,7 +2,7 @@ import useWork from 'hooks/useWork';
 import styled from 'styled-components';
 import {breakpoint} from 'styled-components-breakpoint';
 
-const WorkImages = styled.div`
+export const WorkImages = styled.div`
     position: relative;
     height: 50vw;
     width: 50vw;
@@ -13,7 +13,7 @@ const WorkImages = styled.div`
     `}
 `
 
-const WorkImage = styled(({src, children, placeholder, show, ...p}) => <img {...p} src={src}/>)`
+export const WorkImage = styled(({src, children, placeholder, show, ...p}) => <img {...p} src={src}/>)`
     cursor: pointer;
     margin: 0;
     padding: 0;

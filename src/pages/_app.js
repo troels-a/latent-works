@@ -6,9 +6,8 @@ import { Web3ReactProvider, useWeb3React } from "@web3-react/core";
 import { getProvider } from 'base/utils';
 import { ErrorProvider } from 'hooks/useError';
 import ErrorMessage from 'components/ErrorMessage/ErrorMessage';
-import Web3Provider from 'web3-react/dist/provider';
-import { ethers } from 'ethers';
-
+import {ethers} from 'ethers';
+import { EthNetProvider } from 'hooks/useEthNet';
 
 function getLibrary(provider){
   return new ethers.providers.Web3Provider(provider);
@@ -109,13 +108,16 @@ export default function App({ Component, pageProps }) {
 
   return (
         <ErrorProvider>
-        <Web3ReactProvider getLibrary={getLibrary}>
-        <ThemeProvider theme={theme}>
-          <ErrorMessage/>
-          <GlobalStyle />
-          <Component {...pageProps} />
-        </ThemeProvider>
-       </Web3ReactProvider>
+          <Web3ReactProvider getLibrary={getLibrary}>
+            <EthNetProvider chainID={process.env.NEXT_PUBLIC_NETWORK}>
+              <ThemeProvider theme={theme}>
+                <ErrorMessage/>
+                <GlobalStyle />
+                <Component {...pageProps} />
+              </ThemeProvider>
+            </EthNetProvider>
+        </Web3ReactProvider>
        </ErrorProvider>
   )
+
 }

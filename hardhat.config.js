@@ -47,7 +47,7 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        blockNumber: 13960900,
+        blockNumber: 13960899,
         url: process.env.MAINNET_FORK_URL,
       }
     },
@@ -60,8 +60,7 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY],
     },
     localhost: {
-      url: process.env.LOCALHOST_RPC_URL,
-      accounts: [process.env.PRIVATE_KEY],
+      url: process.env.LOCALHOST_RPC_URL
     },
   },
   etherscan: {

@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { getProvider } from '../../../src/base/utils';
 import abi from '../../../sol/abi/sol/contracts/LatentWorks.sol/LatentWorks_77x7.json';
-
 export default async (req, res) => {
     
     const {work} = Object.assign({}, req.query);

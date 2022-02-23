@@ -2,9 +2,20 @@ import React, { useState, useEffect } from 'react';
 
 const ErrorCtx = React.createContext(false);
 
-const createError = ({workID, ...p}) => {
+const createError = p => {
     const [message, setMessage] = useState();
-    return {message, setMessage};
+
+    async function send(msg, timeout = false){
+        setMessage(msg)
+        if(timeout)
+            setTimeout(() => setMessage(''), timeout);
+    }
+
+    function render(){
+        message;
+    }
+
+    return {message, setMessage, send, render};
 }
 
 
