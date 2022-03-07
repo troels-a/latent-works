@@ -45,7 +45,11 @@ describe("00x0", async function(){
             // const seeds = [5,10,50,20]; !!!
             // const seeds = [74,3];
             // const seeds = [74,5,7];
-            await contract.create(seeds);
+            await contract.create([50, 51, 52, 53, 54, 55]);
+            await contract.create([1, 2, 3, 4, 5, 6, 7]);
+            await contract.create([5,10,50,20]);
+            await contract.create([77, 44, 33, 61, 2, 3]);
+            await contract.create([4, 53, 5, 2]);
 
             expect(await contract.getAvailable(1) == seeds.count);
 
@@ -57,6 +61,10 @@ describe("00x0", async function(){
         it('artwork', async function(){
             this.timeout(120000);
             await preview.writeArtwork(1);
+            await preview.writeArtwork(2);
+            await preview.writeArtwork(3);
+            await preview.writeArtwork(4);
+            await preview.writeArtwork(5);
         });    
     })
 

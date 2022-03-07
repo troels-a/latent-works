@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: Unlicense
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
@@ -102,7 +102,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
 
     function mint(uint comp_id_) public payable nonReentrant {
 
-        require(msg.value >= _price, "VALUE_TOO_LOW");
+        require(msg.value == _price, "INVALID_VALUE");
         require(getAvailable(comp_id_) > 0, "UNAVAILABLE");
         
         address owner_ = owner();

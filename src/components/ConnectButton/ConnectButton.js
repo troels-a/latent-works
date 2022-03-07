@@ -50,10 +50,17 @@ const Connect = styled.a`
   `}
 `
 
+export function useWantToConnect(){
+
+  const [wantToConnect, setWantToConnect] = useState(false);
+  return {wantToConnect, setWantToConnect};
+
+}
+
 export default function ConnectButton({onActivate}) {
   
   const {activate, active, deactivate, account, library, chainId} = useWeb3React();
-  const [wantToConnect, setWantToConnect] = useState(false);
+  const {wantToConnect, setWantToConnect} = useWantToConnect();
   const err = useError();
   const net = useEthNet();
 

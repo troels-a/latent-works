@@ -4,13 +4,16 @@ import Section from "components/Section/Section";
 import use77x7, {_77x7Provider} from "hooks/use77x7";
 import { useWeb3React } from "@web3-react/core";
 import { Children, useEffect, useState } from "react";
-import { map, mapKeys, mapValues } from "lodash";
+import { keys, map, mapKeys, mapValues } from "lodash";
 import useWork, { WorkProvider } from "hooks/useWork";
 import { WorkImage } from "components/WorkDisplay/WorkDisplay";
 import styled, { keyframes } from "styled-components";
 import use00x0, { _00x0Provider } from "hooks/use00x0";
 import { AspectRatio } from "react-aspect-ratio";
 import 'react-aspect-ratio/aspect-ratio.css'
+import { getEntryBySlug } from "base/contentAPI";
+import { useWantToConnect } from "components/ConnectButton/ConnectButton";
+import { ethers } from "ethers";
 
 const Works = styled(p => <Grid container {...p}/>)`
     width: calc(100%+1vw);
@@ -56,28 +59,38 @@ function ZeroZeroByZero(props){
     const {balance, fetchingBalance} = use77x7();
     const {contract} = use00x0();
     const [selectedWorks, setSelectedWorks] = useState({});
-    
-    useEffect(() => {
-        console.log(selectedWorks)
-    }, [selectedWorks])
+    const {wantToConnect, setWantToConnect} = useWantToConnect();
+
+    function handleCreate(){
+        const works = keys(selectedWorks).map(id => parseInt(id));
+        contract.create(works);
+    }
+
 
     return <Page bgColor="#000">
         <Grid>
             <Grid.Unit size={1/2}>
+                <Section dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
+            </Grid.Unit>
+            <Grid.Unit size={1/2}>
                 <Section>
-                    00x0
-                </Section>
-                <Section>
-                    <Works>
-                        {(fetchingBalance) && <Grid.Unit>Looking for 77x7 works...</Grid.Unit>}
-                        {(balance) && map(balance, (_bal, _id) => {
+                    {!account && <>
+                            <a href="#" onClick={() => setWantToConnect(true)}>Connect your wallet</a> holding 77x7 works to view them here
+                    </>}
+                    {(fetchingBalance) && <>Looking for 77x7 works...</>}
+
+                        {(balance) && <><Works>
+                            {map(balance, (_bal, _id) => {
                             const updatedValue = {}
                             updatedValue[_id] = !selectedWorks[_id];
                             return <WorkProvider workID={_id}>
                                 <SelectableWork selected={selectedWorks[_id]} onClick={() => setSelectedWorks(prev => ({...prev, ...updatedValue}))}/>
                             </WorkProvider>
-                        })}
-                    </Works>
+                            })}
+                        </Works>
+                        <button disabled={keys(selectedWorks).length < 1} onClick={handleCreate}>Create 00x0</button>
+                        </>
+                        }
                 </Section>
             </Grid.Unit>
         </Grid>
@@ -87,6 +100,18 @@ function ZeroZeroByZero(props){
 
 function _00x0(p){
     return <_77x7Provider><_00x0Provider><ZeroZeroByZero {...p}/></_00x0Provider></_77x7Provider>;
-}   
+}
+
+
+export async function getStaticProps(){
+    
+    const page00x0 = await getEntryBySlug('pages', '00x0');
+
+    return {
+        props: {
+            page00x0: page00x0,
+        }
+    }
+}
 
 export default _00x0;

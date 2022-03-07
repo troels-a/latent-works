@@ -8,13 +8,22 @@ const _00x0Context = React.createContext(false);
 const create00x0 = (p) => {
     
     const [contract, setContract] = useState();
-    const {provider, active} = useWeb3React();
+    const {library, account} = useWeb3React();
 
     useEffect(() => {
-        if(active && provider){
-            setContract(new ethers.Contract('0xa7c59f010700930003b33ab25a7a0679c860f29c', abi, provider));
+        if(account && library){
+            const _contract = new ethers.Contract('0xa7c59f010700930003b33ab25a7a0679c860f29c', abi, library.getSigner());
+            // console.log('contract', _contract)
+            setContract(_contract);
         }
-    }, [active])
+
+    }, [account, library])
+
+    useEffect(() => {
+        return () => {
+            setContract(false);
+        }
+    }, [])
         
     return {
         contract

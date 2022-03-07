@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: Unlicense
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -96,7 +96,7 @@ contract Meta_00x0 {
             '<use href="#main-ani" filter="url(#blur)" transform="scale(0.',Strings.toString(Rando.number(comp_.seed0, 3, 6)),') translate(',comp_.pos[0],', ',comp_.pos[1],')"/>',
             comp_.mark ? '' : '',
             '<use href="#bg" fill="url(#noise)"/>',
-            '<use href="#bg" x="200" y="100" height="100" width="100" fill="url(#raster)"/>',
+            '<use href="#bg" x="',Strings.toString(Rando.number(comp_.seed0, 0, 700)),'" y="',Strings.toString(Rando.number(comp_.seed1, 0, 700)),'" height="',Strings.toString(Rando.number(comp_.seed2, 0, 100)),'" width="',Strings.toString(Rando.number(comp_.seed3, 0, 100)),'" fill="url(#raster)"/>',
             '</g>',
             '</svg>'
         ));
