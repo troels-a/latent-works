@@ -44,7 +44,9 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
     mapping(uint => uint[]) private _comp_works;
     mapping(uint => address) private _comp_creators;
     mapping(uint => uint) private _comp_seeds;
-    mapping(uint => uint) private _work_used_count;
+    mapping(uint => uint) private _work_uses;
+    mapping(address => mapping(uint => uint)) private _address_work_uses;
+    mapping(uint => mapping(address => uint)) private _work_address_uses;
 
 
     modifier onlyInternal(){
@@ -69,29 +71,55 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
     
     function create(uint[] memory works_) public {
 
-        require((works_.length >= 2 && works_.length <= 7), "WRONG_WORK_COUNT");
-        // require(canCreate(msg.sender, works_), "NOT_ELIGIBLE");
+        require((works_.length >= 2 && works_.length <= 7), "MIN_2_MAX_7_WORKS");
+        require(_noDuplicates(works_), 'NO_DUPLICATES');
+        require(_holdsWorks(msg.sender, works_), 'NOT_HOLDER');
 
         _comp_ids.increment();
         uint comp_id_ = _comp_ids.current();
         _comp_works[comp_id_] = works_;
         _comp_seeds[comp_id_] = block.timestamp+works_[0]+works_[1];
 
+        // Increment counter for work use
+        for(uint i = 0; i < works_.length; i++){
+            _incrementWorkUse(works_[i], msg.sender);
+        }
+
         _mintFor(msg.sender, comp_id_);
 
     }
 
-    function canCreate(address test_, uint[] memory works_) public view returns(bool){
-        uint last_work_;
-        for (uint256 i = 0; i < works_.length; i++) {
+    function _holdsWorks(address test_, uint[] memory works_) private view returns(bool){
+        for(uint i = 0; i < works_.length; i++){
             if((_LW77x7.balanceOf(test_, works_[i])) < 1)
-                return false;
-            if(_work_used_count[works_[i]] > MAX_WORK_USE)
-                return false;
-            if(last_work_ == works_[i])
                 return false;
         }
         return true;
+    }
+
+    function _noDuplicates(uint[] memory works_) private pure returns(bool){
+
+        uint[] memory works_used_ = new uint[](works_.length);
+
+        for(uint i = 0; i < works_.length; i++){
+
+            for(uint ii = 0; ii < works_used_.length; ii++) {
+                if(works_used_[ii] == works_[i])
+                    return false;
+            }
+
+            works_used_[i] = works_[i];
+ 
+        }
+
+        return true;
+
+    }
+
+    function _incrementWorkUse(uint work_id_, address for_) private {
+        _work_uses[work_id_]++;
+        _address_work_uses[for_][work_id_]++;
+        _work_address_uses[work_id_][for_]++;
     }
 
 
@@ -166,7 +194,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
         comp_.width_string = comp_.orientation < 50 ? '700' : '1000';
         comp_.height_string = comp_.orientation < 50 ? '1000' : '700';
 
-        output_ = _Meta00X0.getArtwork(comp_);
+        output_ = _Meta00X0.getArtwork(comp_id_, comp_);
 
         if(encode_)
             return Base64.encode(bytes(output_));

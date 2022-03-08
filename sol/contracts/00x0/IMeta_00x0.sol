@@ -4,6 +4,6 @@ import './ILW_00x0.sol';
 
 interface IMeta_00x0 {
 
-    function getArtwork(ILW_00x0.CompInfo memory comp_) external view returns(string memory);
+    function getArtwork(uint comp_id_, ILW_00x0.CompInfo memory comp_) external view returns(string memory);
 
 }

@@ -9,7 +9,7 @@ class Preview {
     }
 
     async writeArtwork(tokenId){
-        let svg = await this.contract.getArtwork(tokenId, false, true);
+        let svg = await this.contract.getArtwork(tokenId, true, true);
         const svgDir = `./preview`;
         svg = Buffer.from(svg.replace(/^data\:image\/svg\+xml\;base64\,/, ''), 'base64').toString('utf-8');
         await fs.promises.mkdir(svgDir, { recursive: true }).catch(console.error);

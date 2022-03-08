@@ -28,7 +28,7 @@ contract Meta_00x0 {
         _77x7 = ILW_77x7(genesis_);
     }
 
-    function getArtwork(ILW_00x0.CompInfo memory comp_) public view onlyInternal returns(string memory output_) {
+    function getArtwork(uint comp_id_, ILW_00x0.CompInfo memory comp_) public view onlyInternal returns(string memory output_) {
 
         
         for(uint i = 0; i < comp_.works.length; i++) {
@@ -94,7 +94,7 @@ contract Meta_00x0 {
             '<use href="#main" filter="url(#blur)" transform="rotate(90, 500, 500)"/>',
             '<use href="#main-ani" filter="url(#blur)" transform="scale(0.',Strings.toString(Rando.number(comp_.seed0, 5, 9)),') rotate(90, 500, 500)"/>',
             '<use href="#main-ani" filter="url(#blur)" transform="scale(0.',Strings.toString(Rando.number(comp_.seed0, 3, 6)),') translate(',comp_.pos[0],', ',comp_.pos[1],')"/>',
-            comp_.mark ? '' : '',
+            comp_.mark ? _getMark(comp_id_, comp_) : '',
             '<use href="#bg" fill="url(#noise)"/>',
             '<use href="#bg" x="',Strings.toString(Rando.number(comp_.seed0, 0, 700)),'" y="',Strings.toString(Rando.number(comp_.seed1, 0, 700)),'" height="',Strings.toString(Rando.number(comp_.seed2, 0, 100)),'" width="',Strings.toString(Rando.number(comp_.seed3, 0, 100)),'" fill="url(#raster)"/>',
             '</g>',
@@ -103,6 +103,12 @@ contract Meta_00x0 {
 
         return output_;
 
+    }
+
+
+    function _getMark(uint comp_id_, ILW_00x0.CompInfo memory comp_) private pure returns(string memory){
+        string memory lift_text_ = Strings.toString((comp_.orientation < 50 ? 1000 : 700)-12);
+        return string(abi.encodePacked('<style>.txt{font: normal 12px monospace;fill: white;}</style><rect width="95" height="30" x="0" y="',Strings.toString((comp_.orientation < 50 ? 1000 : 700)-30),'" fill="#000" class="box"></rect><text x="12" y="',lift_text_,'" class="txt">#',(comp_id_ < 10 ? string(abi.encodePacked('0', Strings.toString(comp_id_))) : Strings.toString(comp_id_)),' \xc2\xb7 00x0</text><text x="103" y="',lift_text_,'" class="txt">',comp_.seed0,'</text>'));
     }
 
 }
