@@ -3,6 +3,7 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -48,6 +49,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
     mapping(address => mapping(uint => uint)) private _address_work_uses;
     mapping(uint => mapping(address => uint)) private _work_address_uses;
 
+    uint private _price = 0.06 ether;
 
     modifier onlyInternal(){
         require((msg.sender == address(_Meta00X0) || msg.sender == address(this)), 'ONLY_INTERNAL');
@@ -59,21 +61,36 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
 
         Meta_00x0 meta_ = new Meta_00x0(address(this), LW77X7);
         _Meta00X0 = IMeta_00x0(address(meta_));
+
+
+
     }
 
-    
-    uint private _price = 0.06 ether;
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return
+            interfaceId == type(IERC1155Receiver).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
+
+
+    function onERC1155BatchReceived(address operator_, address from_, uint256[] calldata ids_, uint256[] calldata values_, bytes calldata data_) internal returns(bytes4){
+        
+        _create(from_, ids_);
+
+        return bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"));
+
+    }
 
 
     function get77x7() public view onlyInternal returns(ILW_77x7) {
         return ILW_77x7(LW77X7);
     }
     
-    function create(uint[] memory works_) public {
+    function _create(address for_, uint[] memory works_) private {
 
         require((works_.length >= 2 && works_.length <= 7), "MIN_2_MAX_7_WORKS");
         require(_noDuplicates(works_), 'NO_DUPLICATES');
-        require(_holdsWorks(msg.sender, works_), 'NOT_HOLDER');
+        require(_holdsWorks(for_, works_), 'NOT_HOLDER');
 
         _comp_ids.increment();
         uint comp_id_ = _comp_ids.current();
@@ -82,10 +99,10 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
 
         // Increment counter for work use
         for(uint i = 0; i < works_.length; i++){
-            _incrementWorkUse(works_[i], msg.sender);
+            _incrementWorkUse(works_[i], for_);
         }
 
-        _mintFor(msg.sender, comp_id_);
+        _mintFor(for_, comp_id_);
 
     }
 
