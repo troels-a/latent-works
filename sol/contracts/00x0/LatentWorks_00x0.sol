@@ -62,7 +62,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
     }
 
     
-    uint private _price = 0.1 ether;
+    uint private _price = 0.06 ether;
 
 
     function get77x7() public view onlyInternal returns(ILW_77x7) {
@@ -127,10 +127,20 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
         _mint(for_, comp_id_, 1, "");
     }
 
+    function getPrice(uint comp_id_) public view returns(uint){
+        uint editions_ = getEditions(comp_id_);
+
+        return _price/editions_;
+    }
+
+    function getEditions(uint comp_id_) public view returns(uint) {
+        return _comp_works[comp_id_].length;
+    }
+
 
     function mint(uint comp_id_) public payable nonReentrant {
 
-        require(msg.value == _price, "INVALID_VALUE");
+        require(msg.value == getPrice(comp_id_), "INVALID_VALUE");
         require(getAvailable(comp_id_) > 0, "UNAVAILABLE");
         
         address owner_ = owner();
