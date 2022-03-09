@@ -1,10 +1,13 @@
-require("dotenv").config({path: '.env.local'});
+require("dotenv").config({path: '.env'});
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ganache");
 require('hardhat-abi-exporter');
+
+const accounts = require('./hhaccounts.js');
+accounts[0] = {privateKey: process.env.PRIVATE_KEY, balance: '10000000000000000000000'};
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -14,6 +17,7 @@ task("accounts", "Prints the list of accounts", async () => {
   for (const account of accounts) {
     console.log(account.address);
   }
+  
 });
 
 // You need to export an object to set up your config
@@ -50,7 +54,7 @@ module.exports = {
         blockNumber: 14346778,
         url: process.env.MAINNET_FORK_URL,
       },
-      accounts: [{privateKey: process.env.PRIVATE_KEY, balance: '10000000000000000000000'}]
+      accounts: accounts
     },
     mainnet: {
       url: process.env.MAINNET_RPC_URL,

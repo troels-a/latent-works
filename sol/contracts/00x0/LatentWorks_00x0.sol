@@ -3,7 +3,7 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -28,10 +28,9 @@ import './ILW_00x0.sol';
 */
 
 
-contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
+contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGuard {
 
     using Counters for Counters.Counter;
-
 
     string public constant NAME = "Latent Works \xc2\xb7 00x0";
     string public constant DESCRIPTION = "latent.works";
@@ -45,11 +44,8 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
     mapping(uint => uint[]) private _comp_works;
     mapping(uint => address) private _comp_creators;
     mapping(uint => uint) private _comp_seeds;
-    mapping(uint => uint) private _work_uses;
-    mapping(address => mapping(uint => uint)) private _address_work_uses;
-    mapping(uint => mapping(address => uint)) private _work_address_uses;
 
-    uint private _price = 0.06 ether;
+    uint private _price = 0.015 ether;
 
     modifier onlyInternal(){
         require((msg.sender == address(_Meta00X0) || msg.sender == address(this)), 'ONLY_INTERNAL');
@@ -57,40 +53,39 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
     }
 
     constructor() ERC1155("") {
+
         _LW77x7 = ILW_77x7(LW77X7);
 
         Meta_00x0 meta_ = new Meta_00x0(address(this), LW77X7);
         _Meta00X0 = IMeta_00x0(address(meta_));
 
-
-
-    }
-
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return
-            interfaceId == type(IERC1155Receiver).interfaceId ||
-            super.supportsInterface(interfaceId);
     }
 
 
-    function onERC1155BatchReceived(address operator_, address from_, uint256[] calldata ids_, uint256[] calldata values_, bytes calldata data_) internal returns(bytes4){
-        
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, ERC1155Receiver) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
+
+
+    function onERC1155BatchReceived(address operator_, address from_, uint256[] calldata ids_, uint256[] calldata values_, bytes calldata data_) public override returns(bytes4){
         _create(from_, ids_);
-
         return bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"));
+    }
 
+    function onERC1155Received(address operator_, address from_, uint256 id_, uint256 value_, bytes calldata data_) public pure override returns(bytes4){
+        revert('ONLY BATCH TRANSFER');
     }
 
 
     function get77x7() public view onlyInternal returns(ILW_77x7) {
         return ILW_77x7(LW77X7);
     }
+
     
     function _create(address for_, uint[] memory works_) private {
 
         require((works_.length >= 2 && works_.length <= 7), "MIN_2_MAX_7_WORKS");
-        require(_noDuplicates(works_), 'NO_DUPLICATES');
-        require(_holdsWorks(for_, works_), 'NOT_HOLDER');
+        // require(_holdsWorks(for_, works_), 'NOT_HOLDER');
 
         _comp_ids.increment();
         uint comp_id_ = _comp_ids.current();
@@ -98,20 +93,12 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
         _comp_seeds[comp_id_] = block.timestamp+works_[0]+works_[1];
 
         // Increment counter for work use
-        for(uint i = 0; i < works_.length; i++){
-            _incrementWorkUse(works_[i], for_);
-        }
+        // for(uint i = 0; i < works_.length; i++){
+        //     _incrementWorkUse(works_[i], for_);
+        // }
 
         _mintFor(for_, comp_id_);
 
-    }
-
-    function _holdsWorks(address test_, uint[] memory works_) private view returns(bool){
-        for(uint i = 0; i < works_.length; i++){
-            if((_LW77x7.balanceOf(test_, works_[i])) < 1)
-                return false;
-        }
-        return true;
     }
 
     function _noDuplicates(uint[] memory works_) private pure returns(bool){
@@ -133,13 +120,6 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
 
     }
 
-    function _incrementWorkUse(uint work_id_, address for_) private {
-        _work_uses[work_id_]++;
-        _address_work_uses[for_][work_id_]++;
-        _work_address_uses[work_id_][for_]++;
-    }
-
-
     function _mintFor(address for_, uint comp_id_) private {
         _mint(for_, comp_id_, 1, "");
     }
@@ -147,7 +127,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
     function getPrice(uint comp_id_) public view returns(uint){
         uint editions_ = getEditions(comp_id_);
 
-        return _price/editions_;
+        return (7-editions_)*_price;
     }
 
     function getEditions(uint comp_id_) public view returns(uint) {
@@ -232,8 +212,16 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, Ownable, ReentrancyGuard {
 
 
     function uri(uint comp_id_) public view override returns(string memory){
+        
         string memory image_ = getArtwork(comp_id_, true, true);
-        return image_;
+        bytes memory meta_ = abi.encodePacked('{',
+            '"name": "00x0 ',Strings.toString(comp_id_),'", ',
+            '"description": "latent.works", ',
+            '"image": "data:image/svg+xml;base64,',image_,'"}'
+        );
+
+        return string(abi.encodePacked('data:application/json;base64,', Base64.encode(meta_)));
+
     }
 
 

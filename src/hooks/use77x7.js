@@ -1,16 +1,28 @@
 import { useWeb3React } from '@web3-react/core';
+import { ethers } from 'ethers';
 import React, { useState, useEffect } from 'react';
+import abi from '@abi/77x7/LatentWorks_77x7.sol/LatentWorks_77x7.json';
 
 const _77x7Context = React.createContext(false);
 
 const create77x7 = (p) => {
     
-    const {active, account} = useWeb3React();
+    const {active, account, library} = useWeb3React();
+    const [contract, setContract] = useState();
 
     const [balance, setBalance] = useState(false);
     const [fetchingBalance, setFetchingBalance] = useState(false);
 
+    useEffect(() => {
+        if(account && library){
+            const _contract = new ethers.Contract(process.env.NEXT_PUBLIC_ADDRESS_77X7, abi, library.getSigner());
+            setContract(_contract);
+        }
+
+    }, [account, library])
+
     const fetchBalance = async (address) => {
+        
         try {
             setFetchingBalance(true);
             const response = await fetch(`/api/77x7/balance?address=${address}`);
@@ -18,10 +30,11 @@ const create77x7 = (p) => {
             setFetchingBalance(false);
             setBalance(json);
         }
+
         catch(e){
-            console.log(e)
             setFetchingBalance(false);
-        }   
+        }
+
     }
 
     useEffect(() => {
@@ -40,6 +53,7 @@ const create77x7 = (p) => {
     
     
     return {
+        contract: contract,
         balance: balance,
         fetchingBalance: fetchingBalance
     };

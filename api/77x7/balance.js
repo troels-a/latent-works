@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { getProvider } from '../../src/base/utils';
+import { getProvider } from '../../shared/provider';
 import abi from '../../sol/abi/sol/contracts/LatentWorks.sol/LatentWorks_77x7.json';
 
 export default async (req, res) => {
@@ -10,7 +10,7 @@ export default async (req, res) => {
     const _ids = [];
     const balance = {};
     const provider = getProvider();
-    const contract  = new ethers.Contract(process.env.NEXT_PUBLIC_CONTRACT, abi, provider);
+    const contract  = new ethers.Contract(process.env.ADDRESS_77X7, abi, provider);
     
     let i = 1;
     while(i <= 77){

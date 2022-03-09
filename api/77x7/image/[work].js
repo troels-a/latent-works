@@ -2,7 +2,7 @@ import chromium from 'chrome-aws-lambda';
 import core from 'puppeteer-core';
 import { ethers } from 'ethers';
 import abi from '@abi/LatentWorks.sol/LatentWorks_77x7.json';
-import { getProvider } from 'base/utils';
+import { getProvider } from '../../../shared/provider';
 
 const exePath = process.platform === 'win32'
 ? 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
@@ -48,7 +48,7 @@ export default async (req, res) => {
     
     const {work, edition, format, mark, size} = Object.assign({size: 'medium', edition: 7, format: 'svg', mark: true}, req.query);
     
-    const address = process.env.NEXT_PUBLIC_CONTRACT;
+    const address = process.env.NEXT_PUBLIC_ADDRESS_77X7;
     const provider = getProvider();
     const contract = new ethers.Contract(address, abi, provider);
     const data_url = await contract.getSVG(parseInt(work), parseInt(edition), parseBool(mark));

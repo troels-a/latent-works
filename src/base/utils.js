@@ -12,10 +12,6 @@ export function truncate(input, length, append = '...') {
     return input;
 };
 
-export function getProvider(){
-    return new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
-}
-
 export function chainToName(id){
     return chains[id];
 }

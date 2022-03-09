@@ -1,11 +1,11 @@
 import { ethers } from 'ethers';
-import { getProvider } from '../../../src/base/utils';
+import { getProvider } from '../../../shared/provider';
 import abi from '../../../sol/abi/sol/contracts/LatentWorks.sol/LatentWorks_77x7.json';
 export default async (req, res) => {
     
     const {work} = Object.assign({}, req.query);
     
-    const address = process.env.NEXT_PUBLIC_CONTRACT;
+    const address = process.env.NEXT_PUBLIC_ADDRESS_77X7;
     const provider = getProvider();
     const contract  = new ethers.Contract(address, abi, provider);
     const data      = await contract.getWork(parseInt(work));

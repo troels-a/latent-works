@@ -12,8 +12,7 @@ const create00x0 = (p) => {
 
     useEffect(() => {
         if(account && library){
-            const _contract = new ethers.Contract('0xa7c59f010700930003b33ab25a7a0679c860f29c', abi, library.getSigner());
-            // console.log('contract', _contract)
+            const _contract = new ethers.Contract(process.env.NEXT_PUBLIC_ADDRESS_00X0, abi, library.getSigner());
             setContract(_contract);
         }
 

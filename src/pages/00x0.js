@@ -4,7 +4,7 @@ import Section from "components/Section/Section";
 import use77x7, {_77x7Provider} from "hooks/use77x7";
 import { useWeb3React } from "@web3-react/core";
 import { Children, useEffect, useState } from "react";
-import { keys, map, mapKeys, mapValues } from "lodash";
+import { keys, keysIn, map, mapKeys, mapValues } from "lodash";
 import useWork, { WorkProvider } from "hooks/useWork";
 import { WorkImage } from "components/WorkDisplay/WorkDisplay";
 import styled, { keyframes } from "styled-components";
@@ -33,18 +33,36 @@ const colorPulse = keyframes`
 `
 
 const Work = styled(({children, ...p}) => <Grid.Unit {...p} size={1/3}><AspectRatio style={{width: '100%'}} ratio="1/1">{children}</AspectRatio></Grid.Unit>)`
+
     padding: 0 .5vw 1vw .5vw;
+    position: relative;
+
+    ${p => p.index > 0 && `
+
+    &:before {
+        content: "${p.index}";
+        color: inherit;
+        display: inline-block;
+        position: absolute;
+        top: 5px;
+        padding: 1px 2px;
+        background-color: white;
+        z-index: 2;
+    }
+
+    `}
+
     > * {
         animation: ${colorPulse} 2s infinite;
         border: 5px solid transparent; box-sizing: border-box;
-
-        ${p => p.selected && 'border-color: red;'}
+        ${p => p.selected && 'border-color: black;'}
     }
+
 `
 
 function SelectableWork(p){
 
-    const work = useWork()
+    const work = useWork();
     
     return <Work {...p}>
         {work && <img style={{height: 'auto', maxWidth: '100%'}} key={work.id} src={work.iterations[6]}/>}
@@ -57,14 +75,23 @@ function ZeroZeroByZero(props){
 
     const {account} = useWeb3React();
     const {balance, fetchingBalance} = use77x7();
-    const {contract} = use00x0();
-    const [selectedWorks, setSelectedWorks] = useState({});
+    const _77x7 = use77x7();
+    const _00x0 = use00x0();
+    const [selectedWorks, setSelectedWorks] = useState([]);
     const {wantToConnect, setWantToConnect} = useWantToConnect();
 
     function handleCreate(){
-        const works = keys(selectedWorks).map(id => parseInt(id));
-        contract.create(works);
+        const works = selectedWorks.map(id => parseInt(id));
+        const values = Array(works.length).fill(1);
+        const from = account;
+        const to = _00x0.contract.address;
+        console.log(from, to, works, values);
+        _77x7.contract.safeBatchTransferFrom(from, to, works, values, []);
     }
+
+    // useEffect(() => {
+    //     console.log(selectedWorks)
+    // }, [selectedWorks])
 
 
     return <Page bgColor="#000">
@@ -81,16 +108,31 @@ function ZeroZeroByZero(props){
 
                         {(balance) && <><Works>
                             {map(balance, (_bal, _id) => {
-                            const updatedValue = {}
-                            updatedValue[_id] = !selectedWorks[_id];
+                            
                             return <WorkProvider workID={_id}>
-                                <SelectableWork selected={selectedWorks[_id]} onClick={() => setSelectedWorks(prev => ({...prev, ...updatedValue}))}/>
+                                <SelectableWork selected={selectedWorks.includes(_id)} index={selectedWorks.indexOf(_id)+1} onClick={() => setSelectedWorks(prev => {
+
+                                    const index = prev.indexOf(_id);
+
+                                    if(index > -1)
+                                        delete prev[index];
+                                    else
+                                        prev.push(_id);
+
+                                    return prev.filter(val => val);
+                                        
+                                })}/>
                             </WorkProvider>
                             })}
                         </Works>
-                        <button disabled={keys(selectedWorks).length < 1} onClick={handleCreate}>Create 00x0</button>
+                        <button disabled={selectedWorks.length < 2 || selectedWorks.length > 7} onClick={handleCreate}>
+                            {(selectedWorks.length < 2 || selectedWorks.length > 7) ? `Select 2-7 works to create 00x0` : `Create 00x0 from ${selectedWorks.length} works`}
+                        </button>
                         </>
                         }
+                </Section>
+                <Section>
+                        
                 </Section>
             </Grid.Unit>
         </Grid>
