@@ -55,7 +55,8 @@ const create77x7 = (p) => {
     return {
         contract: contract,
         balance: balance,
-        fetchingBalance: fetchingBalance
+        fetchingBalance: fetchingBalance,
+        fetchBalance
     };
     
 }

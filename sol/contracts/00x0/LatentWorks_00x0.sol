@@ -85,17 +85,12 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
     function _create(address for_, uint[] memory works_) private {
 
         require((works_.length >= 2 && works_.length <= 7), "MIN_2_MAX_7_WORKS");
-        // require(_holdsWorks(for_, works_), 'NOT_HOLDER');
 
         _comp_ids.increment();
         uint comp_id_ = _comp_ids.current();
         _comp_works[comp_id_] = works_;
-        _comp_seeds[comp_id_] = block.timestamp+works_[0]+works_[1];
-
-        // Increment counter for work use
-        // for(uint i = 0; i < works_.length; i++){
-        //     _incrementWorkUse(works_[i], for_);
-        // }
+        _comp_seeds[comp_id_] = block.timestamp*(works_[0]+works_[1]);
+        _comp_creators[comp_id_] = for_;
 
         _mintFor(for_, comp_id_);
 
@@ -211,11 +206,53 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
     }
 
 
+    function getComps(uint limit_, uint page_) public view returns(ILW_00x0.Comp[] memory){
+
+        uint max_ = _comp_ids.current();
+
+        if(limit_ < 1 && page_ < 1){
+            limit_ = max_;
+            page_ = 1;
+        }
+
+        ILW_00x0.Comp[] memory comps_ = new ILW_00x0.Comp[](limit_);
+        uint i = 0;
+        uint index;
+        uint offset = page_ == 1 ? 0 : (page_-1)*limit_;
+        while(i < limit_ && i < max_){
+            index = i+(offset);
+            if(max_ > index){
+                comps_[i] = getComp(index+1);
+            }
+            i++;
+        }
+
+        return comps_;
+
+
+    }
+
+
+    function getComp(uint comp_id_) public view returns(ILW_00x0.Comp memory){
+
+        return ILW_00x0.Comp(
+            comp_id_,
+            _comp_creators[comp_id_],
+            _comp_seeds[comp_id_],
+            string(abi.encodePacked('data:image/svg+xml;base64,', getArtwork(comp_id_, true, true))),
+            getPrice(comp_id_),
+            getEditions(comp_id_),
+            getAvailable(comp_id_)
+        );
+
+    }
+
+
     function uri(uint comp_id_) public view override returns(string memory){
         
         string memory image_ = getArtwork(comp_id_, true, true);
         bytes memory meta_ = abi.encodePacked('{',
-            '"name": "00x0 ',Strings.toString(comp_id_),'", ',
+            '"name": "00x0 #',Strings.toString(comp_id_),'", ',
             '"description": "latent.works", ',
             '"image": "data:image/svg+xml;base64,',image_,'"}'
         );

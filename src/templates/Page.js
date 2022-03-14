@@ -18,7 +18,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: rgba(255,255,255,0.95);
+  // background-color: rgba(255,255,255,0.95);
   position: relative;
 
   &:before {
@@ -33,10 +33,10 @@ const Wrapper = styled.div`
     opacity: 0;
     transition: all 2500ms;
 
-    ${p => p.bgColor && `
-      opacity: 1;
-      background-color: ${p.bgColor};
-    `}
+    // ${p => p.bgColor && `
+    //   opacity: 1;
+    //   background-color: ${p.bgColor};
+    // `}
   }
 
   ${breakpoint('lg')`

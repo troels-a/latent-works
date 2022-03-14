@@ -14,6 +14,7 @@ import 'react-aspect-ratio/aspect-ratio.css'
 import { getEntryBySlug } from "base/contentAPI";
 import { useWantToConnect } from "components/ConnectButton/ConnectButton";
 import { ethers } from "ethers";
+import useError from "hooks/useError";
 
 const Works = styled(p => <Grid container {...p}/>)`
     width: calc(100%+1vw);
@@ -60,6 +61,19 @@ const Work = styled(({children, ...p}) => <Grid.Unit {...p} size={1/3}><AspectRa
 
 `
 
+
+const MintingSection = styled(Section)`
+    ${p => p.disabled && `
+        opacity: 0.2;
+    `}
+`
+
+
+const CompImage = styled.div`
+    max-width: 30vw;
+    margin: 5vw auto;
+`
+
 function SelectableWork(p){
 
     const work = useWork();
@@ -74,39 +88,87 @@ function SelectableWork(p){
 function ZeroZeroByZero(props){
 
     const {account} = useWeb3React();
-    const {balance, fetchingBalance} = use77x7();
+    const {balance, fetchBalance, fetchingBalance} = use77x7();
     const _77x7 = use77x7();
     const _00x0 = use00x0();
+    const [comps, setComps] = useState();
     const [selectedWorks, setSelectedWorks] = useState([]);
     const {wantToConnect, setWantToConnect} = useWantToConnect();
+    const [migrating, setMigrating] = useState(false);
+    const err = useError();
 
-    function handleCreate(){
-        const works = selectedWorks.map(id => parseInt(id));
+    async function updateComps(){
+        _00x0.api('getComps', {limit_: 3, page_: 1}).then((data) => {
+            setComps(data.result);
+        })
+    }
+
+    async function updateState(){
+        updateComps();
+        fetchBalance()
+    }
+
+    async function handleMigrate(works){
+        
+        setMigrating(true);
+        works = works.map(id => parseInt(id));
         const values = Array(works.length).fill(1);
         const from = account;
         const to = _00x0.contract.address;
-        console.log(from, to, works, values);
-        _77x7.contract.safeBatchTransferFrom(from, to, works, values, []);
+        try {
+            const tx = await _77x7.contract.safeBatchTransferFrom(from, to, works, values, [])
+            const receipt = await tx.wait();
+            console.log(receipt)
+            setMigrating(false);
+            updateState();
+        }
+        catch(e){
+            err.setMessage(e.message)
+            setMigrating(false);
+        }
+        
     }
 
-    // useEffect(() => {
-    //     console.log(selectedWorks)
-    // }, [selectedWorks])
+
+    async function handleMint(comp){
+        _00x0.contract.mint(comp.id, {value: comp.price});
+    }
+
+    useEffect(() => {
+
+        updateComps()
+
+    }, [])
 
 
     return <Page bgColor="#000">
+        <Grid>
+            {comps && comps.filter(comp => comp.id).map(comp => <Grid.Unit key={comp.id}>
+
+            <CompImage>
+                <img src={comp.artwork}/>
+            </CompImage>
+            <Section>
+            <div>Created by {comp.creator}</div>
+            <div>{comp.available}/{comp.editions}</div>
+            <div>{ethers.utils.formatEther(comp.price)} ETH</div>
+
+            {account ? <button onClick={() => handleMint(comp)}>Mint</button> : <span>Connect to mint</span> }
+            </Section>
+            </Grid.Unit>)}
+        </Grid>
         <Grid>
             <Grid.Unit size={1/2}>
                 <Section dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
             </Grid.Unit>
             <Grid.Unit size={1/2}>
-                <Section>
+                <MintingSection disabled={migrating}>
                     {!account && <>
                             <a href="#" onClick={() => setWantToConnect(true)}>Connect your wallet</a> holding 77x7 works to view them here
                     </>}
                     {(fetchingBalance) && <>Looking for 77x7 works...</>}
 
-                        {(balance) && <><Works>
+                        {(balance && !fetchingBalance) && <><Works>
                             {map(balance, (_bal, _id) => {
                             
                             return <WorkProvider workID={_id}>
@@ -125,15 +187,12 @@ function ZeroZeroByZero(props){
                             </WorkProvider>
                             })}
                         </Works>
-                        <button disabled={selectedWorks.length < 2 || selectedWorks.length > 7} onClick={handleCreate}>
+                        <button disabled={selectedWorks.length < 2 || selectedWorks.length > 7} onClick={() => handleMigrate(selectedWorks)}>
                             {(selectedWorks.length < 2 || selectedWorks.length > 7) ? `Select 2-7 works to create 00x0` : `Create 00x0 from ${selectedWorks.length} works`}
                         </button>
                         </>
                         }
-                </Section>
-                <Section>
-                        
-                </Section>
+                </MintingSection>
             </Grid.Unit>
         </Grid>
     </Page>

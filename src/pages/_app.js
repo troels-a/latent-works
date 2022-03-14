@@ -21,7 +21,7 @@ const GlobalStyle = createGlobalStyle`
     font-family: ${theme.font};
     font-size: 4vw;
     letter-spacing: 0.06em;
-    background-color: ${p => p.theme.colors.emph3};
+    background-color: ${p => p.theme.colors.bg};
     color: ${theme.colors.text};
     margin: 0;
     padding: 0;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import abi from '@abi/00x0/LatentWorks_00x0.sol/LatentWorks_00x0.json';
 import { ethers } from 'ethers';
 import { useWeb3React } from '@web3-react/core';
+import { keys, mapKeys } from 'lodash';
 
 const _00x0Context = React.createContext(false);
 
@@ -9,6 +10,22 @@ const create00x0 = (p) => {
     
     const [contract, setContract] = useState();
     const {library, account} = useWeb3React();
+
+    function api(method, args){
+        let query = method;
+        if(args){
+
+            const keyValues = [];
+            for(const key in args){
+                if (Object.hasOwnProperty.call(args, key)) {
+                    keyValues.push(key+'='+args[key]);
+                }
+            }
+            query += '?'+keyValues.join('&');
+
+        }
+        return fetch(`/api/00x0/${query}`).then(data => data.json()).catch(e => console.log(e))
+    }
 
     useEffect(() => {
         if(account && library){
@@ -25,7 +42,7 @@ const create00x0 = (p) => {
     }, [])
         
     return {
-        contract
+        contract, api
     };
     
 }

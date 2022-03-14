@@ -6,6 +6,8 @@ import './IMeta_00x0.sol';
 
 interface ILW_00x0 is IERC1155 {
     
+    enum Orientation{LANDSCAPE, PORTRAIT}
+
     struct CompInfo {
         string id_string;
         bool mark;
@@ -32,9 +34,22 @@ interface ILW_00x0 is IERC1155 {
         bytes scale;
     }
 
+    struct Comp {
+        uint id;
+        address creator;
+        uint seed;
+        string artwork;
+        Orientation orientation;
+        uint price;
+        uint editions;
+        uint available;
+    }
+
     function get77x7() external view returns(ILW_77x7);
     function create(uint[] memory works_) external;
     function mint(uint comp_id_) external payable;
+    function getComp(uint comp_id_) external view returns(Comp memory);
+    function getComps(uint limit_, uint page_) external view returns(Comp[] memory);
     function getAvailable(uint comp_id_) external view returns(uint);
     function getSeed(uint comp_id_, string memory salt_) external view returns(string memory);
     function getArtwork(uint comp_id_, bool mark_, bool encode_) external view returns(string memory output_);
