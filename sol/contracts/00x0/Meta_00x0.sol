@@ -66,8 +66,8 @@ contract Meta_00x0 {
 
         }
 
-        comp_.pos[0] = Strings.toString(Rando.number(comp_.seed, 100, comp_.orientation < 50 ? 500 : 800));
-        comp_.pos[1] = Strings.toString(Rando.number(comp_.seed1, 100, comp_.orientation < 50 ? 800 : 500));
+        comp_.pos[0] = Strings.toString(Rando.number(comp_.seed, 100, comp_.orientation == ILW_00x0.Orientation.LANDSCAPE ? 500 : 800));
+        comp_.pos[1] = Strings.toString(Rando.number(comp_.seed1, 100, comp_.orientation == ILW_00x0.Orientation.LANDSCAPE ? 800 : 500));
         
         output_ = string(abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ',comp_.width_string, ' ', comp_.height_string, '" preserveAspectRatio="xMinYMin meet">',
@@ -89,6 +89,7 @@ contract Meta_00x0 {
             output_,
             '<g clip-path="#clip">',
             '<use href="#bg" fill="white"/>',
+            '<use href="#bg" fill="',_77x7.getColor(comp_.works[0], 1),'" opacity="0.25"/>',
             '<use href="#main" filter="url(#blur)" transform="rotate(90, 500, 500)"/>',
             '<use href="#main-ani" filter="url(#blur)" transform="scale(0.',Strings.toString(Rando.number(comp_.seed0, 5, 9)),') rotate(90, 500, 500)"/>',
             '<use href="#main-ani" filter="url(#blur)" transform="scale(0.',Strings.toString(Rando.number(comp_.seed0, 3, 6)),') translate(',comp_.pos[0],', ',comp_.pos[1],')"/>',
@@ -104,8 +105,8 @@ contract Meta_00x0 {
 
 
     function _getMark(uint comp_id_, ILW_00x0.CompInfo memory comp_) private pure returns(string memory){
-        string memory lift_text_ = Strings.toString((comp_.orientation < 50 ? 1000 : 700)-12);
-        return string(abi.encodePacked('<style>.txt{font: normal 12px monospace;fill: white;}</style><rect width="95" height="30" x="0" y="',Strings.toString((comp_.orientation < 50 ? 1000 : 700)-30),'" fill="#000" class="box"></rect><text x="12" y="',lift_text_,'" class="txt">#',(comp_id_ < 10 ? string(abi.encodePacked('0', Strings.toString(comp_id_))) : Strings.toString(comp_id_)),' \xc2\xb7 00x0</text><text x="103" y="',lift_text_,'" class="txt">',comp_.seed0,'</text>'));
+        string memory lift_text_ = Strings.toString((comp_.orientation == ILW_00x0.Orientation.LANDSCAPE ? 1000 : 700)-12);
+        return string(abi.encodePacked('<style>.txt{font: normal 12px monospace;fill: white;}</style><rect width="95" height="30" x="0" y="',Strings.toString((comp_.orientation == ILW_00x0.Orientation.LANDSCAPE ? 1000 : 700)-30),'" fill="#000" class="box"></rect><text x="12" y="',lift_text_,'" class="txt">#',(comp_id_ < 10 ? string(abi.encodePacked('0', Strings.toString(comp_id_))) : Strings.toString(comp_id_)),' \xc2\xb7 00x0</text><text x="103" y="',lift_text_,'" class="txt">',comp_.seed0,'</text>'));
     }
 
 }

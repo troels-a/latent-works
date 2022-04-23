@@ -2,8 +2,8 @@
 const theme = {
     font: "'Xanh Mono', monospace",
     colors: {
-      main: '#000',
-      main_dimmed: '#777',
+      main: 'rgba(255,255,255,1)',
+      main_dimmed: 'rgba(255,255,255,0.5)',
       white: '#fff',
       bg: '#111',
       altBg: '#222',
@@ -14,7 +14,7 @@ const theme = {
     },
     breakpoints: {
       sm: 1,
-      md: 768,
+      md: 666,
       lg: 992
     }
 }

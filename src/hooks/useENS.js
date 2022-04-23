@@ -15,16 +15,16 @@ export default function useENS(init = false){
     
         try {
             if(reverse){
+                setAddress(input)
                 const name = provider ? await provider.lookupAddress(input) : await ethers.getDefaultProvider().lookupAddress(input)
                 setResolving(false);
                 setENS(name)
-                setAddress(input)
             }
             else {
+                setENS(input)
                 const address = provider ? await provider.resolveName(input) : await ethers.getDefaultProvider().resolveName(input)
                 setResolving(false);
                 setAddress(address);
-                setENS(input)
             }
         } catch(e) {
           console.log(e)

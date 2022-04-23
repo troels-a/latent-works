@@ -28,7 +28,7 @@ const create77x7 = (p) => {
             const response = await fetch(`/api/77x7/balance?address=${address}`);
             const json = await response.json();
             setFetchingBalance(false);
-            setBalance(json);
+            setBalance(Object.entries(json).length > 0 ? json : false);
         }
 
         catch(e){

@@ -22,7 +22,7 @@ import './ILW_00x0.sol';
 |     /\   |  |__  |\ |  |   |  | /  \ |__) |__/ /__` 
 |___ /~~\  |  |___ | \|  |  .|/\| \__/ |  \ |  \ .__/ 
                                                       
-"00x0", troels_a, 2021
+"00x0", troels_a, 2022
 
 
 */
@@ -45,7 +45,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
     mapping(uint => address) private _comp_creators;
     mapping(uint => uint) private _comp_seeds;
 
-    uint private _price = 0.015 ether;
+    uint private _price = 0.07 ether;
 
     modifier onlyInternal(){
         require((msg.sender == address(_Meta00X0) || msg.sender == address(this)), 'ONLY_INTERNAL');
@@ -84,7 +84,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
     
     function _create(address for_, uint[] memory works_) private {
 
-        require((works_.length >= 2 && works_.length <= 7), "MIN_2_MAX_7_WORKS");
+        require((works_.length >= 1 && works_.length <= 7), "MIN_2_MAX_7_WORKS");
 
         _comp_ids.increment();
         uint comp_id_ = _comp_ids.current();
@@ -121,12 +121,15 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
 
     function getPrice(uint comp_id_) public view returns(uint){
         uint editions_ = getEditions(comp_id_);
-
-        return (7-editions_)*_price;
+        return _price/editions_;
     }
 
     function getEditions(uint comp_id_) public view returns(uint) {
         return _comp_works[comp_id_].length;
+    }
+
+    function getOrientation(uint comp_id_) public view returns(ILW_00x0.Orientation){
+        return Rando.number(getSeed(comp_id_, ''), 0, 99) > 50 ? ILW_00x0.Orientation.LANDSCAPE : ILW_00x0.Orientation.PORTRAIT;
     }
 
 
@@ -157,7 +160,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
 
     function getArtwork(uint comp_id_, bool mark_, bool encode_) public view returns(string memory output_){
 
-        // TODO: Do not reveal before mint!
+        require(totalSupply(comp_id_) > 0, 'DOES_NOT_EXIST');
 
         ILW_00x0.CompInfo memory comp_ = ILW_00x0.CompInfo(
             Strings.toString(comp_id_),
@@ -173,7 +176,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
             '',
             0,
             0,
-            0,
+            getOrientation(comp_id_),
             '',
             '',
             ['', ''],
@@ -185,16 +188,15 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
             ''
         );
 
-        comp_.orientation = Rando.number(comp_.seed, 0, 100);
         comp_.start = (700/comp_.works.length);
         comp_.last_left = Rando.number(comp_.seed1, comp_.start-100, comp_.start);
         comp_.last_right = Rando.number(comp_.seed2, comp_.start-100, comp_.start);
         
-        comp_.pos[0] = Strings.toString(Rando.number(comp_.seed, 100, comp_.orientation < 50 ? 500 : 800));
-        comp_.pos[1] = Strings.toString(Rando.number(comp_.seed1, 100, comp_.orientation < 50 ? 800 : 500));
+        comp_.pos[0] = Strings.toString(Rando.number(comp_.seed, 100, comp_.orientation == ILW_00x0.Orientation.LANDSCAPE ? 500 : 800));
+        comp_.pos[1] = Strings.toString(Rando.number(comp_.seed1, 100, comp_.orientation == ILW_00x0.Orientation.LANDSCAPE ? 800 : 500));
 
-        comp_.width_string = comp_.orientation < 50 ? '700' : '1000';
-        comp_.height_string = comp_.orientation < 50 ? '1000' : '700';
+        comp_.width_string = comp_.orientation == ILW_00x0.Orientation.LANDSCAPE ? '700' : '1000';
+        comp_.height_string = comp_.orientation == ILW_00x0.Orientation.LANDSCAPE ? '1000' : '700';
 
         output_ = _Meta00X0.getArtwork(comp_id_, comp_);
 
@@ -240,6 +242,7 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
             _comp_creators[comp_id_],
             _comp_seeds[comp_id_],
             string(abi.encodePacked('data:image/svg+xml;base64,', getArtwork(comp_id_, true, true))),
+            getOrientation(comp_id_),
             getPrice(comp_id_),
             getEditions(comp_id_),
             getAvailable(comp_id_)

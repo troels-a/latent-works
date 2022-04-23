@@ -8,6 +8,8 @@ import { ErrorProvider } from 'hooks/useError';
 import ErrorMessage from 'components/ErrorMessage/ErrorMessage';
 import {ethers} from 'ethers';
 import { EthNetProvider } from 'hooks/useEthNet';
+import { IconContext } from "react-icons";
+import { ConnectIntent } from 'components/ConnectButton';
 
 function getLibrary(provider){
   return new ethers.providers.Web3Provider(provider);
@@ -101,6 +103,17 @@ const GlobalStyle = createGlobalStyle`
     }
   }
 
+  hr {
+    width: 100%;
+    border-color: ${theme.colors.emph3};
+  }
+
+  .icon {
+    > * {
+      stroke: ${theme.colors.main}!important;
+    }
+  }
+
 `
 
 
@@ -111,9 +124,13 @@ export default function App({ Component, pageProps }) {
           <Web3ReactProvider getLibrary={getLibrary}>
             <EthNetProvider chainID={process.env.NEXT_PUBLIC_NETWORK}>
               <ThemeProvider theme={theme}>
-                <ErrorMessage/>
-                <GlobalStyle />
-                <Component {...pageProps} />
+                <IconContext.Provider value={{color: theme.colors.main, className: 'icon'}}>
+                  <ConnectIntent>
+                  <ErrorMessage/>
+                  <GlobalStyle />
+                  <Component {...pageProps} />
+                  </ConnectIntent>
+                </IconContext.Provider>
               </ThemeProvider>
             </EthNetProvider>
         </Web3ReactProvider>

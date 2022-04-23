@@ -17,8 +17,9 @@ describe("00x0", async function(){
     let minter3;
 
     const seeds = [
-        [54, 5, 1, 3],
-        [6, 63]
+        [3, 5],
+        [54, 1],
+        [63, 6]
     ];
 
     const values = [];

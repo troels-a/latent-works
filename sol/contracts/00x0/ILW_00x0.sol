@@ -22,7 +22,7 @@ interface ILW_00x0 is IERC1155 {
         bytes elements;
         uint left;
         uint right;
-        uint orientation; /// @dev 0 = landscape, 1 = portrait
+        Orientation orientation;
         string width_string;
         string height_string;
         string[2] pos;

@@ -1,0 +1,255 @@
+import Page from "templates/Page"
+import Grid from "styled-components-grid"
+import Section from "components/Section/Section";
+import use77x7, {_77x7Provider} from "hooks/use77x7";
+import { useWeb3React } from "@web3-react/core";
+import { useEffect, useState } from "react";
+import { map } from "lodash";
+import useWork, { WorkProvider } from "hooks/useWork";
+import styled, { keyframes } from "styled-components";
+import use00x0, { _00x0Provider } from "hooks/use00x0";
+import { AspectRatio } from "react-aspect-ratio";
+import 'react-aspect-ratio/aspect-ratio.css'
+import { getEntryBySlug } from "base/contentAPI";
+import {useConnectIntent} from "components/ConnectButton";
+import { ethers } from "ethers";
+import useError from "hooks/useError";
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+// Import Swiper styles
+import 'swiper/css';
+import Link from "next/link";
+import useENS from "hooks/useENS";
+import {breakpoint} from "styled-components-breakpoint";
+
+const Works = styled(p => <Grid container {...p}/>)`
+    width: calc(100%+1vw);
+    margin-left: -0.5vw;
+`;
+
+const colorPulse = keyframes`
+    0% {
+        background-color: rgba(0,0,0,0.05);
+    }
+    50% {
+        background-color: rgba(0,0,0,0.1);
+    }
+    100% {
+        background-color: rgba(0,0,0,0.05);
+    }
+`
+
+
+const Comps = styled.div`
+    min-height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
+    place-items: center;
+    justify-content: center;
+    > div {
+        width: 100%;
+    }
+`
+
+
+const CompImage = styled(({artwork, ...p}) => <div {...p}><img src={artwork}/></div>)`
+    width: 100%;
+    display: flex;
+    place-items: center;
+    justify-items: center;
+    height: 100%;
+    > img {
+        margin: 0 auto;
+        max-height: 73vh;
+        width: auto;
+        max-width: 100%;
+    }
+`
+
+
+const CompInfo = styled(Section)`
+    display: flex;
+    ${breakpoint('sm', 'md')`
+        flex-direction: column;
+    `}
+    justify-content: space-between;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    padding-bottom: 3vw;
+    box-sizing: border-box;
+    > div {
+
+        ${breakpoint('sm', 'md')`
+            margin-top: 5vw;
+            max-width: 100%;
+        `}
+
+        max-width: 40%;
+        &:last-child {
+            text-align: right;
+        }
+    }
+
+    button {
+        width: 100%;
+    }
+`
+
+const CompSwiper = styled(Swiper)`
+    ${breakpoint('sm', 'md')`
+        top: -12vw;
+    `}
+    > div {
+        height: 100%;
+        place-items: center;
+    }
+`
+
+
+function EnsAddress({input, ...p}){
+    const {ENS, address} = useENS(input);
+    return <>{ENS ? ENS : address && `${address.slice(0,6)}...${address.slice(38,42)}` }</>
+}
+
+
+function ZeroZeroByZero(props){
+
+    const {account} = useWeb3React();
+    const {balance, fetchBalance, fetchingBalance} = use77x7();
+    const _77x7 = use77x7();
+    const _00x0 = use00x0();
+    const [comps, setComps] = useState(-1);
+    const [loadingComps, setLoadingComps] = useState(false);
+    const [selectedWorks, setSelectedWorks] = useState([]);
+    const {connectIntent, setConnectIntent} = useConnectIntent();
+    const [migrating, setMigrating] = useState(false);
+    const err = useError();
+
+    async function updateComps(){
+        setLoadingComps(true);
+        _00x0.api('getComps', {limit_: 3, page_: 1}).then((data) => {
+            const _comps = data.result.filter(comp => comp.id);
+            setComps(_comps.length > 0 ? _comps : false);
+            setLoadingComps(false);
+        })
+    }
+
+    async function updateState(){
+        updateComps();
+        fetchBalance()
+    }
+
+    async function handleMigrate(works){
+        
+        setMigrating(true);
+        works = works.map(id => parseInt(id));
+        const values = Array(works.length).fill(1);
+        const from = account;
+        const to = _00x0.contract.address;
+        try {
+            const tx = await _77x7.contract.safeBatchTransferFrom(from, to, works, values, [])
+            const receipt = await tx.wait(5);
+            setMigrating(false);
+            updateState();
+        }
+        catch(e){
+            err.setMessage(e.message)
+            setMigrating(false);
+        }
+        
+    }
+
+
+    async function handleMint(comp){
+        _00x0.contract.mint(comp.id, {value: comp.price});
+    }
+
+    useEffect(() => {
+
+        updateComps()
+
+    }, [])
+
+    useEffect(() => {
+        if(comps)
+            setCurrentComp(comps[0]);
+        return () => {
+            setCurrentComp(false);
+        }
+    }, [comps])
+
+    const [currentComp, setCurrentComp] = useState(false);
+
+
+    return <Page fixHeader bgColor="#000">
+        <Comps>
+        {(comps && comps != -1) &&
+        <>
+            <CompSwiper onSlideChange={(swiper) => {
+                setCurrentComp(comps[swiper.activeIndex])
+            }}>
+                {comps.map(comp => <SwiperSlide style={{height: '100%'}} key={comp.id}>
+                <CompImage {...comp}/>
+                </SwiperSlide>)}
+            </CompSwiper>
+            {currentComp && 
+            <CompInfo>
+            <div>
+                <div><small>Created by <EnsAddress input={currentComp.creator}/></small></div>
+                <div><small>{currentComp.available > 0 ? `${currentComp.available} of ${currentComp.editions} left`: `Edition of ${currentComp.editions}`}</small></div>
+            </div>
+            <div>
+                <div>
+                    {account && currentComp.available > 0 
+                    ? 
+                    <button onClick={() => handleMint(currentComp)}>
+                        Mint <small>({ethers.utils.formatEther(currentComp.price)} ETH)</small>
+                    </button>
+                    :
+                    <button disabled={false} onClick={() => setConnectIntent(!connectIntent)}>{currentComp.available > 0 ? 'Connect to mint' : 'Sold out'}</button>
+                    }
+                </div>
+            </div>
+            </CompInfo>
+            }
+        </>
+        }
+
+        {(!comps && !loadingComps) && 
+        <div style={{textAlign: 'center'}}>
+            <h2>No 00x0 comps have been created yet.</h2>
+            <p>77x7 holders can create comps <Link href="/00x0/seed"><a>here</a></Link></p>
+        </div>
+        }
+
+        {loadingComps && <div>
+            <div style={{textAlign: 'center'}}>
+                <h2>Loading...</h2>
+            </div>
+        </div>}
+        
+        </Comps>
+
+    </Page>
+
+}
+
+function _00x0(p){
+    return <_77x7Provider><_00x0Provider><ZeroZeroByZero {...p}/></_00x0Provider></_77x7Provider>;
+}
+
+
+export async function getStaticProps(){
+    
+    const page00x0 = await getEntryBySlug('pages', '00x0');
+
+    return {
+        props: {
+            page00x0: page00x0,
+        }
+    }
+}
+
+export default _00x0;

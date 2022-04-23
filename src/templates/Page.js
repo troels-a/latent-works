@@ -18,7 +18,6 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  // background-color: rgba(255,255,255,0.95);
   position: relative;
 
   &:before {
@@ -33,10 +32,6 @@ const Wrapper = styled.div`
     opacity: 0;
     transition: all 2500ms;
 
-    // ${p => p.bgColor && `
-    //   opacity: 1;
-    //   background-color: ${p.bgColor};
-    // `}
   }
 
   ${breakpoint('lg')`
@@ -48,12 +43,23 @@ const Wrapper = styled.div`
 
 const Header = styled(Grid)`
   padding: 0;
-  padding: 2vw 4vw;
+  padding: 2vw 2vw;
+  ${breakpoint('sm', 'md')`
+    padding: 2vw 4vw;
+  `}
   height: auto;
   place-items: center;
+  ${p => p.fixHeader && 'position: fixed; z-index: 100; top: 0; left: 0; right: 0;'}
 `
 
 const Content = styled.main`
+${p => p.$centerContent && `
+  display: flex;
+  flex-direction: column;
+  place-content: center;
+  place-items: center;
+  min-height: 70vh;
+`}
 ${breakpoint('sm', 'md')`
   font-size: 1.5rem;
 `}
@@ -81,7 +87,7 @@ const Footer = styled.footer`
 
 
 
-export default function Page({children, ...props}){
+export default function Page({children, $centerContent, ...props}){
     
   const {isChainID, switchNet} = useEthNet();
   const {active, chainId, deactivate} = useWeb3React();
@@ -106,7 +112,7 @@ export default function Page({children, ...props}){
       </Head>
         <Wrapper bgColor={props.bgColor}>
 
-          <Header>
+          <Header fixHeader={props.fixHeader}>
             
             <Grid.Unit component={Title} size={{sm: 1/2}}>
               <Link href="/">
@@ -122,7 +128,7 @@ export default function Page({children, ...props}){
 
           </Header>
           
-          <Content>
+          <Content $centerContent={$centerContent}>
           {children}
           </Content>
 

@@ -28,7 +28,7 @@ export default async (req, res) => {
     }
 
     
-    res.setHeader("Cache-Control", "s-maxage=120, stale-while-revalidate")
+    res.setHeader("Cache-Control", "s-maxage=1, stale-while-revalidate")
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(balance, null, 2));
 
