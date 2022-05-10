@@ -15,6 +15,7 @@ import './IMeta_00x0.sol';
 import './Meta_00x0.sol';
 import 'hardhat/console.sol';
 import './ILW_00x0.sol';
+import './../LTNT.sol';
 
 /**
 
@@ -28,7 +29,7 @@ import './ILW_00x0.sol';
 */
 
 
-contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGuard {
+contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGuard, LTNTProject {
 
     using Counters for Counters.Counter;
 
@@ -61,6 +62,9 @@ contract LatentWorks_00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, Ree
 
     }
 
+    function info() public pure override returns(string memory){
+        return '00x0';
+    }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, ERC1155Receiver) returns (bool) {
         return super.supportsInterface(interfaceId);
