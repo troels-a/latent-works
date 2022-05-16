@@ -6,7 +6,8 @@
 /sol/preview
 
 # project
-/preview 
+/preview
+/temp
 
 # dependencies
 /node_modules

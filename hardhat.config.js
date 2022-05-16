@@ -8,6 +8,7 @@ require('hardhat-abi-exporter');
 
 const accounts = require('./hhaccounts.js');
 accounts[0] = {privateKey: process.env.PRIVATE_KEY, balance: '10000000000000000000000'};
+accounts[01] = {privateKey: process.env.PRIVATE_KEY2, balance: '10000000000000000000000'};
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html

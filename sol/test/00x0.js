@@ -6,7 +6,7 @@ const Preview = require('../preview.js');
 describe("00x0", async function(){
 
     let preview;
-    let contract;
+    let _00x0;
     let _77x7;
     let owner;
     let wallet1;
@@ -36,17 +36,26 @@ describe("00x0", async function(){
   
     it('should deploy', async function () {
 
-        const LatentWorks_77x7 = await hre.ethers.getContractFactory("LatentWorks_77x7");
-        _77x7 = LatentWorks_77x7.attach('0xEF7c89F051ac48885b240eb53934B04fcF3339ab');
+        const LW77x7 = await hre.ethers.getContractFactory("LW77x7");
+        _77x7 = LW77x7.attach('0xEF7c89F051ac48885b240eb53934B04fcF3339ab');
+        await _77x7.deployed();
 
-        const LatentWorks_00x0 = await hre.ethers.getContractFactory("LatentWorks_00x0");
-        contract = await LatentWorks_00x0.deploy();
+        const LTNT = await hre.ethers.getContractFactory("LTNT");
+        _ltnt = await LTNT.deploy();
+        await _ltnt.deployed();
+
+        const LW00x0 = await hre.ethers.getContractFactory("LW00x0");
+        _00x0 = await LW00x0.deploy(_ltnt.address);
+        await _00x0.deployed();
+
+        _ltnt.addIssuer(_00x0.address);
+
         [owner, wallet1, wallet2, wallet3] = await hre.ethers.getSigners();
 
-        minter1 = await contract.connect(wallet1);
-        minter2 = await contract.connect(wallet2);
-        minter3 = await contract.connect(wallet3);
-        preview = new Preview(contract);
+        minter1 = await _00x0.connect(wallet1);
+        minter2 = await _00x0.connect(wallet2);
+        minter3 = await _00x0.connect(wallet3);
+        preview = new Preview(_00x0);
         
     });
 
@@ -55,17 +64,25 @@ describe("00x0", async function(){
         it('can transfer works', async function(){
 
             for (let i = 0; i < seeds.length; i++) {
-                await _77x7.safeBatchTransferFrom(owner.address, contract.address, seeds[i], values[i], []);
-                expect(await contract.getAvailable(i+1) == seeds[i].length -1);
+                await _77x7.safeBatchTransferFrom(owner.address, _00x0.address, seeds[i], values[i], []);
+                expect(await _00x0.getAvailable(i+1) == seeds[i].length -1);
             }
-            
 
         })
 
         it('receives 00x0 after transfer', async function(){
             for (let i = 0; i < seeds.length; i++) {
-                expect(await contract.balanceOf(owner.address, i+1)).to.equal(1);
+                expect(await _00x0.balanceOf(owner.address, i+1)).to.equal(1);
             }
+        });
+
+        it('receives LTNTs after transfer', async function(){
+            let total  = 0;
+            for (let i = 0; i < seeds.length; i++) {
+                total += seeds[i].length;
+            }
+            expect(await _ltnt.balanceOf(owner.address)).to.equal(total);
+
         });
 
     })
@@ -81,9 +98,9 @@ describe("00x0", async function(){
                 const avail = await minter1.getAvailable(id);
                 const price = await minter1.getPrice(id);
 
-                console.log(`       ID: ${id}`);
-                console.log(`       Available: ${avail.toString()}`);
-                console.log(`       Price: ${hre.ethers.utils.formatUnits(price.toString())}`);
+                // console.log(`       ID: ${id}`);
+                // console.log(`       Available: ${avail.toString()}`);
+                // console.log(`       Price: ${hre.ethers.utils.formatUnits(price.toString())}`);
 
                 let ii = 0; 
                 while(ii < avail){
@@ -114,6 +131,7 @@ describe("00x0", async function(){
                 await preview.writeJSON(i+1);
             }
         });
+
     })
 
 });

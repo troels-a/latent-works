@@ -9,8 +9,8 @@ class Preview {
     }
 
     async writeArtwork(tokenId){
-        let svg = await this.contract.getArtwork(tokenId, true, true);
-        const svgDir = `./preview`;
+        let svg = await this.contract.getImage(tokenId, true, true);
+        const svgDir = `./temp/preview`;
         svg = Buffer.from(svg.replace(/^data\:image\/svg\+xml\;base64\,/, ''), 'base64').toString('utf-8');
         await fs.promises.mkdir(svgDir, { recursive: true }).catch(console.error);
         await fs.writeFileSync(`${svgDir}/${tokenId}.svg`, svg, {flag: 'w'});
@@ -19,7 +19,7 @@ class Preview {
 
     async writeJSON(tokenId){
         let json = await this.contract.uri(tokenId);
-        const jsonDir = `./preview`;
+        const jsonDir = `./temp/preview`;
         json = JSON.stringify(JSON.parse(Buffer.from(json.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8')), null, 2)
         await fs.promises.mkdir(jsonDir, { recursive: true }).catch(console.error);
         await fs.writeFileSync(`${jsonDir}/${tokenId}.json`, json, {flag: 'w'});

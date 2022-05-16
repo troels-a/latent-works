@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import './base64.sol';
-import './Rando.sol';
+import './lib/base64.sol';
+import './lib/Rando.sol';
 
 /**
 
@@ -22,7 +22,7 @@ import './Rando.sol';
 
 */
 
-contract LatentWorks_77x7 is ERC1155, ERC1155Supply, Ownable {
+contract LW77x7 is ERC1155, ERC1155Supply, Ownable {
 
     using Counters for Counters.Counter;
 
