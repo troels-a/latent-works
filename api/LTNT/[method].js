@@ -1,27 +1,15 @@
-import _00x0ABI from '../../sol/abi/sol/contracts/LW00x0.sol/LW00x0.json';
+import _LTNTABI from '../../sol/abi/sol/contracts/LTNT.sol/LTNT.json';
 import { ethers } from "ethers";
 import ABIAPI from 'abiapi';
 import { getProvider } from '../../shared/provider';
+import {bigNumbersToNumber} from 'abiapi/parsers';
 
-const abi = new ABIAPI(_00x0ABI);
+
+const abi = new ABIAPI(_LTNTABI);
 abi.supportedMethods = abi.getReadMethods();
 abi.cacheTTL = 60*60;
 
-function compToCompObject(comp){
-    console.log(comp)
-    return {
-        id: comp.id.toNumber(),
-        creator: comp.creator,
-        seed: comp.seed.toNumber(),
-        artwork: comp.artwork,
-        price: comp.price.toString(),
-        editions: comp.editions.toNumber(),
-        available: comp.available.toNumber()
-    }
-
-}
-
-abi.addParser('getComps', (result) => result.map(comp => (compToCompObject(comp))))
+abi.addGlobalParser(bigNumbersToNumber)
 
 export default async (req, res) => {
 
@@ -31,7 +19,7 @@ export default async (req, res) => {
     if(abi.supportsMethod(method)){
 
         const provider = getProvider();
-        const contract = new ethers.Contract(process.env.NEXT_PUBLIC_ADDRESS_00X0, _00x0ABI, provider);
+        const contract = new ethers.Contract(process.env.NEXT_PUBLIC_ADDRESS_LTNT, _LTNTABI, provider);
         
         try {
             data.result = await contract[method](...abi.methodParamsFromQuery(method, query));

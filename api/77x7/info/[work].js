@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { getProvider } from '../../../shared/provider';
-import abi from '../../../sol/abi/sol/contracts/LatentWorks.sol/LatentWorks_77x7.json';
+import abi from '../../../sol/abi/sol/contracts/LW77x7.sol/LW77x7.json';
 export default async (req, res) => {
     
     const {work} = Object.assign({}, req.query);

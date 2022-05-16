@@ -41,7 +41,7 @@
     "web3": "^1.5.3"
   },
   "dependencies": {
-    "abiapi": "^0.2.0",
+    "abiapi": "^0.2.3",
     "babel-plugin-inline-react-svg": "^2.0.1",
     "babel-plugin-styled-components": "^1.8.0",
     "colors": "^1.4.0",

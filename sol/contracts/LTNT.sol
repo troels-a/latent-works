@@ -70,7 +70,7 @@ contract LTNT is ERC721, Ownable {
 
     function _stamp(uint id_, address project_, Param memory param_) private {
         _stamps[id_][project_] = true;
-        _params[_ids] = param_;
+        _params[id_] = param_;
     }
 
     /// @notice make address an LW project

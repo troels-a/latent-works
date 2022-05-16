@@ -163,8 +163,9 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
     }
 
     function getPrice(uint comp_id_) public view returns(uint){
-        uint editions_ = getEditions(comp_id_);
-        return _price/editions_;
+        return _price;
+        // uint editions_ = getEditions(comp_id_);
+        // return _price/editions_;
     }
 
     function getEditions(uint comp_id_) public view returns(uint) {
@@ -245,7 +246,7 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
             comp_id_,
             _comp_creators[comp_id_],
             _comp_seeds[comp_id_],
-            string(abi.encodePacked('data:image/svg+xml;base64,', getImage(comp_id_, true, true))),
+            getImage(comp_id_, true, true),
             getOrientation(comp_id_),
             getPrice(comp_id_),
             getEditions(comp_id_),
@@ -407,7 +408,7 @@ contract LW00x0_Meta {
             comp_.ani_elements,
             '</g>',
             '<filter id="blur" x="0" y="0"><feGaussianBlur in="SourceGraphic" stdDeviation="100"/></filter>',
-            '<rect id="bg" height="',comp_.height_string,'" width="',comp_.width_string,'" x="0" y="0"/><clipPath id="clip"><use href="url(#bg)"/></clipPath>',
+            '<rect id="bg" height="',comp_.height_string,'" width="',comp_.width_string,'" x="0" y="0"/><clipPath id="clip"><use href="#bg"/></clipPath>',
             comp_.defs,
             '</defs>'
         );

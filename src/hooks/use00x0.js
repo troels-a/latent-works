@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import abi from '@abi/00x0/LatentWorks_00x0.sol/LatentWorks_00x0.json';
+import abi from '@abi/LW00x0.sol/LW00x0.json';
 import { ethers } from 'ethers';
 import { useWeb3React } from '@web3-react/core';
 import { keys, mapKeys } from 'lodash';

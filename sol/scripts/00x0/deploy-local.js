@@ -11,14 +11,22 @@ async function main() {
 
   console.log('DEPLOYING TO LOCALHOST'.bgGreen);
 
-  const OOxO = await hre.ethers.getContractFactory("LatentWorks_00x0");
-  const ooxo = await OOxO.deploy();
-  await ooxo.deployed();
+  const LW77x7 = await hre.ethers.getContractFactory("LW77x7");
+  _77x7 = LW77x7.attach('0xEF7c89F051ac48885b240eb53934B04fcF3339ab');
+  await _77x7.deployed();
 
-  const LatentWorks_77x7 = await hre.ethers.getContractFactory("LatentWorks_77x7");
-  _77x7 = LatentWorks_77x7.attach(process.env.ADDRESS_77X7);
+  const LTNT = await hre.ethers.getContractFactory("LTNT");
+  _ltnt = await LTNT.deploy();
+  await _ltnt.deployed();
 
-  console.log("00x0 deployed to:", ooxo.address.green.bold);
+  const LW00x0 = await hre.ethers.getContractFactory("LW00x0");
+  _00x0 = await LW00x0.deploy(_ltnt.address);
+  await _00x0.deployed();
+
+  _ltnt.addIssuer(_00x0.address);
+
+  console.log("00x0 deployed to:", _00x0.address.green.bold);
+  console.log("LTNT deployed to:", _ltnt.address.green.bold);
   
   [owner, user1, user2, user3] = await hre.ethers.getSigners();
 

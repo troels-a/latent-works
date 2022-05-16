@@ -1,7 +1,7 @@
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
 import React, { useState, useEffect } from 'react';
-import abi from '@abi/77x7/LatentWorks_77x7.sol/LatentWorks_77x7.json';
+import abi from '@abi/LW77x7.sol/LW77x7.json';
 
 const _77x7Context = React.createContext(false);
 

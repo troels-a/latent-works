@@ -1,7 +1,7 @@
 import chromium from 'chrome-aws-lambda';
 import core from 'puppeteer-core';
 import { ethers } from 'ethers';
-import abi from '@abi/LatentWorks.sol/LatentWorks_77x7.json';
+import abi from '../../../sol/abi/sol/contracts/LW77x7.sol/LW77x7.json';
 import { getProvider } from '../../../shared/provider';
 
 const exePath = process.platform === 'win32'

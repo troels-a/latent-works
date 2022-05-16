@@ -1,10 +1,10 @@
 require("dotenv").config({path: '.env'});
+require('hardhat-abi-exporter');
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ganache");
-require('hardhat-abi-exporter');
 
 const accounts = require('./hhaccounts.js');
 accounts[0] = {privateKey: process.env.PRIVATE_KEY, balance: '10000000000000000000000'};
