@@ -3,6 +3,11 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "seven7x7_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "ltnt_",
         "type": "address"
       }
@@ -238,38 +243,25 @@
   },
   {
     "inputs": [],
-    "name": "LW77X7",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_WORK_USE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "NAME",
     "outputs": [
       {
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PRICE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -352,7 +344,7 @@
         "type": "address"
       }
     ],
-    "stateMutability": "pure",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -410,11 +402,6 @@
             "internalType": "enum LW00x0.Orientation",
             "name": "orientation",
             "type": "uint8"
-          },
-          {
-            "internalType": "uint256",
-            "name": "price",
-            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -476,11 +463,6 @@
             "internalType": "enum LW00x0.Orientation",
             "name": "orientation",
             "type": "uint8"
-          },
-          {
-            "internalType": "uint256",
-            "name": "price",
-            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -563,25 +545,6 @@
         "internalType": "enum LW00x0.Orientation",
         "name": "",
         "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "comp_id_",
-        "type": "uint256"
-      }
-    ],
-    "name": "getPrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",

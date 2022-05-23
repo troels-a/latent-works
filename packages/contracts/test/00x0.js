@@ -17,9 +17,7 @@ describe("00x0", async function(){
     let minter3;
 
     const seeds = [
-        [3, 5],
-        [54, 1],
-        [63, 6]
+        [6, 54, 5, 63, 1, 3]
     ];
 
     const values = [];
@@ -45,7 +43,7 @@ describe("00x0", async function(){
         await _ltnt.deployed();
 
         const LW00x0 = await hre.ethers.getContractFactory("LW00x0");
-        _00x0 = await LW00x0.deploy(_ltnt.address);
+        _00x0 = await LW00x0.deploy(_77x7.address, _ltnt.address);
         await _00x0.deployed();
         await _ltnt.addIssuer(_00x0.address);
 
@@ -105,7 +103,7 @@ describe("00x0", async function(){
                 const seed = seeds[i];
                 const id = i+1;
                 const avail = await minter1.getAvailable(id);
-                const price = await minter1.getPrice(id);
+                const price = await minter1.PRICE();
 
                 // console.log(`       ID: ${id}`);
                 // console.log(`       Available: ${avail.toString()}`);

@@ -6,6 +6,7 @@
     "lerna": "^4.0.0"
   },
   "scripts": {
+    "setup": "ln .env packages/contracts/.env; ln .env packages/website/.env; ",
     "node": "cd packages/contracts; hardhat node",
     "dev": "lerna run develop --stream --no-prefix",
     "contracts:watch": "cd packages/contracts; npm run watch",

@@ -20,7 +20,7 @@ async function main() {
   await _ltnt.deployed();
 
   const LW00x0 = await hre.ethers.getContractFactory("LW00x0");
-  _00x0 = await LW00x0.deploy(_ltnt.address);
+  _00x0 = await LW00x0.deploy(_77x7.address, _ltnt.address);
   await _00x0.deployed();
 
   _ltnt.addIssuer(_00x0.address);

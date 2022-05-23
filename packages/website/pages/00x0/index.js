@@ -114,7 +114,7 @@ function EnsAddress({input, ...p}){
 }
 
 
-function ZeroZeroByZero(props){
+function _00x0_index(props){
 
     const {account} = useWeb3React();
     const {balance, fetchBalance, fetchingBalance} = use77x7();

@@ -75,6 +75,17 @@ const MintingSection = styled(Section)`
     `}
 `
 
+const Center = styled.div`
+    text-align: center;
+`
+
+const Button = styled.button`
+    
+    ${breakpoint('sm', 'md')`
+        width: 100%;
+    `}
+`
+
 function SelectableWork(p){
 
     const work = useWork();
@@ -87,7 +98,7 @@ function SelectableWork(p){
 }
 
 
-function ZeroZeroByZero(props){
+function _00x0_transfer(props){
 
     const {account} = useWeb3React();
     const {balance, fetchBalance, fetchingBalance} = use77x7();
@@ -130,9 +141,9 @@ function ZeroZeroByZero(props){
             <Grid.Unit size={{sm: 1/1, md: 7/12}}>
                 <MintingSection disabled={migrating}>
                     
-                    {!account && <div><a href="#" onClick={(e) => {
+                    {!account && <Center><a href="#" onClick={(e) => {
                         e.preventDefault(); setConnectIntent(true)
-                    }}>Connect</a> to read 77x7 works from your wallet</div>}
+                    }}>Connect</a></Center>}
                     {(fetchingBalance) && <div>Looking for 77x7 works...</div>}
                     {(account && !fetchingBalance && !balance) && <div>No 77x7 works found</div>}
                     {(balance && !fetchingBalance) && <Works>
@@ -157,15 +168,22 @@ function ZeroZeroByZero(props){
                     </Works>
                     }
                 {(account && !fetchingBalance && balance && Object.entries(balance).length > 0) && 
-                    <Section>
-                    <button disabled={!(selectedWorks.length > 1 && selectedWorks.length < 8)} onClick={() => handleMigrate(selectedWorks)}>
-                        {(selectedWorks.length > 1 && selectedWorks.length < 8) ? `Create 00x0 from ${selectedWorks.length} works` : `Select 2-7 works to create 00x0`}
-                    </button>
+                    <Section style={{paddingLeft: 0, paddingRight: 0}}>
+                        <Button disabled={!(selectedWorks.length > 1 && selectedWorks.length < 8)} onClick={() => handleMigrate(selectedWorks)}>
+                            {selectedWorks.length == 0 && `Select works to migrate`}
+                            {selectedWorks.length == 1 && `Migrate`}
+                            {(selectedWorks.length > 1 && selectedWorks.length < 8) && 'Migrate and create 00x0'}
+                        </Button>
                     </Section>}
                 </MintingSection>
             </Grid.Unit>
             <Grid.Unit size={{sm: 1/1, md: 5/12}}>
                 <Section dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
+                <Section padTop={false}>
+                <a href={`https://etherscan.io/address/${process.env.NEXT_PUBLIC_ADDRESS_00X0}`}>
+                    Contract
+                </a>
+                </Section>
             </Grid.Unit>
         </Grid>
     </Page>
@@ -173,7 +191,7 @@ function ZeroZeroByZero(props){
 }
 
 function _00x0(p){
-    return <_77x7Provider><_00x0Provider><ZeroZeroByZero {...p}/></_00x0Provider></_77x7Provider>;
+    return <_77x7Provider><_00x0Provider><_00x0_transfer {...p}/></_00x0Provider></_77x7Provider>;
 }
 
 

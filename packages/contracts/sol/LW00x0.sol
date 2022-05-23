@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
@@ -12,7 +12,6 @@ import "./LW77x7.sol";
 import './LTNT.sol';
 import './lib/base64.sol';
 import './lib/Rando.sol';
-import 'hardhat/console.sol';
 
 
 /**
@@ -21,7 +20,7 @@ import 'hardhat/console.sol';
 |     /\   |  |__  |\ |  |   |  | /  \ |__) |__/ /__` 
 |___ /~~\  |  |___ | \|  |  .|/\| \__/ |  \ |  \ .__/ 
                                                       
-"00x0", troels_a, 2022
+"00x0", latent.works, 2022
 
 
 */
@@ -29,8 +28,10 @@ import 'hardhat/console.sol';
 
 contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGuard, LTNTIssuer {
 
+    // Orientation enum for artworks
     enum Orientation{LANDSCAPE, PORTRAIT}
 
+    // Compinfo for passing to the comp creator
     struct CompInfo {
         string id_string;
         bool mark;
@@ -57,22 +58,22 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
         bytes scale;
     }
 
+    // Public facing comp info
     struct Comp {
         uint id;
         address creator;
         uint seed;
         string artwork;
         Orientation orientation;
-        uint price;
         uint editions;
         uint available;
     }
 
+
     string public constant LTNTProjectID = "00x0";
     string public constant NAME = "Latent Works \xc2\xb7 00x0";
     string public constant DESCRIPTION = "latent.works";
-    uint public constant MAX_WORK_USE = 7;
-    address public constant LW77X7 = 0xEF7c89F051ac48885b240eb53934B04fcF3339ab;
+    uint public constant PRICE = 0.07 ether;
     
     LTNT private _ltnt;
     LW77x7 private _77x7;
@@ -83,19 +84,17 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
     mapping(uint => address) private _comp_creators;
     mapping(uint => uint) private _comp_seeds;
 
-    uint private _price = 0.07 ether;
-
     modifier onlyInternal(){
         require((msg.sender == address(_meta) || msg.sender == address(this)), 'ONLY_INTERNAL');
         _;
     }
 
-    constructor(address ltnt_) ERC1155("") {
+    constructor(address seven7x7_, address ltnt_) ERC1155("") {
 
-        _77x7 = LW77x7(LW77X7);
+        _77x7 = LW77x7(seven7x7_);
         _ltnt = LTNT(ltnt_);
 
-        LW00x0_Meta meta_ = new LW00x0_Meta(address(this), LW77X7);
+        LW00x0_Meta meta_ = new LW00x0_Meta(address(this), seven7x7_);
         _meta = LW00x0_Meta(address(meta_));
 
     }
@@ -115,11 +114,11 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
         return super.supportsInterface(interfaceId);
     }
 
-    function _req77x7Token(address address_) private pure {
-        require(address_ == LW77X7, 'ONLY_77X7_ACCEPTED');
+    function _req77x7Token(address address_) private view {
+        require(address_ == address(_77x7), 'ONLY_77X7_ACCEPTED');
     }
 
-    function onERC1155BatchReceived(address, address from_, uint[] calldata ids_, uint[] calldata, bytes calldata) public override returns(bytes4){
+    function onERC1155BatchReceived(address, address from_, uint[] memory ids_, uint[] memory, bytes memory) public override returns(bytes4){
         
         _req77x7Token(_msgSender());
 
@@ -134,15 +133,15 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     }
 
-    function onERC1155Received(address, address from_, uint256 id_, uint256, bytes calldata) public override returns(bytes4){
+    function onERC1155Received(address, address from_, uint256 id_, uint256, bytes memory) public override returns(bytes4){
         _req77x7Token(_msgSender());
         _ltnt.issueTo(from_, LTNT.Param(id_, from_, '', true), false);
         return super.onERC1155Received.selector;
     }
 
 
-    function get77x7() public pure returns(LW77x7) {
-        return LW77x7(LW77X7);
+    function get77x7() public view returns(LW77x7) {
+        return _77x7;
     }
 
     
@@ -152,7 +151,7 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
         _comp_ids++;
         _comp_works[_comp_ids] = works_;
-        _comp_seeds[_comp_ids] = block.timestamp*(works_[0]+works_[1]);
+        _comp_seeds[_comp_ids] = (works_[0]+works_[1])*(works_[0]+works_[1])*(77*works_.length);
         _comp_creators[_comp_ids] = for_;
 
         _mintFor(for_, _comp_ids);
@@ -162,12 +161,6 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     function _mintFor(address for_, uint comp_id_) private {
         _mint(for_, comp_id_, 1, "");
-    }
-
-    function getPrice(uint comp_id_) public view returns(uint){
-        return _price;
-        // uint editions_ = getEditions(comp_id_);
-        // return _price/editions_;
     }
 
     function getEditions(uint comp_id_) public view returns(uint) {
@@ -182,8 +175,9 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
     function mint(uint comp_id_) public payable nonReentrant {
 
         require(msg.sender != _comp_creators[comp_id_], 'COMP_CREATOR');
-        require(msg.value == getPrice(comp_id_), "INVALID_VALUE");
+        require(msg.value == PRICE, "INVALID_VALUE");
         require(getAvailable(comp_id_) > 0, "UNAVAILABLE");
+        require(_comp_creators[comp_id_] != msg.sender, "NO_CREATOR_MINT");
         
         address owner_ = owner();
         uint each_ = msg.value / 2;
@@ -213,7 +207,6 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
         require(totalSupply(comp_id_) > 0, 'DOES_NOT_EXIST');
         return _meta.getImage(comp_id_, mark_, encode_);
     }
-
 
     function getComps(uint limit_, uint page_) public view returns(LW00x0.Comp[] memory){
 
@@ -250,7 +243,6 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
             _comp_seeds[comp_id_],
             getImage(comp_id_, true, true),
             getOrientation(comp_id_),
-            getPrice(comp_id_),
             getEditions(comp_id_),
             getAvailable(comp_id_)
         );
@@ -261,11 +253,13 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
     function uri(uint comp_id_) public view override returns(string memory){
         
         string memory image_ = getImage(comp_id_, true, true);
-        bytes memory meta_ = abi.encodePacked('{',
+        bytes memory meta_ = abi.encodePacked(
+        '{',
             '"name": "00x0 #',Strings.toString(comp_id_),'", ',
             '"description": "latent.works", ',
-            '"image": "',image_,'"}'
-        );
+            '"image": "',image_,'", '
+            '"attributes": [{"trait_type": "Orientation", "value":"',getOrientation(comp_id_) == LW00x0.Orientation.LANDSCAPE ? 'Landscape' : 'Portrait','"}]'
+        '}');
 
         return string(abi.encodePacked('data:application/json;base64,', Base64.encode(meta_)));
 
@@ -455,7 +449,7 @@ contract LW00x0_Meta {
         return string(abi.encodePacked('<style>.txt{font: normal 12px monospace;fill: white;}</style><rect width="105" height="30" x="0" y="',Strings.toString((comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 1000 : 700)-30),'" fill="#000" class="box"></rect><text x="12" y="',lift_text_,'" class="txt">#', leading_zeroes_, comp_id_string_,' \xc2\xb7 00x0</text><text x="113" y="',lift_text_,'" class="txt">',comp_.seed0,'</text>'));
     }
 
-    function getLTNTImage(uint ltnt_id_, LTNT.Param memory param_) public view returns(bytes memory){
+    function getLTNTImage(uint, LTNT.Param memory param_) public view returns(bytes memory){
         return abi.encodePacked(
             '<image opacity="0" width="1000" height="1000" href="', _77x7.getSVG(param_._uint, 7, false), '"><animate attributeName="opacity" values="0;1" dur="2s" repeatCount="1" fill="freeze"/></image>'
         );
