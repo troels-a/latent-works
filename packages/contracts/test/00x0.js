@@ -17,7 +17,7 @@ describe("00x0", async function(){
     let minter3;
 
     const seeds = [
-        [6, 54, 5, 63, 1, 3]
+        [1, 3, 63, 6, 54, 5]
     ];
 
     const values = [];
@@ -34,18 +34,40 @@ describe("00x0", async function(){
   
     it('should deploy', async function () {
 
+        const XanhMonoRegularLatin = await hre.ethers.getContractFactory("XanhMonoRegularLatin");
+        _xmrl = await XanhMonoRegularLatin.deploy();
+        await _xmrl.deployed();
+        const XanhMonoItalicLatin = await hre.ethers.getContractFactory("XanhMonoItalicLatin");
+        _xmil = await XanhMonoItalicLatin.deploy();
+        await _xmil.deployed();
+
+        console.log('FONTS')
+        console.log(_xmrl.address)
+        console.log(_xmil.address)
+
+
+        const LTNT = await hre.ethers.getContractFactory("LTNT");
+        _ltnt = await LTNT.deploy(_xmrl.address, _xmil.address);
+        await _ltnt.deployed();
+
         const LW77x7 = await hre.ethers.getContractFactory("LW77x7");
         _77x7 = LW77x7.attach('0xEF7c89F051ac48885b240eb53934B04fcF3339ab');
         await _77x7.deployed();
 
-        const LTNT = await hre.ethers.getContractFactory("LTNT");
-        _ltnt = await LTNT.deploy();
-        await _ltnt.deployed();
+        const LW77x7_LTNTIssuer = await hre.ethers.getContractFactory("LW77x7_LTNTIssuer");
+        _77x7_ltnt_issuer = await LW77x7_LTNTIssuer.deploy(_77x7.address, _ltnt.address);
+        await _77x7_ltnt_issuer.deployed();
+        await _ltnt.addIssuer(_77x7_ltnt_issuer.address);
 
         const LW00x0 = await hre.ethers.getContractFactory("LW00x0");
-        _00x0 = await LW00x0.deploy(_77x7.address, _ltnt.address);
+        _00x0 = await LW00x0.deploy(_77x7.address, _77x7_ltnt_issuer.address, _ltnt.address);
         await _00x0.deployed();
+        await _77x7_ltnt_issuer.setCaller(_00x0.address);
         await _ltnt.addIssuer(_00x0.address);
+
+        const LW00x0_Meta = await hre.ethers.getContractFactory("LW00x0_Meta");
+        _00x0_meta = LW00x0_Meta.attach(await _00x0._00x0_meta());
+        await _00x0_meta.deployed();
 
         const Issuer1 = await hre.ethers.getContractFactory("Issuer1");
         _issuer1 = await Issuer1.deploy();
@@ -84,6 +106,7 @@ describe("00x0", async function(){
         });
 
         it('receives LTNTs after transfer', async function(){
+            
             let total  = 0;
             for (let i = 0; i < seeds.length; i++) {
                 total += seeds[i].length;
@@ -105,10 +128,6 @@ describe("00x0", async function(){
                 const avail = await minter1.getAvailable(id);
                 const price = await minter1.PRICE();
 
-                // console.log(`       ID: ${id}`);
-                // console.log(`       Available: ${avail.toString()}`);
-                // console.log(`       Price: ${hre.ethers.utils.formatUnits(price.toString())}`);
-
                 let ii = 0; 
                 while(ii < avail){
                     await minter1.mint(id, {value: price});
@@ -125,6 +144,24 @@ describe("00x0", async function(){
 
     describe('Generates', async function(){
         
+
+        it('preview', async function(){
+            this.timeout(120000);
+
+            await expect(_00x0_meta.previewImage(owner.address, [1, 2, 99], false)).to.be.revertedWith('WORK_DOES_NOT_EXIST')
+
+            const svgDir = `./temp/preview`;
+            await fs.promises.mkdir(svgDir, { recursive: true }).catch(console.error);
+            for(let i = 0; i < seeds.length; i++){
+                let preview = await _00x0_meta.previewImage(owner.address, seeds[i], false);
+                // let real = await _00x0_meta.getImage(i+1, false, false);
+                // expect(preview).to.equal(real);
+                await fs.writeFileSync(`${svgDir}/PREVIEW_${i+1}.svg`, preview, {flag: 'w'});
+            }
+
+        })
+
+
         it('artwork', async function(){
             this.timeout(120000);
             for (let i = 0; i < seeds.length; i++) {
@@ -144,13 +181,18 @@ describe("00x0", async function(){
 
     describe("LTNT", async function(){
 
-        it("outputs JSON", async function(){
+        it("outputs SVG", async function(){
+            
+            this.timeout(120000);
 
             const svgDir = `./temp/preview`;
             await fs.promises.mkdir(svgDir, { recursive: true }).catch(console.error);
 
-            let i = 1;
-            const max = 4;
+            await _77x7_ltnt_issuer.setIteration(3, 4);
+            await expect(_77x7_ltnt_issuer.connect(wallet1).setIteration(3, 7)).to.be.revertedWith('NOT_OWNER');
+
+            let i = 8;
+            const max = 10;
             while(i <= max){
                 let svg = await _ltnt.getImage(i, false);
                 await fs.writeFileSync(`${svgDir}/LTNT_${i}.svg`, svg, {flag: 'w'});

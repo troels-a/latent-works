@@ -5,8 +5,8 @@ import "../LTNT.sol";
 
 contract Issuer2 is LTNTIssuer {
 
-    function LTNTInfo(uint id_, LTNT.Param memory param_) public pure override returns(LTNT.Info memory){
-        return LTNT.Info('issuer 2', 0, '');
+    function issuerInfo(uint, LTNT.Param memory) public pure override returns(LTNT.IssuerInfo memory){
+        return LTNT.IssuerInfo('issuer 2', '');
     }
 
 }

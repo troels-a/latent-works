@@ -31,7 +31,7 @@ module.exports = {
   solidity: "0.8.4",
   gasReporter: {
     currency: 'ETH',
-    gasPrice: 70,
+    gasPrice: 30,
     coinmarketcap: '430b4c0c-3705-426c-9056-92196dca927a'
   },
   settings: {

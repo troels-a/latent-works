@@ -48,43 +48,88 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "comp_id_",
+        "type": "uint256"
+      }
+    ],
+    "name": "getJSON",
+    "outputs": [
+      {
+        "internalType": "string",
         "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "comp_id_",
+        "type": "uint256"
+      }
+    ],
+    "name": "getOrientation",
+    "outputs": [
+      {
+        "internalType": "enum LW00x0.Orientation",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "comp_id_",
         "type": "uint256"
       },
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "_uint",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "_address",
-            "type": "address"
-          },
-          {
-            "internalType": "string",
-            "name": "_string",
-            "type": "string"
-          },
-          {
-            "internalType": "bool",
-            "name": "_bool",
-            "type": "bool"
-          }
-        ],
-        "internalType": "struct LTNT.Param",
-        "name": "param_",
-        "type": "tuple"
+        "internalType": "string",
+        "name": "append_",
+        "type": "string"
       }
     ],
-    "name": "getLTNTImage",
+    "name": "getSeed",
     "outputs": [
       {
-        "internalType": "bytes",
+        "internalType": "string",
         "name": "",
-        "type": "bytes"
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "salt_",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "works_",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "encode_",
+        "type": "bool"
+      }
+    ],
+    "name": "previewImage",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",

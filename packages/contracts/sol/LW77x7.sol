@@ -8,8 +8,10 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import './LTNT.sol';
 import './lib/base64.sol';
 import './lib/Rando.sol';
+import 'hardhat/console.sol';
 
 /**
 
@@ -264,5 +266,46 @@ contract LW77x7 is ERC1155, ERC1155Supply, Ownable {
     function _burnBatch(address to, uint256[] memory ids, uint256[] memory amounts) internal override (ERC1155) {
         super._burnBatch(to, ids, amounts);
     }
+
+}
+
+
+
+
+contract LW77x7_LTNTIssuer is LTNTIssuer, Ownable {
+
+  LW77x7 private _77x7;
+  address private _caller;
+  LTNT private _ltnt;
+
+  mapping(uint => uint) private _iterations;
+
+  constructor(address seven7x7_, address ltnt_) {
+    _77x7 = LW77x7(seven7x7_);
+    _ltnt = LTNT(ltnt_);
+  }
+
+  function issuerInfo(uint id_, LTNT.Param memory param_) public override view returns(LTNT.IssuerInfo memory){
+    return LTNT.IssuerInfo(
+      '77x7', _77x7.getSVG(param_._uint, _iterations[id_], true)
+    );
+  }
+
+  function issueTo(address to_, LTNT.Param memory param_, bool stamp_) public returns(uint) {
+    require(msg.sender == _caller, 'ONLY_CALLER');
+    uint id_ = _ltnt.issueTo(to_, param_, stamp_);
+    _iterations[id_] = 7;
+    return id_;
+  }
+
+  function setCaller(address caller_) public onlyOwner {
+    _caller = caller_;
+  }
+
+  function setIteration(uint id_, uint iteration_) public {
+    require(msg.sender == _ltnt.ownerOf(id_), 'NOT_OWNER');
+    require(iteration_ > 0 && iteration_ < 8, 'ITERATION_OUT_OF_RANGE');
+    _iterations[id_] = iteration_;
+  }
 
 }

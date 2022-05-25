@@ -34,7 +34,7 @@
         "type": "tuple"
       }
     ],
-    "name": "LTNTInfo",
+    "name": "issuerInfo",
     "outputs": [
       {
         "components": [
@@ -44,17 +44,12 @@
             "type": "string"
           },
           {
-            "internalType": "uint256",
-            "name": "width",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "content",
-            "type": "bytes"
+            "internalType": "string",
+            "name": "image",
+            "type": "string"
           }
         ],
-        "internalType": "struct LTNT.Info",
+        "internalType": "struct LTNT.IssuerInfo",
         "name": "",
         "type": "tuple"
       }
