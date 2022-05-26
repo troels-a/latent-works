@@ -132,7 +132,7 @@ contract LTNT is ERC721, Ownable {
 
     /// @notice determine if an address is a LW project
     /// @param address_ the address of the issuer
-    /// @return bool indicating wet
+    /// @return bool indicating wether the address is an issuer or not
     function isIssuer(address address_) public view returns(bool){
         for(uint i = 0; i < _issuers.length; i++) {
             if(_issuers[i] == address_)
@@ -142,6 +142,8 @@ contract LTNT is ERC721, Ownable {
     }
 
     /// @notice return image string for id_
+    /// @param id_ the id of the LTNT to retrieve the image for
+    /// @param encode_ encode output as base64 uri
     function getImage(uint id_, bool encode_) public view returns(string memory){
 
         bytes memory stamps_;
@@ -196,7 +198,9 @@ contract LTNT is ERC721, Ownable {
 
     }
 
-    /// @notice return JSON for id_
+    /// @notice the ERC721 tokenURI for a given LTNT
+    /// @param id_ the id of the LTNT
+    /// @return json_ base64 encoded data URI containing the JSON metadata
     function tokenURI(uint id_) public view override returns(string memory json_){
         json_ = string(abi.encodePacked(
         '{',
@@ -210,6 +214,9 @@ contract LTNT is ERC721, Ownable {
 }
 
 
+/// @title LTNTIssuer
+/// @author Troels Abrahamsen
+/// @dev LTNTIssuers implement this contract and use issuerInfo to pass info to LTNT main contract
 abstract contract LTNTIssuer {
 
     function issuerInfo(uint id_, LTNT.Param memory param_) external virtual view returns(LTNT.IssuerInfo memory);
