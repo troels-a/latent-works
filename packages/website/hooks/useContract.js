@@ -4,7 +4,6 @@ import fetch from 'node-fetch';
 import { useWeb3React } from "@web3-react/core";
 import { isObject, values } from "lodash";
 
-
 function objectToArray(input){
 
     const arr = [];
@@ -24,22 +23,25 @@ function objectToArray(input){
 }
 
 
-export default function useContract({endpoint, abi, address}){
+export default function useContract(options){
 
     const [contract, setContract] = useState();
     const {library, account} = useWeb3React();
-    
+    const [address, setAddress] = useState(options.address);
+
     useEffect(() => {
 
-        if(account && library){
+        if(account && library && address){
+            const {abi} = options;
             const _contract = new ethers.Contract(address, abi, library.getSigner());
             setContract(_contract);
         }
 
-    }, [account, library])
+    }, [address, account, library])
 
 
-    async function read(method, args = false){
+    async function read(method, args = false, controller = false){
+        const {endpoint} = options;
         let req = `${endpoint}/${method}`;
         if(args){
             let query = '?';
@@ -62,7 +64,7 @@ export default function useContract({endpoint, abi, address}){
             req = req+query;
         }
 
-        return await fetch(req).then(req => req.json());
+        return await fetch(req, controller ? {signal: controller.signal} : null).then(req => req.json());
 
     }
 
@@ -75,14 +77,6 @@ export default function useContract({endpoint, abi, address}){
     }
 
 
-    useEffect(() => {
-
-        return () => {
-
-        }
-        
-    }, []);
-
-    return {read, write};
+    return {read, write, setAddress, contract};
 
 }

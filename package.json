@@ -10,6 +10,7 @@
     "node": "cd packages/contracts; hardhat node",
     "dev": "lerna run develop --stream --no-prefix",
     "contracts:watch": "cd packages/contracts; npm run watch",
+    "website:watch": "cd packages/website; npm run develop",
     "contracts:compile": "cd packages/contracts; npx hardhat compile"
   }
 }

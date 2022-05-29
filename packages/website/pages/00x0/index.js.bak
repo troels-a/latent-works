@@ -4,7 +4,7 @@ import Section from "components/Section/Section";
 import use77x7, {_77x7Provider} from "hooks/use77x7";
 import { useWeb3React } from "@web3-react/core";
 import { useEffect, useState } from "react";
-import { map, result } from "lodash";
+import { map } from "lodash";
 import useWork, { WorkProvider } from "hooks/useWork";
 import styled, { keyframes } from "styled-components";
 import use00x0, { _00x0Provider } from "hooks/use00x0";
@@ -14,13 +14,14 @@ import { getEntryBySlug } from "base/contentAPI";
 import {useConnectIntent} from "components/ConnectButton";
 import { ethers } from "ethers";
 import useError from "hooks/useError";
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 // Import Swiper styles
+import 'swiper/css';
 import Link from "next/link";
 import useENS from "hooks/useENS";
 import {breakpoint} from "styled-components-breakpoint";
 import { errToMessage } from "base/errors";
-import { useRouter } from "next/dist/client/router";
 
 const PRICE = ethers.utils.parseEther('0.07');
 
@@ -60,13 +61,6 @@ const CompImage = styled(({image, ...p}) => <div {...p}><img src={image}/></div>
     place-items: center;
     justify-items: center;
     height: 100%;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 300ms ease-out;
-    ${p => p.show && `
-        opacity: 1;
-        pointer-events: all;
-    `}
     > img {
         margin: 0 auto;
         max-height: 73vh;
@@ -104,17 +98,9 @@ const CompInfo = styled(Section)`
     button {
         width: 100%;
     }
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 300ms ease-out;
-    ${p => p.show && `
-        opacity: 1;
-        pointer-events: all;
-    `}
 `
 
-const Comp = styled.div`
-    position: relative;
+const CompSwiper = styled(Swiper)`
     ${breakpoint('sm', 'md')`
         top: -12vw;
     `}
@@ -122,24 +108,6 @@ const Comp = styled.div`
         height: 100%;
         place-items: center;
     }
-`
-
-const CompNav = styled.div`
-    position: relative;
-    width: 100%;
-    height: 0;
-    > div {
-        position: fixed;
-        top: 50%;
-        font-size: 30px;
-        &:first-child {
-            left: 2vw;
-        }
-        &:last-child {
-            right: 2vw;
-        }
-    }
-
 `
 
 
@@ -151,40 +119,34 @@ function EnsAddress({input, ...p}){
 
 function _00x0_Index(props){
 
-    const router = useRouter();
     const {account} = useWeb3React();
+    const {balance, fetchBalance, fetchingBalance} = use77x7();
+    const _77x7 = use77x7();
     const _00x0 = use00x0();
-    const [comp, setComp] = useState(false);
-    const [loadingComp, setLoadingComp] = useState(false);
+    const [comps, setComps] = useState(false);
+    const [loadingComps, setLoadingComps] = useState(false);
+    const [selectedWorks, setSelectedWorks] = useState([]);
     const {connectIntent, setConnectIntent} = useConnectIntent();
-    const err = useError(); 
-    const [compCount, setCompCount] = useState(-1);
+    const [migrating, setMigrating] = useState(false);
+    const err = useError();
+    
+    const [page, setPage] = useState(0);
 
-    useEffect(() => {
-        updateCompCount();
-    }, [])
+    async function fetchComps(){
 
-    async function updateCompCount(){
-        const count = await _00x0.api('getCompCount');
-        setCompCount(count.result);
-    }
+        const _page = page+1;
+        setPage(_page)
 
-    async function fetchComp(id){
-
-        if(loadingComp)
-            return;
-
-        setLoadingComp(true);
-        const data = await _00x0.api('getComp', {comp_id_: id});
-
-        if(data.error){
-            setLoadingComp(false);
-            return;
-        }
-
-        const comp = data.result;
-        setComp(comp);
-        setLoadingComp(false);
+        setLoadingComps(true);
+        const data = await _00x0.api('getComps', {limit_: 1, page_: _page});
+        const moreComps = data.result.filter(comp => comp.id);
+        setComps(prevComps => {
+            if(prevComps)
+                return prevComps.concat(moreComps)
+            else
+                return moreComps;
+        });
+        setLoadingComps(false);
 
     }
 
@@ -198,76 +160,66 @@ function _00x0_Index(props){
         }
     }
 
-
     useEffect(() => {
 
-        if(compCount > 0 && !comp){
-            if(router?.query?.comp)
-                fetchComp(router.query.comp)
-            else
-                goToComp(1)
+        fetchComps()
+
+    }, [])
+
+    useEffect(() => {
+        if(comps)
+            setCurrentComp(comps[0]);
+        return () => {
+            setCurrentComp(false);
         }
+    }, [comps])
 
-    }, [router, compCount, comp])
-
-    async function nextComp(){
-        if(!loadingComp)
-            goToComp(comp.id+1)
-    }
-
-    async function prevComp(){
-        if(!loadingComp)
-            goToComp(comp.id-1)
-    }
-
-    async function goToComp(id){
-        if(id <= compCount && id > 0){
-            router.replace(`/00x0?comp=${id}`)
-            fetchComp(id)
-        }
-    }
+    const [currentComp, setCurrentComp] = useState(false);
 
 
     return <Page fixHeader bgColor="#000">
         <Comps>
-        {(comp && comp != -1) &&
+        {(comps && comps != -1) &&
         <>
-            <Comp>
-                <CompNav>
-                    <div onClick={() => prevComp()}>{'<'}</div>
-                    <div onClick={() => nextComp()}>{'>'}</div>
-                </CompNav>
-                <CompImage {...comp} show={!loadingComp}/>
-            </Comp>
-            <CompInfo show={!loadingComp}>
+            <CompSwiper onSlideChange={(swiper) => {
+                setCurrentComp(comps[swiper.activeIndex])
+            }}>
+                {comps.map(comp => <SwiperSlide style={{height: '100%'}} key={comp.id}>
+                <CompImage {...comp}/>
+                </SwiperSlide>)}
+                <div onClick={fetchComps}>More</div>
+            </CompSwiper>
+            {currentComp && 
+            <CompInfo>
             <div>
-                <div><small>Created by <EnsAddress input={comp.creator}/></small></div>
-                <div><small>{comp.available > 0 ? `${comp.available} of ${comp.editions} left`: `Edition of ${comp.editions}`}</small></div>
+                <div><small>Created by <EnsAddress input={currentComp.creator}/></small></div>
+                <div><small>{currentComp.available > 0 ? `${currentComp.available} of ${currentComp.editions} left`: `Edition of ${currentComp.editions}`}</small></div>
             </div>
             <div>
                 <div>
-                    {account && comp.available > 0 
+                    {account && currentComp.available > 0 
                     ? 
-                    <button disabled={account == comp.creator} onClick={() => handleMint(comp)}>
-                        {account == comp.creator ? `Creator can't mint` : <>Mint <small>({ethers.utils.formatEther(PRICE)} ETH)</small></>}
+                    <button disabled={account == currentComp.creator} onClick={() => handleMint(currentComp)}>
+                        {account == currentComp.creator ? `Creator can't mint` : <>Mint <small>({ethers.utils.formatEther(PRICE)} ETH)</small></>}
                     </button>
                     :
-                    <button onClick={() => setConnectIntent(!connectIntent)}>{comp.available > 0 ? 'Connect to mint' : 'Sold out'}</button>
+                    <button onClick={() => setConnectIntent(!connectIntent)}>{currentComp.available > 0 ? 'Connect to mint' : 'Sold out'}</button>
                     }
                 </div>
             </div>
             </CompInfo>
+            }
         </>
         }
 
-        {compCount === 0 && 
+        {(!comps && !loadingComps) && 
         <div style={{textAlign: 'center'}}>
-            <h2>No 00x0 comp have been created yet.</h2>
-            <p>77x7 holders can create comp <Link href="/00x0/transfer"><a>here</a></Link></p>
+            <h2>No 00x0 comps have been created yet.</h2>
+            <p>77x7 holders can create comps <Link href="/00x0/transfer"><a>here</a></Link></p>
         </div>
         }
 
-        {compCount === -1 && <div>
+        {loadingComps && <div>
             <div style={{textAlign: 'center'}}>
                 <h2>Loading...</h2>
             </div>

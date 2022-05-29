@@ -110,6 +110,45 @@
     "type": "event"
   },
   {
+    "inputs": [],
+    "name": "_ltnt_meta",
+    "outputs": [
+      {
+        "internalType": "contract LTNT_Meta",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_xanh_italic",
+    "outputs": [
+      {
+        "internalType": "contract XanhMonoItalicLatin",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_xanh_regular",
+    "outputs": [
+      {
+        "internalType": "contract XanhMonoRegularLatin",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -184,19 +223,150 @@
         "internalType": "uint256",
         "name": "id_",
         "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "encode_",
-        "type": "bool"
       }
     ],
-    "name": "getImage",
+    "name": "getIssuerFor",
     "outputs": [
       {
-        "internalType": "string",
+        "components": [
+          {
+            "internalType": "address",
+            "name": "location",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "_uint",
+                "type": "uint256"
+              },
+              {
+                "internalType": "address",
+                "name": "_address",
+                "type": "address"
+              },
+              {
+                "internalType": "string",
+                "name": "_string",
+                "type": "string"
+              },
+              {
+                "internalType": "bool",
+                "name": "_bool",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct LTNT.Param",
+            "name": "param",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct LTNT.Issuer",
         "name": "",
-        "type": "string"
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getIssuers",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "address_",
+        "type": "address"
+      }
+    ],
+    "name": "getStampParams",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "_uint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "_address",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "_string",
+            "type": "string"
+          },
+          {
+            "internalType": "bool",
+            "name": "_bool",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct LTNT.Param",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id_",
+        "type": "uint256"
+      }
+    ],
+    "name": "getStamps",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "address_",
+        "type": "address"
+      }
+    ],
+    "name": "hasStamp",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -455,25 +625,6 @@
     "name": "stamp",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "id_",
-        "type": "uint256"
-      }
-    ],
-    "name": "stamps",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

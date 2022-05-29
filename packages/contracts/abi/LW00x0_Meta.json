@@ -117,11 +117,6 @@
         "internalType": "uint256[]",
         "name": "works_",
         "type": "uint256[]"
-      },
-      {
-        "internalType": "bool",
-        "name": "encode_",
-        "type": "bool"
       }
     ],
     "name": "previewImage",

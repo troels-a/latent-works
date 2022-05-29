@@ -9,6 +9,7 @@ describe("00x0", async function(){
     let _00x0;
     let _77x7;
     let owner;
+    let migrater;
     let wallet1;
     let wallet2;
     let wallet3;
@@ -34,6 +35,18 @@ describe("00x0", async function(){
   
     it('should deploy', async function () {
 
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: ["0x3827014F2236519f1101Ae2E136985E0e603Be79"],
+        });
+
+        await network.provider.send("hardhat_setBalance", [
+            "0x3827014F2236519f1101Ae2E136985E0e603Be79",
+            "0x10000000000000000000000",
+        ]);
+
+        migrater = await ethers.getSigner("0x3827014F2236519f1101Ae2E136985E0e603Be79")
+
         const XanhMonoRegularLatin = await hre.ethers.getContractFactory("XanhMonoRegularLatin");
         _xmrl = await XanhMonoRegularLatin.deploy();
         await _xmrl.deployed();
@@ -41,14 +54,18 @@ describe("00x0", async function(){
         _xmil = await XanhMonoItalicLatin.deploy();
         await _xmil.deployed();
 
-        console.log('FONTS')
-        console.log(_xmrl.address)
-        console.log(_xmil.address)
+        // console.log('FONTS')
+        // console.log(_xmrl.address)
+        // console.log(_xmil.address)
 
 
         const LTNT = await hre.ethers.getContractFactory("LTNT");
         _ltnt = await LTNT.deploy(_xmrl.address, _xmil.address);
         await _ltnt.deployed();
+
+        const LTNT_Meta = await hre.ethers.getContractFactory("LTNT_Meta");
+        _ltnt_meta = LTNT_Meta.attach(await _ltnt._ltnt_meta());
+        await _ltnt_meta.deployed();
 
         const LW77x7 = await hre.ethers.getContractFactory("LW77x7");
         _77x7 = LW77x7.attach('0xEF7c89F051ac48885b240eb53934B04fcF3339ab');
@@ -69,15 +86,15 @@ describe("00x0", async function(){
         _00x0_meta = LW00x0_Meta.attach(await _00x0._00x0_meta());
         await _00x0_meta.deployed();
 
-        const Issuer1 = await hre.ethers.getContractFactory("Issuer1");
-        _issuer1 = await Issuer1.deploy();
-        await _issuer1.deployed();
-        await _ltnt.addIssuer(_issuer1.address);
+        // const Issuer1 = await hre.ethers.getContractFactory("Issuer1");
+        // _issuer1 = await Issuer1.deploy();
+        // await _issuer1.deployed();
+        // await _ltnt.addIssuer(_issuer1.address);
         
-        const Issuer2 = await hre.ethers.getContractFactory("Issuer2");
-        _issuer2 = await Issuer2.deploy();
-        await _issuer2.deployed();
-        await _ltnt.addIssuer(_issuer2.address);
+        // const Issuer2 = await hre.ethers.getContractFactory("Issuer2");
+        // _issuer2 = await Issuer2.deploy();
+        // await _issuer2.deployed();
+        // await _ltnt.addIssuer(_issuer2.address);
 
         [owner, wallet1, wallet2, wallet3] = await hre.ethers.getSigners();
 
@@ -93,7 +110,7 @@ describe("00x0", async function(){
         it('can transfer works', async function(){
 
             for (let i = 0; i < seeds.length; i++) {
-                await _77x7.safeBatchTransferFrom(owner.address, _00x0.address, seeds[i], values[i], []);
+                await _77x7.connect(migrater).safeBatchTransferFrom(migrater.address, _00x0.address, seeds[i], values[i], []);
                 expect(await _00x0.getAvailable(i+1) == seeds[i].length -1);
             }
 
@@ -101,7 +118,7 @@ describe("00x0", async function(){
 
         it('receives 00x0 after transfer', async function(){
             for (let i = 0; i < seeds.length; i++) {
-                expect(await _00x0.balanceOf(owner.address, i+1)).to.equal(1);
+                expect(await _00x0.balanceOf(migrater.address, i+1)).to.equal(1);
             }
         });
 
@@ -111,7 +128,7 @@ describe("00x0", async function(){
             for (let i = 0; i < seeds.length; i++) {
                 total += seeds[i].length;
             }
-            expect(await _ltnt.balanceOf(owner.address)).to.equal(total);
+            expect(await _ltnt.balanceOf(migrater.address)).to.equal(total);
 
         });
 
@@ -148,12 +165,12 @@ describe("00x0", async function(){
         it('preview', async function(){
             this.timeout(120000);
 
-            await expect(_00x0_meta.previewImage(owner.address, [1, 2, 99], false)).to.be.revertedWith('WORK_DOES_NOT_EXIST')
+            await expect(_00x0_meta.previewImage(migrater.address, [1, 2, 99], false)).to.be.revertedWith('WORK_DOES_NOT_EXIST')
 
             const svgDir = `./temp/preview`;
             await fs.promises.mkdir(svgDir, { recursive: true }).catch(console.error);
             for(let i = 0; i < seeds.length; i++){
-                let preview = await _00x0_meta.previewImage(owner.address, seeds[i], false);
+                let preview = await _00x0_meta.previewImage(migrater.address, seeds[i], false);
                 // let real = await _00x0_meta.getImage(i+1, false, false);
                 // expect(preview).to.equal(real);
                 await fs.writeFileSync(`${svgDir}/PREVIEW_${i+1}.svg`, preview, {flag: 'w'});
@@ -188,13 +205,13 @@ describe("00x0", async function(){
             const svgDir = `./temp/preview`;
             await fs.promises.mkdir(svgDir, { recursive: true }).catch(console.error);
 
-            await _77x7_ltnt_issuer.setIteration(3, 4);
+            await _77x7_ltnt_issuer.connect(migrater).setIteration(3, 4);
             await expect(_77x7_ltnt_issuer.connect(wallet1).setIteration(3, 7)).to.be.revertedWith('NOT_OWNER');
 
             let i = 8;
             const max = 10;
             while(i <= max){
-                let svg = await _ltnt.getImage(i, false);
+                let svg = await _ltnt_meta.getImage(i, false);
                 await fs.writeFileSync(`${svgDir}/LTNT_${i}.svg`, svg, {flag: 'w'});
                 i++;
             }

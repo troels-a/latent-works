@@ -32,7 +32,7 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
     // Orientation enum for artworks
     enum Orientation{LANDSCAPE, PORTRAIT}
 
-    // Public facing comp info
+    // Comp info
     struct Comp {
         uint id;
         address creator;
@@ -149,10 +149,6 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
         return _comp_creators[comp_id_];
     }
 
-    // function getOrientation(uint comp_id_) public view returns(LW00x0.Orientation){
-    //     return Rando.number(getSeed(comp_id_, ''), 0, 99) > 50 ? LW00x0.Orientation.LANDSCAPE : LW00x0.Orientation.PORTRAIT;
-    // }
-
 
     function mint(uint comp_id_) public payable nonReentrant {
 
@@ -232,6 +228,10 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     }
 
+    function getCompCount() public view returns(uint){
+        return _comp_ids;
+    }
+
 
     function uri(uint comp_id_) public view override returns(string memory){
         
@@ -280,11 +280,6 @@ contract LW00x0_Meta {
     
     string private _easing = 'keyTimes="0; 0.33; 0.66; 1" keySplines="0.5 0 0.5 1; 0.5 0 0.5 1; 0.5 0 0.5 1; 0.5 0 0.5 1;"';    
     string private _noise = 'data:@file/png;base64,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';
-
-    XanhMonoRegularLatin private _xahn_regular = XanhMonoRegularLatin(0x89f6aC805bD06556bb6f8Cc23EAbcF2920f81eEe);
-    XanhMonoItalicLatin private _xahn_italic = XanhMonoItalicLatin(0x89f6aC805bD06556bb6f8Cc23EAbcF2920f81eEe);
-
-
 
     // Compinfo for passing to the comp creator
     struct CompInfo {
@@ -400,7 +395,7 @@ contract LW00x0_Meta {
         
     }
 
-    function previewImage(address salt_, uint[] memory works_, bool encode_) public view returns(string memory){
+    function previewImage(address salt_, uint[] memory works_) public view returns(string memory){
 
         require((works_.length > 1 && works_.length <= 7), "MIN_2_MAX_7_WORKS");
         for(uint i = 0; i < works_.length; i++){
@@ -411,7 +406,7 @@ contract LW00x0_Meta {
         comp_.id = 'PRE';
         comp_.mark = true;
 
-        return _generateImage(comp_, encode_);
+        return _generateImage(comp_, true);
 
     }
 
@@ -513,7 +508,7 @@ contract LW00x0_Meta {
             leading_zeroes_ = '0';
 
         string memory lift_text_ = Strings.toString((comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 700 : 1000)-10);
-        return string(abi.encodePacked('<style>',_xahn_regular.fontFace(),_xahn_italic.fontFace(),'.txt{font: normal 12px "Xanh Mono";fill: white; letter-spacing:0.1em;}</style><rect width="105" height="30" x="-2" y="',Strings.toString((comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 700 : 1000)-28),'" fill="#000" class="box"></rect><text x="12" y="',lift_text_,'" class="txt">#', leading_zeroes_, comp_.id,unicode' · ', '00x0</text><text x="113" y="',lift_text_,'" class="txt">',comp_.seed0,'</text>'));
+        return string(abi.encodePacked('<style>',_00x0._ltnt()._xanh_regular().fontFace(),_00x0._ltnt()._xanh_italic().fontFace(),'.txt{font: normal 12px "Xanh Mono";fill: white; letter-spacing:0.1em;}</style><rect width="105" height="30" x="-2" y="',Strings.toString((comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 700 : 1000)-28),'" fill="#000" class="box"></rect><text x="12" y="',lift_text_,'" class="txt">#', leading_zeroes_, comp_.id,unicode' · ', '00x0</text><text x="113" y="',lift_text_,'" class="txt">',comp_.seed0,'</text>'));
         
     }
 

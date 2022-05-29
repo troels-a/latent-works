@@ -1,7 +1,5 @@
+import _00x0_meta_ABI from '@lw/contracts/abi/LTNT_Meta.json';
 import Page from "templates/Page"
-
-
-
 import Grid from "styled-components-grid"
 import Section from "components/Section/Section";
 import use77x7, {_77x7Provider} from "hooks/use77x7";
@@ -17,11 +15,11 @@ import { getEntryBySlug } from "base/contentAPI";
 import { useConnectIntent } from "components/ConnectButton";
 import { ethers } from "ethers";
 import useError from "hooks/useError";
+import useContract from "hooks/useContract";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import {breakpoint} from "styled-components-breakpoint";
-
-// Import Swiper styles
-import 'swiper/css';
+import Loader from 'components/Loader';
+import AbortController from "abort-controller";
 
 const Works = styled(p => <Grid container {...p}/>)`
     width: calc(100%+1vw);
@@ -86,6 +84,35 @@ const Button = styled.button`
     `}
 `
 
+const Preview = styled.div`
+
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    left:0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    place-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    ${p => p.show && `
+        opacity: 1;
+        pointer-events: all;
+    `}
+
+
+    img {
+        max-height: 70%; 
+    }
+
+`
+
 function SelectableWork(p){
 
     const work = useWork();
@@ -97,31 +124,56 @@ function SelectableWork(p){
 
 }
 
+let previewController;
 
-function _00x0_transfer(props){
+function _00x0_Transfer(props){
 
     const {account} = useWeb3React();
     const {balance, fetchBalance, fetchingBalance} = use77x7();
     const _77x7 = use77x7();
     const _00x0 = use00x0();
+    const _00x0_Meta = useContract({endpoint: '/api/00x0/meta', abi: _00x0_meta_ABI});
     const [selectedWorks, setSelectedWorks] = useState([]);
     const {connectIntent, setConnectIntent} = useConnectIntent();
     const [migrating, setMigrating] = useState(false);
     const err = useError();
+    const [preview, setPreview] = useState(false);
 
-    async function handleMigrate(works){
+    useEffect(() => {
+
+        if(_00x0.contract){
+            updateMetaContract();
+        }
+
+    }, [_00x0.contract])
+
+    async function updateMetaContract(){
+        console.log('MUPDATE META')
+        const meta_address = await _00x0.contract._00x0_meta()
+        await _00x0_Meta.setAddress(meta_address);
+    }
+
+
+    async function handleMigrate(){
         
         setMigrating(true);
-        works = works.map(id => parseInt(id));
+        const works = selectedWorks.map(id => parseInt(id));
         const values = Array(works.length).fill(1);
         const from = account;
         const to = _00x0.contract.address;
+        
         try {
-            const tx = await _77x7.contract.safeBatchTransferFrom(from, to, works, values, [])
-            const receipt = await tx.wait();
+            
+            const tx =  works.length < 2 
+            ? await _77x7.contract.safeTransferFrom(from, to, works[0], values[0], [])
+            : await _77x7.contract.safeBatchTransferFrom(from, to, works, values, []);
+
+            await tx.wait();
+
             setMigrating(false);
             fetchBalance(account);
             setSelectedWorks(prev => [])
+
         }
         catch(e){
             err.setMessage(e.message)
@@ -131,9 +183,32 @@ function _00x0_transfer(props){
     }
 
 
-    async function handleMint(comp){
-        _00x0.contract.mint(comp.id, {value: comp.price});
+    async function handlePreview(){
+        
+        setPreview(-1)
+
+        try {
+            previewController = new AbortController()            
+            const response = await _00x0_Meta.read('previewImage', {
+                salt_: account,
+                works_: selectedWorks
+            }, previewController)
+
+            setPreview(response.result);
+
+        }
+        catch(err){
+            console.log(err)
+            setPreview(false);
+        }
+
     }
+
+
+    async function cancelPreview(){
+        previewController.abort();
+    }
+
 
 
     return <Page>
@@ -169,11 +244,14 @@ function _00x0_transfer(props){
                     }
                 {(account && !fetchingBalance && balance && Object.entries(balance).length > 0) && 
                     <Section style={{paddingLeft: 0, paddingRight: 0}}>
-                        <Button disabled={!(selectedWorks.length > 1 && selectedWorks.length < 8)} onClick={() => handleMigrate(selectedWorks)}>
+                        <Button disabled={!(selectedWorks.length > 0 && selectedWorks.length < 8)} onClick={() => handleMigrate()}>
                             {selectedWorks.length == 0 && `Select works to migrate`}
                             {selectedWorks.length == 1 && `Migrate`}
                             {(selectedWorks.length > 1 && selectedWorks.length < 8) && 'Migrate and create 00x0'}
                         </Button>
+                        {(selectedWorks.length > 1 && selectedWorks.length < 8) && <Button onClick={() => handlePreview()}>
+                            {`Preview 00x0`}
+                        </Button>}
                     </Section>}
                 </MintingSection>
             </Grid.Unit>
@@ -186,12 +264,18 @@ function _00x0_transfer(props){
                 </Section>
             </Grid.Unit>
         </Grid>
+        <Preview show={preview !== false && preview !== -100}>
+        {/* <Preview show={true}> */}
+            {/* <Loader>Generating preview...<br/><a href="#" onClick={cancelPreview}>Cancel</a></Loader> */}
+            {preview === -1 && <Loader>Generating preview...<br/><small><a href="#" onClick={cancelPreview}>Cancel</a></small></Loader>}
+            {preview !== -1 && <><a href="#" onClick={() => setPreview(false)}>Close</a><br/><br/><img src={`${preview}`}/></>}
+        </Preview>
     </Page>
 
 }
 
-function _00x0(p){
-    return <_77x7Provider><_00x0Provider><_00x0_transfer {...p}/></_00x0Provider></_77x7Provider>;
+function ZeroZeroByZeroTransfer(p){
+    return <_77x7Provider><_00x0Provider><_00x0_Transfer {...p}/></_00x0Provider></_77x7Provider>;
 }
 
 
@@ -206,4 +290,4 @@ export async function getStaticProps(){
     }
 }
 
-export default _00x0;
+export default ZeroZeroByZeroTransfer;
