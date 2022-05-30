@@ -9,8 +9,9 @@
     "setup": "ln .env packages/contracts/.env; ln .env packages/website/.env; ",
     "node": "cd packages/contracts; hardhat node",
     "dev": "lerna run develop --stream --no-prefix",
+    "contracts:deploy": "cd packages/contracts; npm run develop",
     "contracts:watch": "cd packages/contracts; npm run watch",
-    "website:watch": "cd packages/website; npm run develop",
+    "website:watch": "vercel dev",
     "contracts:compile": "cd packages/contracts; npx hardhat compile"
   }
 }

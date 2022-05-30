@@ -3,7 +3,7 @@ const networkName = hre.network.name;
 require("colors");
 
 const NETWORK = 'rinkeby';
-const ADDRESS_77X7 = '0x2f97FFE0A5EfF45FD9A1e6CDD81768bE2BDb3A8E';
+const ADDRESS_77X7 = '0x81e4002C4F96B901fD97f8c5D9128020568d4EC5';
 
 async function main() {
 
