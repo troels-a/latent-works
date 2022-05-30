@@ -325,10 +325,10 @@ function SeventySevenBySeven(props){
                         <hr/>
                         <Minters>{work.minters.map((minter, index) => <MinterLink href="#" $active={(index+1 == iteration)} onClick={(event) => {event.preventDefault(); autoplay && toggleAutoPlay(); updateUrl('edition', index+1)}}><small>{index+1}. {work.colors[index]}</small></MinterLink>)}</Minters>
                         <hr/>
-                        <Link href={`https://opensea.io/assets/${process.env.NEXT_PUBLIC_CONTRACT}/${workID}`} passHref>
+                        <Link href={`https://opensea.io/assets/${process.env.NEXT_PUBLIC_ADDRESS_77X7}/${workID}`} passHref>
                             <a>Opensea</a>
                         </Link>
-                        <Link href={`https://looksrare.org/collections/${process.env.NEXT_PUBLIC_CONTRACT}/${workID}`} passHref>
+                        <Link href={`https://looksrare.org/collections/${process.env.NEXT_PUBLIC_ADDRESS_77X7}/${workID}`} passHref>
                             <a>Looksrare</a>
                         </Link>
                     </>}

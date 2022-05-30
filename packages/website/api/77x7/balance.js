@@ -10,7 +10,7 @@ export default async (req, res) => {
     const _ids = [];
     const balance = {};
     const provider = getProvider();
-    const contract  = new ethers.Contract(process.env.ADDRESS_77X7, abi, provider);
+    const contract  = new ethers.Contract(process.env.NEXT_PUBLIC_ADDRESS_77X7, abi, provider);
     
     let i = 1;
     while(i <= 77){
