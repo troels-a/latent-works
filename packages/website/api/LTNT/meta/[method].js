@@ -33,7 +33,7 @@ export default async (req, res) => {
 
         const provider = getProvider();
         const _ltnt = new ethers.Contract(process.env.NEXT_PUBLIC_ADDRESS_LTNT, parentABI, provider);
-        const contract = new ethers.Contract(await _ltnt._ltnt_meta(), ABI, provider);
+        const contract = new ethers.Contract(await _ltnt.getMetaContract(), ABI, provider);
         
         try {
             data.result = await contract[method](...abi.methodParamsFromQuery(method, query));

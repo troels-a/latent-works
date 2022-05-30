@@ -64,7 +64,7 @@ describe("00x0", async function(){
         await _ltnt.deployed();
 
         const LTNT_Meta = await hre.ethers.getContractFactory("LTNT_Meta");
-        _ltnt_meta = LTNT_Meta.attach(await _ltnt._ltnt_meta());
+        _ltnt_meta = LTNT_Meta.attach(await _ltnt.getMetaContract());
         await _ltnt_meta.deployed();
 
         const LW77x7 = await hre.ethers.getContractFactory("LW77x7");
@@ -159,36 +159,17 @@ describe("00x0", async function(){
 
     });
 
-    describe('Generates', async function(){
+    describe('Generate 00x0 assets', async function(){
         
 
-        it('preview', async function(){
+        it('-', async function(){
             this.timeout(120000);
-
-            await expect(_00x0_meta.previewImage(migrater.address, [1, 2, 99], false)).to.be.revertedWith('WORK_DOES_NOT_EXIST')
-
-            const svgDir = `./temp/preview`;
-            await fs.promises.mkdir(svgDir, { recursive: true }).catch(console.error);
+            const preview_dir = `./temp/preview`;
+            await fs.promises.mkdir(preview_dir, { recursive: true }).catch(console.error);
             for(let i = 0; i < seeds.length; i++){
-                let preview = await _00x0_meta.previewImage(migrater.address, seeds[i], false);
-                // let real = await _00x0_meta.getImage(i+1, false, false);
-                // expect(preview).to.equal(real);
-                await fs.writeFileSync(`${svgDir}/PREVIEW_${i+1}.svg`, preview, {flag: 'w'});
-            }
-
-        })
-
-
-        it('artwork', async function(){
-            this.timeout(120000);
-            for (let i = 0; i < seeds.length; i++) {
+                let prev = await _00x0_meta.previewImage(migrater.address, seeds[i]);
+                await fs.writeFileSync(`${preview_dir}/PREVIEW_${i+1}.svg`, prev, {flag: 'w'});
                 await preview.writeArtwork(i+1);
-            }
-        });
-
-        it('json', async function(){
-            this.timeout(120000);
-            for (let i = 0; i < seeds.length; i++) {
                 await preview.writeJSON(i+1);
             }
         });
@@ -196,23 +177,25 @@ describe("00x0", async function(){
     })
 
 
-    describe("LTNT", async function(){
+    describe("Generate LTNT assets", async function(){
 
-        it("outputs SVG", async function(){
+        it("-", async function(){
             
             this.timeout(120000);
 
-            const svgDir = `./temp/preview`;
-            await fs.promises.mkdir(svgDir, { recursive: true }).catch(console.error);
+            const preview_dir = `./temp/preview`;
+            await fs.promises.mkdir(preview_dir, { recursive: true }).catch(console.error);
 
             await _77x7_ltnt_issuer.connect(migrater).setIteration(3, 4);
             await expect(_77x7_ltnt_issuer.connect(wallet1).setIteration(3, 7)).to.be.revertedWith('NOT_OWNER');
 
-            let i = 8;
+            let i = 10;
             const max = 10;
             while(i <= max){
                 let svg = await _ltnt_meta.getImage(i, false);
-                await fs.writeFileSync(`${svgDir}/LTNT_${i}.svg`, svg, {flag: 'w'});
+                await fs.writeFileSync(`${preview_dir}/LTNT_${i}.svg`, svg, {flag: 'w'});
+                let json = await _ltnt.tokenURI(i);
+                await fs.writeFileSync(`${preview_dir}/LTNT_${i}.json`, json, {flag: 'w'});
                 i++;
             }
 

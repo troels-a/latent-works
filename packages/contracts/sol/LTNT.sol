@@ -4,7 +4,8 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./LTNTFont.sol";
-import "./lib/base64.sol";
+import "base64-sol/base64.sol";
+import "hardhat/console.sol";
 
 
 //////////////////////////////////
@@ -17,9 +18,7 @@ import "./lib/base64.sol";
 
 
 /// @title LTNT
-/// @author Troels Abrahamsen
-/// @notice Handles the creation and issuance of LTNT tokens used in the Latent Works project
-/// @dev Allows the owner to register issuers that can mint new LTNT tokens to addresses
+/// @author troels_a
 
 contract LTNT is ERC721, Ownable {
     
@@ -40,11 +39,7 @@ contract LTNT is ERC721, Ownable {
         Param param;
     }
 
-    ///@dev latent fonts
-    XanhMonoRegularLatin public immutable _xanh_regular;
-    XanhMonoItalicLatin public immutable _xanh_italic;
-
-    LTNT_Meta public immutable _ltnt_meta;
+    LTNT_Meta private _ltnt_meta;
 
     address[] private _issuers; ///@dev array of addresses registered as issuers
     mapping(uint => mapping(address => bool)) private _stamps; ///@dev (ltnt => (issuer => is stamped?))
@@ -53,15 +48,12 @@ contract LTNT is ERC721, Ownable {
     
     uint private _ids; ///@dev LTNT _id counter
 
-
     /// @dev pass address of onchain fonts to the constructor
-    constructor(address xanh_regular_, address xanh_italic_) ERC721("Latents", "LTNT"){
+    constructor(address regular_, address italic_) ERC721("Latents", "LTNT"){
 
-        LTNT_Meta ltnt_meta_ = new LTNT_Meta();
+        LTNT_Meta ltnt_meta_ = new LTNT_Meta(regular_, italic_);
         _ltnt_meta = LTNT_Meta(address(ltnt_meta_));
 
-        _xanh_regular = XanhMonoRegularLatin(xanh_regular_);
-        _xanh_italic = XanhMonoItalicLatin(xanh_italic_);
     }
 
 
@@ -105,17 +97,25 @@ contract LTNT is ERC721, Ownable {
         _params[id_][issuer_] = param_;
     }
 
+    /// @dev checks if a given id_ is stamped by address_
+    /// @param id_ the ID of the LTNT to check
+    /// @param address_ the address of the stamper
+    /// @return bool indicating wether LTNT is stamped
     function hasStamp(uint id_, address address_) public view returns(bool){
         return _stamps[id_][address_];
     }
 
+    /// @dev get params for a given stamp on a LTNT
+    /// @param id_ the id of the LTNT
+    /// @param address_ the address of the stamper
+    /// @return Param the param to return
     function getStampParams(uint id_, address address_) public view returns(Param memory){
         return _params[id_][address_];
     }
 
     /// @dev Get the addresses of the issuers that have stamped a given LTNT
     /// @param id_ the ID of the LTNT to fetch stamps for
-    /// @return address[] an array of issuer addresses that have stamped the LTNT
+    /// @return addresses an array of issuer addresses that have stamped the LTNT
     function getStamps(uint id_) public view returns(address[] memory){
         
         // First count the stamps
@@ -141,14 +141,28 @@ contract LTNT is ERC721, Ownable {
 
     }
 
-    function getIssuerFor(uint id_) public view returns(LTNT.Issuer memory){
-        return _issuer_for_id[id_];
-    }
-
+    /// @dev list all issuer addresses
+    /// @return addresses list of all issuers
     function getIssuers() public view returns(address[] memory){
         return _issuers;
     }
 
+    /// @dev get the issuer of a LTNT
+    function getIssuerFor(uint id_) public view returns(LTNT.Issuer memory){
+        return _issuer_for_id[id_];
+    }
+
+    /// @dev set the meta contract
+    /// @param address_ the address of the meta contract
+    function setMetaContract(address address_) public onlyOwner {
+        _ltnt_meta = LTNT_Meta(address_);
+    }
+
+    /// @dev get the meta contract
+    /// @return LTNT_Meta the meta contract currently in use
+    function getMetaContract() public view returns(LTNT_Meta) {
+        return _ltnt_meta;
+    }
 
     /// @notice register an issuer address
     /// @param address_ the address of the issuer to add
@@ -172,7 +186,7 @@ contract LTNT is ERC721, Ownable {
     /// @param id_ the id of the LTNT
     /// @return json_ base64 encoded data URI containing the JSON metadata
     function tokenURI(uint id_) public view override returns(string memory json_){
-        return _ltnt_meta.getJSON(id_);
+        return _ltnt_meta.getJSON(id_, true);
     }
 
 
@@ -180,51 +194,61 @@ contract LTNT is ERC721, Ownable {
 
 
 /// @title A title that should describe the contract/interface
-/// @author The name of the author
-/// @notice Explain to an end user what this does
-/// @dev Explain to a developer any extra details
+/// @author troels_a
+/// @dev Handles meta for this contract
 contract LTNT_Meta {
-
 
     LTNT public immutable _ltnt;
 
-    constructor(){
+    ///@dev latent fonts
+    XanhMonoRegularLatin public immutable _xanh_regular;
+    XanhMonoItalicLatin public immutable _xanh_italic;
+
+    constructor(address regular_, address italic_){
+
         _ltnt = LTNT(msg.sender);
+        _xanh_regular = XanhMonoRegularLatin(regular_);
+        _xanh_italic = XanhMonoItalicLatin(italic_);
+
     }
 
     /// @notice return image string for id_
     /// @param id_ the id of the LTNT to retrieve the image for
     /// @param encode_ encode output as base64 uri
+    /// @return string the image string
     function getImage(uint id_, bool encode_) public view returns(string memory){
 
         LTNT.Issuer memory issuer_for_id_ = _ltnt.getIssuerFor(id_);
+        // console.log(issuer_for_id_.location);
         LTNT.IssuerInfo memory issuer_info_ = LTNTIssuer(issuer_for_id_.location).issuerInfo(id_, issuer_for_id_.param);
         LTNT.IssuerInfo memory stamper_;
         LTNT.Param memory stamp_param_;
         address[] memory issuers_ = _ltnt.getIssuers();
 
-
         bytes memory stamps_svg_;
-        bytes memory image_;
         string memory delay_;
         uint stamp_count_;
+        bool has_stamp_;
 
         for(uint i = 0; i < issuers_.length; i++) {
+
             delay_ = Strings.toString(i*150);
-            if(_ltnt.hasStamp(id_, issuers_[i])){
-                stamp_param_ = _ltnt.getStampParams(id_,issuers_[i]);
-                stamper_ = LTNTIssuer(issuers_[i]).issuerInfo(id_, stamp_param_);
-                stamps_svg_ = abi.encodePacked(stamps_svg_, '<text class="txt italic" fill-opacity="0" fill="white" y="',Strings.toString(25*i),'">',stamper_.name,' <animate attributeName="fill-opacity" values="0;1" dur="500ms" repeatCount="1" begin="',delay_,'ms" fill="freeze"/></text>');
+            stamp_param_ = _ltnt.getStampParams(id_,issuers_[i]);
+            stamper_ = LTNTIssuer(issuers_[i]).issuerInfo(id_, stamp_param_);
+            has_stamp_ = _ltnt.hasStamp(id_, issuers_[i]);
+
+            stamps_svg_ = abi.encodePacked(stamps_svg_, '<text class="txt italic" fill-opacity="0" fill="',has_stamp_ ? 'white' : '#555','" y="',Strings.toString(25*i),'">',stamper_.name,' <animate attributeName="fill-opacity" values="0;1" dur="500ms" repeatCount="1" begin="',delay_,'ms" fill="freeze"/></text>');
+            if(has_stamp_)
                 ++stamp_count_;
-            }
-            else {
-                stamps_svg_ = abi.encodePacked(stamps_svg_, '<text class="txt italic" fill-opacity="0" fill="#666" y="',Strings.toString(25*i),'">',stamper_.name,' <animate attributeName="fill-opacity" values="0;1" dur="500ms" repeatCount="1" begin="',delay_,'ms" fill="freeze"/></text>');
-            }
+
         }
 
+        // console.log('Assembled stamp SVG');
+
+        bytes memory image_;
         image_ = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1000" preserveAspectRatio="xMinYMin meet">',
-                '<defs><style>', _ltnt._xanh_regular().fontFace(), _ltnt._xanh_italic().fontFace(),'.txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em;} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect id="bg" height="1000" width="750" fill="black"/></defs>',
+                '<defs><style>', _xanh_regular.fontFace(), _xanh_italic.fontFace(),' .txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em;} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect id="bg" height="1000" width="750" fill="black"/></defs>',
                 '<use href="#bg"/>',
                 '<g transform="translate(65, 980) rotate(-90)">',
                     '<text class="txt large italic" fill="white">Latent Works</text>',
@@ -243,26 +267,39 @@ contract LTNT_Meta {
                 '</g>',
                 '<g transform="translate(659, 980)">',
                     '<text class="txt small" fill="white">latent.works</text>',
-                '</g>'
+                '</g>',
             '</svg>'
         );
 
         if(encode_)
-            image_ = abi.encodePacked('data:image/svg+xml;base69,', Base64.encode(image_));
+            image_ = abi.encodePacked('data:image/svg+xml;base64,', Base64.encode(image_));
 
         return string(image_);
 
     }
 
-    function getJSON(uint id_) public view returns(string memory) {
 
-        return string(abi.encodePacked(
+    /// @notice return base64 encoded JSON metadata for id_
+    /// @param id_ the id of the LTNT to retrieve the image for
+    /// @param encode_ encode output as base64 uri
+    /// @return string the image string
+    function getJSON(uint id_, bool encode_) public view returns(string memory) {
+
+        bytes memory json_ = abi.encodePacked(
             '{',
                 '"name":"LTNT", ',
                 '"image": "', getImage(id_, true),'", ',
-                '"description": "latent.works"'
-            '}')
+                '"description": "latent.works",',
+                '"attributes": [',
+                    '{"trait_type": "Stamps", "value": ',Strings.toString(_ltnt.getStamps(id_).length),'}',
+                ']',
+            '}'
         );
+
+        if(encode_)
+            json_ = abi.encodePacked('data:application/json;base64,', Base64.encode(json_));
+        
+        return string(json_);
 
     }
 
@@ -270,10 +307,8 @@ contract LTNT_Meta {
 
 
 /// @title LTNTIssuer
-/// @author Troels Abrahamsen
+/// @author troels_a
 /// @dev LTNTIssuers implement this contract and use issuerInfo to pass info to LTNT main contract
 abstract contract LTNTIssuer {
-
     function issuerInfo(uint id_, LTNT.Param memory param_) external virtual view returns(LTNT.IssuerInfo memory);
-    
 }

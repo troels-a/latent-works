@@ -3,12 +3,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "xanh_regular_",
+        "name": "regular_",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "xanh_italic_",
+        "name": "italic_",
         "type": "address"
       }
     ],
@@ -108,45 +108,6 @@
     ],
     "name": "Transfer",
     "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "_ltnt_meta",
-    "outputs": [
-      {
-        "internalType": "contract LTNT_Meta",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "_xanh_italic",
-    "outputs": [
-      {
-        "internalType": "contract XanhMonoItalicLatin",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "_xanh_regular",
-    "outputs": [
-      {
-        "internalType": "contract XanhMonoRegularLatin",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
   },
   {
     "inputs": [
@@ -278,6 +239,19 @@
         "internalType": "address[]",
         "name": "",
         "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMetaContract",
+    "outputs": [
+      {
+        "internalType": "contract LTNT_Meta",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -583,6 +557,19 @@
       }
     ],
     "name": "setApprovalForAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "address_",
+        "type": "address"
+      }
+    ],
+    "name": "setMetaContract",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

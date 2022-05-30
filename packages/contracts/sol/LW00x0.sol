@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./LW77x7.sol";
 import './LTNT.sol';
-import './lib/base64.sol';
+import 'base64-sol/base64.sol';
 import './lib/Rando.sol';
 import './LTNTFont.sol';
 
@@ -485,21 +485,21 @@ contract LW00x0_Meta {
             '<use href="#main" filter="url(#blur)" transform="rotate(90, 500, 500)"/>',
             '<use href="#main-ani" filter="url(#blur)" transform="scale(0.',Strings.toString(Rando.number(comp_.seed0, 5, 9)),') rotate(90, 500, 500)"/>',
             '<use href="#main-ani" filter="url(#blur)" transform="scale(0.',Strings.toString(Rando.number(comp_.seed0, 3, 6)),') translate(',comp_.pos[0],', ',comp_.pos[1],')"/>',
-            comp_.mark ? _getMark(comp_) : '',
+            comp_.mark ? _getMark(comp_) : bytes(''),
             '<use href="#bg" fill="url(#noise)"/>',
             '</g>',
             '</svg>'
         );
 
         if(encode_)
-            return string(abi.encodePacked('data:image/svg+xml;base64,', Base64.encode(bytes(output_))));
+            return string(abi.encodePacked('data:image/svg+xml;base64,', Base64.encode(output_)));
 
         return string(output_);
 
     }
 
 
-    function _getMark(CompInfo memory comp_) private view returns(string memory){
+    function _getMark(CompInfo memory comp_) private pure returns(bytes memory){
         
         bytes memory leading_zeroes_;
         if(bytes(comp_.id).length == 1)
@@ -508,7 +508,7 @@ contract LW00x0_Meta {
             leading_zeroes_ = '0';
 
         string memory lift_text_ = Strings.toString((comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 700 : 1000)-10);
-        return string(abi.encodePacked('<style>',_00x0._ltnt()._xanh_regular().fontFace(),_00x0._ltnt()._xanh_italic().fontFace(),'.txt{font: normal 12px "Xanh Mono";fill: white; letter-spacing:0.1em;}</style><rect width="105" height="30" x="-2" y="',Strings.toString((comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 700 : 1000)-28),'" fill="#000" class="box"></rect><text x="12" y="',lift_text_,'" class="txt">#', leading_zeroes_, comp_.id,unicode' · ', '00x0</text><text x="113" y="',lift_text_,'" class="txt">',comp_.seed0,'</text>'));
+        return abi.encodePacked('<style>.txt{font: normal 12px monospace;fill: white; letter-spacing:0.1em;}</style><rect width="115" height="30" x="-2" y="',Strings.toString((comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 700 : 1000)-28),'" fill="#000" class="box"></rect><text x="12" y="',lift_text_,'" class="txt">#', leading_zeroes_, comp_.id,unicode' · ', '00x0</text><text x="123" y="',lift_text_,'" class="txt">',comp_.seed0,'</text>');
         
     }
 
