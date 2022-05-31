@@ -44,6 +44,7 @@ async function main() {
   _00x0 = await LW00x0.deploy(_77x7.address, _77x7_ltnt_issuer.address, _ltnt.address);
   await _00x0.deployed();
   console.log("00x0 deployed to:", _00x0.address.green.bold);
+  
   await _77x7_ltnt_issuer.setCaller(_00x0.address);
   await _ltnt.addIssuer(_00x0.address);
 

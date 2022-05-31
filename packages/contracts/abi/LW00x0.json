@@ -316,32 +316,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "get00x0_00x0_meta",
-    "outputs": [
-      {
-        "internalType": "contract LW00x0_Meta",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "get77x7",
-    "outputs": [
-      {
-        "internalType": "contract LW77x7",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
