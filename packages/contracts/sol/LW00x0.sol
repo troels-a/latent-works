@@ -109,15 +109,6 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
         return super.onERC1155Received.selector;
     }
 
-
-    function get77x7() public view returns(LW77x7) {
-        return _77x7;
-    }
-
-    function get00x0_00x0_meta() public view returns(LW00x0_Meta) {
-        return _00x0_meta;
-    }
-
     
     function _create(address for_, uint[] memory works_) private returns(uint) {
 
