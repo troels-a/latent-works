@@ -6,7 +6,7 @@ import { bigNumbersToNumber } from 'abiapi/parsers';
 
 const abi = new ABIAPI(_00x0ABI);
 abi.supportedMethods = abi.getReadMethods();
-abi.cacheTTL = 60*60;
+abi.cacheTTL = 3;
 
 function compToCompObject(comp){
 
@@ -21,9 +21,15 @@ function compToCompObject(comp){
 
 }
 
+/// PARSERS
 abi.addParser('getCompCount', bigNumbersToNumber);
 abi.addParser('getComps', (result) => result.map(comp => (compToCompObject(comp))))
 abi.addParser('getComp', (result) => compToCompObject(result))
+
+/// TTLs
+// abi.setMethodCacheTTL('getCompCount', 3);
+// abi.setMethodCacheTTL('getComps', 3);
+// abi.setMethodCacheTTL('getComp', 3);
 
 export default async (req, res) => {
 
