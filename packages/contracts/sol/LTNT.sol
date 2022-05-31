@@ -169,6 +169,7 @@ contract LTNT is ERC721, Ownable {
     function addIssuer(address address_) public onlyOwner {
         _issuers.push(address_);
     }
+    
 
     /// @notice determine if an address is a LW project
     /// @param address_ the address of the issuer
@@ -242,8 +243,6 @@ contract LTNT_Meta {
                 ++stamp_count_;
 
         }
-
-        // console.log('Assembled stamp SVG');
 
         bytes memory image_;
         image_ = abi.encodePacked(

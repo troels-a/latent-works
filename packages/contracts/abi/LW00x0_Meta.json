@@ -3,12 +3,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "main_",
+        "name": "zero0x0_",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "genesis_",
+        "name": "seven7x7_",
         "type": "address"
       }
     ],

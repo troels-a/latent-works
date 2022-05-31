@@ -35,6 +35,32 @@
     "type": "event"
   },
   {
+    "inputs": [],
+    "name": "_77x7",
+    "outputs": [
+      {
+        "internalType": "contract LW77x7",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_ltnt",
+    "outputs": [
+      {
+        "internalType": "contract LTNT",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",

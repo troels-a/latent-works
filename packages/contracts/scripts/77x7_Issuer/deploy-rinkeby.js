@@ -5,7 +5,6 @@ const Verify = require('../verify.js');
 
 const NETWORK = 'rinkeby';
 const ADDRESS_77X7 = '0x81e4002C4F96B901fD97f8c5D9128020568d4EC5';
-const ADDRESS_77X7_ISSUER = '0x3d7ab61d376935a4b757768ea94B38fE0789EBf6';
 const ADDRESS_LTNT = '0x622EC226632eCD6370Ffb6e9FC5d8BFC7C51E2bb';
 
 async function main() {
@@ -24,29 +23,21 @@ async function main() {
   _77x7 = LW77x7.attach(ADDRESS_77X7);
   await _77x7.deployed();
 
-  const LW77x7_LTNTIssuer = await hre.ethers.getContractFactory("LW77x7_LTNTIssuer");
-  _77x7_ltnt_issuer = LW77x7_LTNTIssuer.attach(ADDRESS_77X7_ISSUER);
-  await _77x7_ltnt_issuer.deployed();
-
   const LTNT = await hre.ethers.getContractFactory("LTNT");
   _ltnt = LTNT.attach(ADDRESS_LTNT);
   await _ltnt.deployed();
 
 
-  /// LW00x0
+  /// LW77x7
+  const LW77x7_LTNTIssuer = await hre.ethers.getContractFactory("LW77x7_LTNTIssuer");
+  _77x7_ltnt_issuer = await LW77x7_LTNTIssuer.deploy(_77x7.address, _ltnt.address);
+  await _77x7_ltnt_issuer.deployed();
+  
+  await _ltnt.addIssuer(_77x7_ltnt_issuer.address);
 
-  const LW00x0 = await hre.ethers.getContractFactory("LW00x0");
-  _00x0 = await LW00x0.deploy(_77x7.address, _77x7_ltnt_issuer.address, _ltnt.address);
-  await _00x0.deployed();
-  console.log("00x0 deployed to:", _00x0.address.green.bold);
-  verify.add(_00x0.address, [_77x7.address, _77x7_ltnt_issuer.address, _ltnt.address]);
+  console.log("77x7 issuer deployed to:", _77x7_ltnt_issuer.address.green.bold);
+  verify.add(_77x7_ltnt_issuer.address, [_77x7.address, _ltnt.address]);
 
-  await _77x7_ltnt_issuer.setCaller(_00x0.address);
-  await _ltnt.addIssuer(_00x0.address);
-
-  const _00x0_meta_address = await _00x0._00x0_meta();
-  console.log("00x0_Meta deployed to:", _00x0_meta_address.green.bold);
-  verify.add(_00x0_meta_address, [_00x0.address, _77x7.address]);
 
   console.log('Done!');
   console.log('Verify command:')

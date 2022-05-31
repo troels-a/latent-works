@@ -300,9 +300,9 @@ contract LW00x0_Meta {
         bytes scale;
     }
 
-    constructor(address main_, address genesis_){
-        _00x0 = LW00x0(main_);
-        _77x7 = LW77x7(genesis_);
+    constructor(address zero0x0_, address seven7x7_){
+        _00x0 = LW00x0(zero0x0_);
+        _77x7 = LW77x7(seven7x7_);
     }
 
     /**

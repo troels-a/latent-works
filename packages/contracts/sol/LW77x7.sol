@@ -274,9 +274,9 @@ contract LW77x7 is ERC1155, ERC1155Supply, Ownable {
 
 contract LW77x7_LTNTIssuer is LTNTIssuer, Ownable {
 
-  LW77x7 private _77x7;
+  LW77x7 public immutable _77x7;
+  LTNT public immutable _ltnt;
   address private _caller;
-  LTNT private _ltnt;
 
   mapping(uint => uint) private _iterations;
 
