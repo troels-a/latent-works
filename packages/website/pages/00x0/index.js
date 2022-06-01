@@ -14,7 +14,7 @@ import { getEntryBySlug } from "base/contentAPI";
 import {useConnectIntent} from "components/ConnectButton";
 import { ethers } from "ethers";
 import useError from "hooks/useError";
-
+import Modal from "components/Modal";
 // Import Swiper styles
 import Link from "next/link";
 import useENS from "hooks/useENS";
@@ -42,7 +42,7 @@ const colorPulse = keyframes`
 `
 
 
-const Comps = styled.div`
+const CompModal = styled(Modal)`
     min-height: 100vh;
     display: flex;
     flex-wrap: wrap;
@@ -229,14 +229,22 @@ function _00x0_Index(props){
 
 
     return <Page fixHeader bgColor="#000">
-        <Comps>
-        {(comp && comp != -1) &&
-        <>
+        
+        {compCount === 0 && 
+        <div style={{textAlign: 'center'}}>
+            <h2>No 00x0 comps have been created yet.</h2>
+            <p>77x7 holders can create 00x0 comps <Link href="/00x0/transfer"><a>here</a></Link></p>
+        </div>
+        }
+
+        {compCount === -1 && <div>
+            <div style={{textAlign: 'center'}}>
+                <h2>Loading...</h2>
+            </div>
+        </div>}
+
+        <CompModal show={(comp && comp != -1)}>
             <Comp>
-                <CompNav>
-                    <div onClick={() => prevComp()}>{'<'}</div>
-                    <div onClick={() => nextComp()}>{'>'}</div>
-                </CompNav>
                 <CompImage {...comp} show={!loadingComp}/>
             </Comp>
             <CompInfo show={!loadingComp}>
@@ -257,23 +265,7 @@ function _00x0_Index(props){
                 </div>
             </div>
             </CompInfo>
-        </>
-        }
-
-        {compCount === 0 && 
-        <div style={{textAlign: 'center'}}>
-            <h2>No 00x0 comp have been created yet.</h2>
-            <p>77x7 holders can create comp <Link href="/00x0/transfer"><a>here</a></Link></p>
-        </div>
-        }
-
-        {compCount === -1 && <div>
-            <div style={{textAlign: 'center'}}>
-                <h2>Loading...</h2>
-            </div>
-        </div>}
-        
-        </Comps>
+        </CompModal>
 
     </Page>
 

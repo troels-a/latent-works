@@ -1,35 +1,25 @@
+import useInterval from "hooks/useInterval";
+import { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
 
-const spin = keyframes`
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+const Dots = styled.span`
+display: inline-block;
+    width: 2em;
 `
 
-function _Loader({children, ...p}){
+export default function Loader({children, ...p}){
+
+    const [dots, setDots] = useState('');
+    
+    useInterval(() => {
+        if(dots.length < 3)
+            setDots(dots+'.');
+        else
+            setDots('');
+    }, 500);
 
     return <div {...p}>
-        {children}
+        {children}<Dots>{dots}</Dots>
     </div>
 
 }
-
-export default styled(_Loader)`
-    position: absolute;
-    text-align: center;
-    &:before {
-        transform-origin: 50% 50%;
-        position: relative;
-        top: -30px;
-        left: -15px;
-        display: block;
-        content: '-';
-        width: 100%;
-        height: 0px;
-        animation: ${spin} 500ms infinite;
-    }
-
-`

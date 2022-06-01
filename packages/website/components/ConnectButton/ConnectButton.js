@@ -40,7 +40,6 @@ const ConnectGroup = styled.div`
     pointer-events: none;
   `}
 
-  ${breakpoint('sm', 'lg')`
 
     ${p => p.choices && `
       position: fixed!important;
@@ -59,7 +58,6 @@ const ConnectGroup = styled.div`
       place-content: center;
       flex-direction: column;
     `}
-  `}
 
 `
 

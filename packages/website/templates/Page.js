@@ -95,8 +95,9 @@ export default function Page({children, $centerContent, ...props}){
   function check(){
     if(active && !isChainID()){
       err.send(() => {
-        return <span onClick={switchNet}>Wrong network - click here to change</span>
+        return <span>You are connected to the wrong network. Please switch before continuing.</span>
       });
+      err.setActions([{label: 'Switch network', callback: () => {switchNet(); err.reset()}}, {label: 'Cancel', callback: err.reset}]);
       deactivate();
     }
   }

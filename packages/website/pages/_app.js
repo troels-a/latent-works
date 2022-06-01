@@ -78,24 +78,34 @@ const GlobalStyle = createGlobalStyle`
   }
 
   button {
+
     transition: all 150ms;
-    background-color: ${theme.colors.emph2};
+    background-color: ${theme.colors.emph7};
     padding: 1vw 2vw;
     cursor: pointer;
+
     ${breakpoint('sm', 'md')`
       padding: 2vw 3vw;
     `}
+
     border: none;
-    /* box-shadow: 0px 0px 20px rgba(0,0,0,0.1); */
+    
+
     color: ${theme.colors.text};
     font-family: ${theme.font};
     font-size: inherit;
+    
     &:hover {
-      background-color: ${theme.colors.emph1};
+      background-color: ${theme.colors.emph9};
     }
+    
     &:active {
-      background-color: ${theme.colors.emph3};
+      background-color: ${theme.colors.emph9};
       /* box-shadow: 0px 0px 10px rgba(0,0,0,0.1); */
+    }
+    &[disabled]{
+      opacity: 0.3;
+      pointer-events: none;
     }
     margin-right: 2vw;
     &:last-child {

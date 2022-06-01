@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 const ErrorCtx = React.createContext(false);
 
 const createError = p => {
+
     const [message, setMessage] = useState();
+    const [actions, setActions] = useState();
 
     async function send(msg, timeout = false){
         setMessage(msg)
@@ -15,7 +17,12 @@ const createError = p => {
         message;
     }
 
-    return {message, setMessage, send, render};
+    function reset(){
+        setMessage(null);
+        setActions(null)
+    }
+
+    return {message, setMessage, actions, setActions, send, reset};
 }
 
 

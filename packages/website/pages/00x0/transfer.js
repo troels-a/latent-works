@@ -13,13 +13,12 @@ import { AspectRatio } from "react-aspect-ratio";
 import 'react-aspect-ratio/aspect-ratio.css'
 import { getEntryBySlug } from "base/contentAPI";
 import { useConnectIntent } from "components/ConnectButton";
-import { ethers } from "ethers";
 import useError from "hooks/useError";
 import useContract from "hooks/useContract";
-import { Swiper, SwiperSlide } from 'swiper/react';
 import {breakpoint} from "styled-components-breakpoint";
 import Loader from 'components/Loader';
 import AbortController from "abort-controller";
+import Modal, {ModalActions, ModalInner} from 'components/Modal';
 
 const Works = styled(p => <Grid container {...p}/>)`
     width: calc(100%+1vw);
@@ -91,40 +90,6 @@ const Button = styled.button`
 
 `
 
-const Modal = styled.div`
-
-    position: fixed;
-    z-index: 100;
-    top: 0;
-    left:0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0,0,0,0.8);
-    display: flex;
-    flex-direction: column;
-    place-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 200ms;
-
-    ${p => p.show && `
-        opacity: 1;
-        pointer-events: all;
-    `}
-
-`
-
-const ModalInner = styled.div`
-    padding: 0 2vw;
-    max-width: 600px;
-    ${breakpoint('sm', 'md')`
-        max-width: 100%;
-    `}
-
-`
 
 const Preview = styled.img`
     max-height: ${p => p.maxHeight ? p.maxHeight : 70}%; 
@@ -226,6 +191,8 @@ function _00x0_Transfer(props){
             setTransferring(false);
 
         }
+
+        resetTransferPrompt();
         
     }
 
@@ -258,15 +225,18 @@ function _00x0_Transfer(props){
     }
 
 
+    async function resetTransferPrompt(){
+        setTransferPrompt(false);
+        setTransferPreview(false);
+    }
+
 
     return <Page>
         <Grid>
+            {!account && <h2 style={{textAlign: 'center', width: '100%', paddingTop: '2vw'}}>Connect to create</h2>}
+            {account && <>
             <Grid.Unit size={{sm: 1/1, md: 6/12}}>
-                <MintingSection disabled={transferring} padTop={0}>
-                    
-                    {!account && <Center><a href="#" onClick={(e) => {
-                        e.preventDefault(); setConnectIntent(true)
-                    }}>Connect</a></Center>}
+                <MintingSection disabled={transferring} padTop={0}>                    
                     {(fetchingBalance) && <div>Looking for 77x7 works...</div>}
                     {(account && !fetchingBalance && !balance) && <div>No 77x7 works found</div>}
                     {(balance && !fetchingBalance) && <Works>
@@ -297,16 +267,22 @@ function _00x0_Transfer(props){
                 </MintingSection>
             </Grid.Unit>
             <Grid.Unit size={{sm: 1/1, md: 6/12}}>
-                {/* <Section dangerouslySetInnerHTML={{__html: props.page00x0.content}}/> */}
-                <Section>
+                <Section $padBottom={0} dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
+                <Section $padTop={0}>
+                    <small>
                 <a href={`https://etherscan.io/address/${process.env.NEXT_PUBLIC_ADDRESS_00X0}`}>
                     Contract
                 </a>
+                ·
+                <a href={`https://etherscan.io/address/${process.env.NEXT_PUBLIC_ADDRESS_00X0}`}>
+                    Discord
+                </a>
+                </small>
                 </Section>
 
                 <Section>
                 {}
-                {(account && !fetchingBalance && balance && Object.entries(balance).length > 0) && 
+                {account && 
                     <>
                         {/* <table style={{width: '50%'}}>
                         <thead>
@@ -315,48 +291,70 @@ function _00x0_Transfer(props){
                         {Object.keys(balance).map(key => <tr><td>#{key.length < 2 ? `0${key}` : key}</td> <td>{balance[key]}</td></tr>)}
                         </table> */}
                     
-                        {(selectedWorks.length > 1 && selectedWorks.length < 8) && <>
-                            <Button disabled={!(selectedWorks.length > 1 && selectedWorks.length < 8)} onClick={() => openTransferPrompt()}>
-                                {(selectedWorks.length > 1 && selectedWorks.length < 8) && 'Transfer'}
-                            </Button>
-                            <Button onClick={() => handlePreview()}>
-                                Preview
-                            </Button>
-                        </>}
+                        <Button disabled={!(selectedWorks.length > 1 && selectedWorks.length < 8)} onClick={() => openTransferPrompt()}>
+                            Transfer
+                        </Button>
+                        <Button disabled={!(selectedWorks.length > 1 && selectedWorks.length < 8)} onClick={() => handlePreview()}>
+                            Preview
+                        </Button>
                     </>
                 }
                 </Section>
             </Grid.Unit>
+            </>}
         </Grid>
-        <Modal show={
-            (preview !== false && preview !== -100)
-            ||
-            (transferPrompt)
-        }>
-            {transferPrompt && <>
-                {transferPreview === false && <Loader>Generating transaction...<br/><small><a href="#" onClick={cancelPreview}>Cancel</a></small></Loader>}
-                {transferPreview !== false && <>
-                <a href="#" onClick={() => {setTransferPreview(false); setTransferPrompt(false);}}>Close</a><br/><br/><Preview maxHeight={40} src={`${transferPreview}`}/>
-                <br/><br/>
+
+
+
+        {/* PREVIEW MODAL */}
+        <Modal show={preview !== false && preview !== -100}>
+            
+            {preview !== -1 && <Preview src={preview}/>}
+
+            <ModalInner>
+                
+                {preview === -1 && <>
+                    <Loader>Generating preview</Loader>
+                    <ModalActions actions={[{label: 'Cancel', callback: cancelPreview}]}/>
+                </>}
+
+                {preview !== -1 && <ModalActions actions={[{label: 'Close', callback: () => setPreview(false)}]}/>}
+            </ModalInner>
+
+        </Modal>
+
+
+
+        {/* TRANSFER PREVIEW MODAL */}
+        <Modal show={transferPrompt}>
+
+                {transferPreview && <Preview maxHeight={50} src={transferPreview}/>}
                 <ModalInner>
+                    
+                    {transferPreview === false && <>
+                        <Loader>Generating transaction</Loader>
+                        <ModalActions actions={[{label: 'Cancel', callback: cancelPreview}]}/>
+                    </>}
+
+
+                    {transferPreview !== false && <>
                     <small>
                         You are about to permanently transfer <strong>{selectedWorks.length}</strong> 77x7 works out of your wallet.
-                        The transfer will result in the above 00x0 being created and the first edition being minted directly to your wallet. The remaining {selectedWorks.length-1 > 1 ? `${selectedWorks.length-1} editions` : `edition`} will be publicly mintable for 0.07 ETH{selectedWorks.length-1 > 1 && ` each`} of which you will recieve 50%.
+                        The transfer will result in the above 00x0 being created and the first edition being minted directly to your wallet. The remaining {selectedWorks.length-1 > 1 ? `${selectedWorks.length-1} editions` : `edition`} will be publicly mintable for 0.07 ETH{selectedWorks.length-1 > 1 && ` each`} of which you will receive 50%.
                         Additionally {selectedWorks.length} LTNT passports will be issued to your wallet.
                     </small>
                     <br/>
                     <br/>
-                    {transferring && <Loader>Transferring...</Loader>}
-                    {!transferring && <Button invertColors fullWidth onClick={() => handleTransfer()}>
-                        I understand - transfer
-                    </Button>}
+                    {transferring && <Loader>Transferring</Loader>}
+                    {!transferring && <ModalActions actions={[
+                        {label: 'Cancel', callback: resetTransferPrompt},
+                        {label: 'Transfer', cta: true, callback: handleTransfer}
+                    ]}/>}
+                    </>
+                    }
+
                 </ModalInner>
-                </>}
-            </>}
-
-            {preview === -1 && <Loader>Generating preview...<br/><small><a href="#" onClick={cancelPreview}>Cancel</a></small></Loader>}
-            {(typeof preview == 'string') && <><a href="#" onClick={() => setPreview(false)}>Close</a><br/><br/><Preview src={`${preview}`}/></>}
-
+            
         </Modal>
     </Page>
 
