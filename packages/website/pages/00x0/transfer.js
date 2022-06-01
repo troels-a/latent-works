@@ -82,9 +82,16 @@ const Button = styled.button`
     ${breakpoint('sm', 'md')`
         width: 100%;
     `}
+
+    ${p => p.fullWidth && 'width: 100%;'}
+    ${p => p.invertColors && `
+        background-color: ${p.theme.colors.text}!important;
+        color: ${p.theme.colors.bg}!important;
+    `}
+
 `
 
-const Preview = styled.div`
+const Modal = styled.div`
 
     position: fixed;
     z-index: 100;
@@ -101,16 +108,26 @@ const Preview = styled.div`
     justify-content: center;
     opacity: 0;
     pointer-events: none;
+    transition: opacity 200ms;
+
     ${p => p.show && `
         opacity: 1;
         pointer-events: all;
     `}
 
+`
 
-    img {
-        max-height: 70%; 
-    }
+const ModalInner = styled.div`
+    padding: 0 2vw;
+    max-width: 600px;
+    ${breakpoint('sm', 'md')`
+        max-width: 100%;
+    `}
 
+`
+
+const Preview = styled.img`
+    max-height: ${p => p.maxHeight ? p.maxHeight : 70}%; 
 `
 
 function SelectableWork(p){
@@ -133,11 +150,17 @@ function _00x0_Transfer(props){
     const _77x7 = use77x7();
     const _00x0 = use00x0();
     const _00x0_Meta = useContract({endpoint: '/api/00x0/meta', abi: _00x0_meta_ABI});
+    
     const [selectedWorks, setSelectedWorks] = useState([]);
     const {connectIntent, setConnectIntent} = useConnectIntent();
-    const [migrating, setMigrating] = useState(false);
-    const err = useError();
+
+    const [transferPrompt, setTransferPrompt] = useState(false);
+    const [transferPreview, setTransferPreview] = useState(false);
+    const [transferring, setTransferring] = useState(false);
+
     const [preview, setPreview] = useState(false);
+
+    const err = useError();
 
     useEffect(() => {
 
@@ -148,15 +171,37 @@ function _00x0_Transfer(props){
     }, [_00x0.contract])
 
     async function updateMetaContract(){
-        console.log('MUPDATE META')
         const meta_address = await _00x0.contract._00x0_meta()
         await _00x0_Meta.setAddress(meta_address);
     }
 
 
-    async function handleMigrate(){
+    async function openTransferPrompt(){
+
+        setTransferPrompt(true);
+
+        try {
+
+            previewController = new AbortController()            
+            const response = await _00x0_Meta.read('previewImage', {
+                salt_: account,
+                works_: selectedWorks
+            }, previewController)
+
+            setTransferPreview(response.result);
+
+        }
+        catch(err){
+            console.log(err)
+            setTransferPrompt(false)
+        }
+
+    }
+
+
+    async function handleTransfer(){
         
-        setMigrating(true);
+        setTransferring(true);
         const works = selectedWorks.map(id => parseInt(id));
         const values = Array(works.length).fill(1);
         const from = account;
@@ -170,14 +215,16 @@ function _00x0_Transfer(props){
 
             await tx.wait();
 
-            setMigrating(false);
+            setTransferring(false);
             fetchBalance(account);
             setSelectedWorks(prev => [])
 
         }
         catch(e){
+
             err.setMessage(e.message)
-            setMigrating(false);
+            setTransferring(false);
+
         }
         
     }
@@ -204,7 +251,8 @@ function _00x0_Transfer(props){
 
     }
 
-
+    
+    // Cancel any preview request
     async function cancelPreview(){
         previewController.abort();
     }
@@ -213,8 +261,8 @@ function _00x0_Transfer(props){
 
     return <Page>
         <Grid>
-            <Grid.Unit size={{sm: 1/1, md: 7/12}}>
-                <MintingSection disabled={migrating}>
+            <Grid.Unit size={{sm: 1/1, md: 6/12}}>
+                <MintingSection disabled={transferring} padTop={0}>
                     
                     {!account && <Center><a href="#" onClick={(e) => {
                         e.preventDefault(); setConnectIntent(true)
@@ -228,11 +276,15 @@ function _00x0_Transfer(props){
                             <SelectableWork selected={selectedWorks.includes(_id)} index={selectedWorks.indexOf(_id)+1} onClick={() => setSelectedWorks(prev => {
 
                                 const index = prev.indexOf(_id);
-
-                                if(index > -1)
+                                if(index > -1){
                                     delete prev[index];
-                                else
+                                }
+                                else{
+                                    if(prev.length == 7){
+                                        prev.shift();
+                                    }
                                     prev.push(_id);
+                                }
 
                                 return prev.filter(val => val);
                                     
@@ -242,34 +294,70 @@ function _00x0_Transfer(props){
                         })}
                     </Works>
                     }
-                {(account && !fetchingBalance && balance && Object.entries(balance).length > 0) && 
-                    <Section style={{paddingLeft: 0, paddingRight: 0}}>
-                        <Button disabled={!(selectedWorks.length > 0 && selectedWorks.length < 8)} onClick={() => handleMigrate()}>
-                            {selectedWorks.length == 0 && `Select works to migrate`}
-                            {selectedWorks.length == 1 && `Migrate`}
-                            {(selectedWorks.length > 1 && selectedWorks.length < 8) && 'Migrate and create 00x0'}
-                        </Button>
-                        {(selectedWorks.length > 1 && selectedWorks.length < 8) && <Button onClick={() => handlePreview()}>
-                            {`Preview 00x0`}
-                        </Button>}
-                    </Section>}
                 </MintingSection>
             </Grid.Unit>
-            <Grid.Unit size={{sm: 1/1, md: 5/12}}>
-                <Section dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
-                <Section padTop={false}>
+            <Grid.Unit size={{sm: 1/1, md: 6/12}}>
+                {/* <Section dangerouslySetInnerHTML={{__html: props.page00x0.content}}/> */}
+                <Section>
                 <a href={`https://etherscan.io/address/${process.env.NEXT_PUBLIC_ADDRESS_00X0}`}>
                     Contract
                 </a>
                 </Section>
+
+                <Section>
+                {}
+                {(account && !fetchingBalance && balance && Object.entries(balance).length > 0) && 
+                    <>
+                        {/* <table style={{width: '50%'}}>
+                        <thead>
+                            <td>Work</td><td>Balance</td>
+                        </thead>
+                        {Object.keys(balance).map(key => <tr><td>#{key.length < 2 ? `0${key}` : key}</td> <td>{balance[key]}</td></tr>)}
+                        </table> */}
+                    
+                        {(selectedWorks.length > 1 && selectedWorks.length < 8) && <>
+                            <Button disabled={!(selectedWorks.length > 1 && selectedWorks.length < 8)} onClick={() => openTransferPrompt()}>
+                                {(selectedWorks.length > 1 && selectedWorks.length < 8) && 'Transfer'}
+                            </Button>
+                            <Button onClick={() => handlePreview()}>
+                                Preview
+                            </Button>
+                        </>}
+                    </>
+                }
+                </Section>
             </Grid.Unit>
         </Grid>
-        <Preview show={preview !== false && preview !== -100}>
-        {/* <Preview show={true}> */}
-            {/* <Loader>Generating preview...<br/><a href="#" onClick={cancelPreview}>Cancel</a></Loader> */}
+        <Modal show={
+            (preview !== false && preview !== -100)
+            ||
+            (transferPrompt)
+        }>
+            {transferPrompt && <>
+                {transferPreview === false && <Loader>Generating transaction...<br/><small><a href="#" onClick={cancelPreview}>Cancel</a></small></Loader>}
+                {transferPreview !== false && <>
+                <a href="#" onClick={() => {setTransferPreview(false); setTransferPrompt(false);}}>Close</a><br/><br/><Preview maxHeight={40} src={`${transferPreview}`}/>
+                <br/><br/>
+                <ModalInner>
+                    <small>
+                        You are about to permanently transfer <strong>{selectedWorks.length}</strong> 77x7 works out of your wallet.
+                        The transfer will result in the above 00x0 being created and the first edition being minted directly to your wallet. The remaining {selectedWorks.length-1 > 1 ? `${selectedWorks.length-1} editions` : `edition`} will be publicly mintable for 0.07 ETH{selectedWorks.length-1 > 1 && ` each`} of which you will recieve 50%.
+                        Additionally {selectedWorks.length} LTNT passports will be issued to your wallet.
+                    </small>
+                    <br/>
+                    <br/>
+                    {transferring && <Loader>Transferring...</Loader>}
+                    {!transferring && <Button invertColors fullWidth onClick={() => handleTransfer()}>
+                        I understand - transfer
+                    </Button>}
+                </ModalInner>
+                </>}
+            </>}
+
             {preview === -1 && <Loader>Generating preview...<br/><small><a href="#" onClick={cancelPreview}>Cancel</a></small></Loader>}
-            {preview !== -1 && <><a href="#" onClick={() => setPreview(false)}>Close</a><br/><br/><img src={`${preview}`}/></>}
-        </Preview>
+            {(typeof preview == 'string') && <><a href="#" onClick={() => setPreview(false)}>Close</a><br/><br/><Preview src={`${preview}`}/></>}
+
+        </Modal>
     </Page>
 
 }

@@ -10,8 +10,10 @@ const Section = styled.div`
     ${p => p.$large && `font-size: 1.3em;`}
     ${p => p.$compact && `max-width: 70%;`}
     ${p => p.$center && `margin-left: auto; margin-right: auto;`}
-    ${p => p.$padtop && `padding-top: ${p.$padtop ? p.$padtop*1 : 5}vw;`}
-    ${p => p.$padbottom && `padding-bottom: ${p.$padbottom ? p.$padbottom*1 : 5}vw;`}
+    ${p => p.$padTop > -1 && `padding-top: ${p.$padTop > -1 ? p.$padTop : 5}vw;`}
+    ${p => p.$padBottom > -1 && `padding-bottom: ${p.$padBottom > -1 ? p.$padBottom : 5}vw;`}
+    ${p => p.$padLeft > -1 && `padding-left: ${p.$padLeft > -1 ? p.$padLeft : 5}vw;`}
+    ${p => p.$padRight > -1 && `padding-right: ${p.$padRight > -1 ? p.$padRight : 5}vw;`}
 
     ${breakpoint('sm', 'md')`
         padding: 4vw;
