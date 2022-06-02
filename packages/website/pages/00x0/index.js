@@ -4,7 +4,7 @@ import Section from "components/Section/Section";
 import use77x7, {_77x7Provider} from "hooks/use77x7";
 import { useWeb3React } from "@web3-react/core";
 import { useEffect, useState } from "react";
-import { isArray, map, result } from "lodash";
+import { isArray, isObject, map, result } from "lodash";
 import useWork, { WorkProvider } from "hooks/useWork";
 import styled, { keyframes } from "styled-components";
 import use00x0, { _00x0Provider } from "hooks/use00x0";
@@ -14,7 +14,7 @@ import { getEntryBySlug } from "base/contentAPI";
 import {useConnectIntent} from "components/ConnectButton";
 import { ethers } from "ethers";
 import useError from "hooks/useError";
-import Modal from "components/Modal";
+import Modal, {ModalInner} from "components/Modal";
 // Import Swiper styles
 import Link from "next/link";
 import useENS from "hooks/useENS";
@@ -22,6 +22,7 @@ import {breakpoint} from "styled-components-breakpoint";
 import { errToMessage } from "base/errors";
 import { useRouter } from "next/dist/client/router";
 import Loader from "components/Loader";
+import Button from "components/Button";
 
 const PRICE = ethers.utils.parseEther('0.07');
 
@@ -99,15 +100,24 @@ const CompInfo = styled(Section)`
             max-width: 100%;
         `}
 
-        max-width: 40%;
+        width: 33%;
+
+        ${breakpoint('lg')`
+            &:nth-child(2) {
+                text-align: center;
+            }
+        `}
+
         &:last-child {
             text-align: right;
         }
     }
 
-    button {
-        width: 100%;
-    }
+    ${breakpoint('sm', 'md')`
+        button {
+            width: 100%;
+        }
+    `}
     opacity: 0;
     pointer-events: none;
     transition: opacity 300ms ease-out;
@@ -147,7 +157,7 @@ const CompNav = styled.div`
 `
 
 const Comps = styled(Grid)`
-    min-height: 90vh;
+    min-height: 60vh;
     display: flex;
     flex-wrap: wrap;
     place-items: center;
@@ -168,11 +178,10 @@ function _00x0_Index(props){
     const router = useRouter();
     const {account} = useWeb3React();
     const _00x0 = use00x0();
-    const [comp, setComp] = useState(false);
-    const [comps, setComps] = useState(false); // false = unset, -102 = loading, -404 = no comps
+    const [comp, setComp] = useState(false); // false = unset, -102 = loading, -404 = not found
+    const [comps, setComps] = useState(false); // false = unset, -102 = loading, -404 = not
     const [compsPage, setCompsPage] = useState(1);
     const [compsLimit, setCompsLimit] = useState(9);
-    const [loadingComp, setLoadingComp] = useState(false);
     const {connectIntent, setConnectIntent} = useConnectIntent();
     const err = useError(); 
     const [compCount, setCompCount] = useState(-1);
@@ -188,20 +197,19 @@ function _00x0_Index(props){
 
     async function fetchComp(id){
 
-        if(loadingComp)
+        if(comp === -102)
             return;
 
-        setLoadingComp(true);
+        setComp(-102);
         const data = await _00x0.api('getComp', {comp_id_: id});
 
         if(data.error){
-            setLoadingComp(false);
+            setComp(false);
             return;
         }
 
         const comp = data.result;
         setComp(comp);
-        setLoadingComp(false);
 
     }
 
@@ -236,14 +244,6 @@ function _00x0_Index(props){
 
 
     useEffect(() => {
-
-        if(comp){
-            goToComp(1);
-        }
-
-    }, [comp])
-
-    useEffect(() => {
         if(compsPage)
             fetchComps()
     }, [compsPage])
@@ -266,20 +266,36 @@ function _00x0_Index(props){
         }
     }
 
+    async function resetComp(){
+        router.replace(`/00x0`)
+        setComp(false);
+    }
+    
+
 
     return <Page bgColor="#000">
         
-        {compCount === 0 && 
-        <div style={{textAlign: 'center'}}>
-            <h2>No 00x0 comps have been created yet.</h2>
-            <p>77x7 holders can create 00x0 comps <Link href="/00x0/transfer"><a>here</a></Link></p>
-        </div>
-        }
+        <Section>
+            <Grid>
+                <Grid.Unit size={{sm: 1/1, md: 1/2}}>
+                    <div dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
+                    <div>
+                        77x7 holders can create 00x0 comps <Link href="/00x0/transfer"><a>here</a></Link> 
+                    </div>
+                </Grid.Unit>
+                <Grid.Unit size={{sm: 1/1, md: 1/2}}>
+                    <div>
+                       {compCount > 0 && <>{compCount} 00x0 comps have been created.<br/></>}
+                    </div>
+                </Grid.Unit>
+            </Grid>
+        </Section>
         
 
         {comps === -102 && <Comps><Loader>Loading comps</Loader></Comps>}
+        {compCount === 0 && <Comps>No comps have been created yet</Comps>}
 
-        {isArray(comps) && // THERE ARE COMPS
+        {(isArray(comps) && compCount > 0) && // THERE ARE COMPS
         <div>
             <CompNav>
                 <div onClick={prevCompsPage}>{'<'}</div>
@@ -288,37 +304,42 @@ function _00x0_Index(props){
             
             <Comps>
                 {comps.map(comp => <Grid.Unit size={{sm: 1/2, md: 1/3}}>
-                    <CompImage pad image={comp.image} show={true}/>
-                </Grid.Unit>)}
-                {comps.map(comp => <Grid.Unit size={{sm: 1/2, md: 1/3}}>
-                    <CompImage pad image={comp.image} show={true}/>
+                    <CompImage pad onClick={() => goToComp(comp.id)} image={comp.image} show={true}/>
                 </Grid.Unit>)}
             </Comps>
         </div>}
         
 
-        <CompModal show={(comp && comp != -1)}>
-            <Comp>
-                <CompImage {...comp} show={!loadingComp}/>
-            </Comp>
-            <CompInfo show={!loadingComp}>
-            <div>
-                <div><small>Created by <EnsAddress input={comp.creator}/></small></div>
-                <div><small>{comp.available > 0 ? `${comp.available} of ${comp.editions} left`: `Edition of ${comp.editions}`}</small></div>
-            </div>
-            <div>
+        <CompModal show={comp}>
+            {comp === -102 && <ModalInner center><Loader>Loading comp</Loader></ModalInner>}
+            {isObject(comp) && <>
+
+                <Comp>
+                    <CompImage {...comp} show={isObject(comp)}/>
+                </Comp>
+                <CompInfo show={isObject(comp)}>
                 <div>
-                    {account && comp.available > 0 
-                    ? 
-                    <button disabled={account == comp.creator} onClick={() => handleMint(comp)}>
-                        {account == comp.creator ? `Creator can't mint` : <>Mint <small>({ethers.utils.formatEther(PRICE)} ETH)</small></>}
-                    </button>
-                    :
-                    <button onClick={() => setConnectIntent(!connectIntent)}>{comp.available > 0 ? 'Connect to mint' : 'Sold out'}</button>
-                    }
+                    <div><small>Created by <EnsAddress input={comp.creator}/></small></div>
+                    <div><small>{comp.available > 0 ? `${comp.available} of ${comp.editions} left`: `Edition of ${comp.editions}`}</small></div>
                 </div>
-            </div>
-            </CompInfo>
+                <div>
+                    <div>
+                        {account && comp.available > 0 
+                        ? 
+                        <Button disabled={account == comp.creator} onClick={() => handleMint(comp)}>
+                            {account == comp.creator ? `Creator can't mint` : <>Mint <small>({ethers.utils.formatEther(PRICE)} ETH)</small></>}
+                        </Button>
+                        :
+                        <Button onClick={() => setConnectIntent(!connectIntent)}>{comp.available > 0 ? 'Connect to mint' : 'Sold out'}</Button>
+                        }
+                    </div>
+                </div>
+                <div>
+                    <Button onClick={resetComp}>Close</Button>
+                </div>
+                </CompInfo>
+            
+            </>}
         </CompModal>
 
     </Page>

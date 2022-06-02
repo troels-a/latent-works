@@ -141,7 +141,7 @@ export default function ConnectButton({onActivate}) {
         </div>
       </ConnectGroup>
       
-      <Modal show={connectIntent}>
+      <Modal show={connectIntent} zIndex={2000}>
         <ModalInner>
         <Connect
           onClick={() => {

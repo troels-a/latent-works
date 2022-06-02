@@ -122,6 +122,8 @@ function _00x0_Transfer(props){
     const [transferPrompt, setTransferPrompt] = useState(false);
     const [transferPreview, setTransferPreview] = useState(false);
     const [transferring, setTransferring] = useState(false);
+    const [transferDone, setTransferDone] = useState(false);
+    const [transferComp, setTransferComp] = useState(false);
 
     const [preview, setPreview] = useState(false);
 
@@ -178,11 +180,14 @@ function _00x0_Transfer(props){
             ? await _77x7.contract.safeTransferFrom(from, to, works[0], values[0], [])
             : await _77x7.contract.safeBatchTransferFrom(from, to, works, values, []);
 
-            await tx.wait();
-
+            const res = await tx.wait();
+            // console.log(res)
+            // const id = res.events[0].args[0];
+            // const transferComp = _00x0.read('getComp', {comp_id_: id})
             setTransferring(false);
             fetchBalance(account);
             setSelectedWorks(prev => [])
+            // setTransferComp(_transferComp)
 
         }
         catch(e){
@@ -305,6 +310,22 @@ function _00x0_Transfer(props){
         </Grid>
 
 
+        {/* TRANSFER DONE MODAL */}
+        <Modal show={transferDone}>
+            
+            {transferComp !== -1 && <Preview src={transferComp}/>}
+
+            <ModalInner>
+                
+                {preview === -1 && <>
+                    <Loader>Generating preview</Loader>
+                    <ModalActions actions={[{label: 'Cancel', callback: cancelPreview}]}/>
+                </>}
+
+                {preview !== -1 && <ModalActions actions={[{label: 'Close', callback: () => setPreview(false)}]}/>}
+            </ModalInner>
+
+        </Modal>
 
         {/* PREVIEW MODAL */}
         <Modal show={preview !== false && preview !== -100}>

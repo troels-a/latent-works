@@ -43,6 +43,7 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
         uint available;
     }
 
+    event CompCreated(uint indexed comp_id, address indexed creator);
 
     string public constant NAME = "Latent Works \xc2\xb7 00x0";
     string public constant DESCRIPTION = "latent.works";
@@ -119,6 +120,8 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
         _comp_seeds[_comp_ids] = _generateSeed(works_);
         _comp_creators[_comp_ids] = for_;
 
+        emit CompCreated(_comp_ids, for_);
+        
         _mintFor(for_, _comp_ids);
         return _comp_ids;
 

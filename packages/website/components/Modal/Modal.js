@@ -5,7 +5,7 @@ import Button from 'components/Button';
 const Modal = styled.div`
 
 position: fixed;
-z-index: 100;
+z-index: ${p => p.zIndex ? p.zIndex : '100'};
 top: 0;
 left:0;
 right: 0;
@@ -32,6 +32,10 @@ ${p => p.show && `
 export const ModalInner = styled.div`
 padding: 1vw;
 max-width: 650px;
+${p => p.center && `
+    display:flex;
+    justify-content: center;
+`}
 ${breakpoint('sm', 'md')`
     max-width: 100%;
 `}

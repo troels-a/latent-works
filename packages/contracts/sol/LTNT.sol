@@ -39,6 +39,9 @@ contract LTNT is ERC721, Ownable {
         Param param;
     }
 
+    event Issued(uint indexed id, address indexed to);
+    event Stamped(uint indexed id, address indexed stamper);
+
     LTNT_Meta private _ltnt_meta;
 
     address[] private _issuers; ///@dev array of addresses registered as issuers
@@ -69,13 +72,17 @@ contract LTNT is ERC721, Ownable {
     /// @param stamp_ boolean determining wether the newly issued LTNT should be stamped by the issuer
     /// @return uint the id of the newly issued LTNT
     function issueTo(address to_, Param memory param_, bool stamp_) public returns(uint){
+
         _reqOnlyIssuer(msg.sender);
         _ids++;
         _safeMint(to_, _ids);
+        _issuer_for_id[_ids] = Issuer(msg.sender, param_);
+
+        emit Issued(_ids, to_);
+        
         if(stamp_)
             _stamp(_ids, msg.sender, param_);
-        _issuer_for_id[_ids] = Issuer(msg.sender, param_);
-        // _params_for_issuer[_ids] = param_;
+
         return _ids;
     }
 
@@ -95,6 +102,7 @@ contract LTNT is ERC721, Ownable {
     function _stamp(uint id_, address issuer_, Param memory param_) private {
         _stamps[id_][issuer_] = true;
         _params[id_][issuer_] = param_;
+        emit Stamped(_ids, issuer_);
     }
 
     /// @dev checks if a given id_ is stamped by address_

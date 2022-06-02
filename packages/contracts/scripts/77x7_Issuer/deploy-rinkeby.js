@@ -5,7 +5,7 @@ const Verify = require('../verify.js');
 
 const NETWORK = 'rinkeby';
 const ADDRESS_77X7 = '0x81e4002C4F96B901fD97f8c5D9128020568d4EC5';
-const ADDRESS_LTNT = '0x622EC226632eCD6370Ffb6e9FC5d8BFC7C51E2bb';
+const ADDRESS_LTNT = '0xeDbF3134217D6223EEF411EF796635830a8ad8D5';
 
 async function main() {
 

@@ -29,7 +29,7 @@ async function main() {
 
   const _ltnt_meta = await _ltnt.getMetaContract();
   console.log("LTNT_Meta deployed to:", _ltnt_meta.green.bold);
-  verify.add(_ltnt_meta.address, [REGULAR_ADDRESS, ITALIC_ADDRESS]);
+  verify.add(_ltnt_meta, [REGULAR_ADDRESS, ITALIC_ADDRESS]);
 
   console.log('Done!');
   console.log('Verify command:')
