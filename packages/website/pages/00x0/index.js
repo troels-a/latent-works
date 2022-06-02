@@ -4,7 +4,7 @@ import Section from "components/Section/Section";
 import use77x7, {_77x7Provider} from "hooks/use77x7";
 import { useWeb3React } from "@web3-react/core";
 import { useEffect, useState } from "react";
-import { map, result } from "lodash";
+import { isArray, map, result } from "lodash";
 import useWork, { WorkProvider } from "hooks/useWork";
 import styled, { keyframes } from "styled-components";
 import use00x0, { _00x0Provider } from "hooks/use00x0";
@@ -21,6 +21,7 @@ import useENS from "hooks/useENS";
 import {breakpoint} from "styled-components-breakpoint";
 import { errToMessage } from "base/errors";
 import { useRouter } from "next/dist/client/router";
+import Loader from "components/Loader";
 
 const PRICE = ethers.utils.parseEther('0.07');
 
@@ -60,6 +61,9 @@ const CompImage = styled(({image, ...p}) => <div {...p}><img src={image}/></div>
     place-items: center;
     justify-items: center;
     height: 100%;
+    box-sizing: border-box;
+    ${p => p.pad && 'padding: 0 2vw 2vw 2vw;'}
+
     opacity: 0;
     pointer-events: none;
     transition: opacity 300ms ease-out;
@@ -142,6 +146,16 @@ const CompNav = styled.div`
 
 `
 
+const Comps = styled(Grid)`
+    min-height: 90vh;
+    display: flex;
+    flex-wrap: wrap;
+    place-items: center;
+    justify-content: center;
+    max-width: 80%;
+    margin: 0 auto;
+`
+
 
 function EnsAddress({input, ...p}){
     const {ENS, address} = useENS(input);
@@ -155,6 +169,9 @@ function _00x0_Index(props){
     const {account} = useWeb3React();
     const _00x0 = use00x0();
     const [comp, setComp] = useState(false);
+    const [comps, setComps] = useState(false); // false = unset, -102 = loading, -404 = no comps
+    const [compsPage, setCompsPage] = useState(1);
+    const [compsLimit, setCompsLimit] = useState(9);
     const [loadingComp, setLoadingComp] = useState(false);
     const {connectIntent, setConnectIntent} = useConnectIntent();
     const err = useError(); 
@@ -188,6 +205,25 @@ function _00x0_Index(props){
 
     }
 
+    /// Fetch comps
+    async function fetchComps(){
+
+        if(comps == -102) // Loading - return
+            return;
+
+        setComps(-102);
+        const data = await _00x0.api('getComps', {page_: compsPage, limit_: compsLimit});
+
+        if(data.error){
+            setComps(false);
+            err.send(data.error);
+            return;
+        }
+
+        setComps(data.result);
+
+    }
+
 
     async function handleMint(comp){
         try {
@@ -201,23 +237,26 @@ function _00x0_Index(props){
 
     useEffect(() => {
 
-        if(compCount > 0 && !comp){
-            if(router?.query?.comp)
-                fetchComp(router.query.comp)
-            else
-                goToComp(1)
+        if(comp){
+            goToComp(1);
         }
 
-    }, [router, compCount, comp])
+    }, [comp])
 
-    async function nextComp(){
-        if(!loadingComp)
-            goToComp(comp.id+1)
+    useEffect(() => {
+        if(compsPage)
+            fetchComps()
+    }, [compsPage])
+
+
+    async function prevCompsPage(){
+        if(comps !== -102 && compsPage-1 > 0) // loading
+            setCompsPage(compsPage-1)
     }
 
-    async function prevComp(){
-        if(!loadingComp)
-            goToComp(comp.id-1)
+    async function nextCompsPage(){
+        if(comps !== -102 && (compsPage*compsLimit) < compCount) // loading
+            setCompsPage(compsPage+1)
     }
 
     async function goToComp(id){
@@ -228,7 +267,7 @@ function _00x0_Index(props){
     }
 
 
-    return <Page fixHeader bgColor="#000">
+    return <Page bgColor="#000">
         
         {compCount === 0 && 
         <div style={{textAlign: 'center'}}>
@@ -236,12 +275,27 @@ function _00x0_Index(props){
             <p>77x7 holders can create 00x0 comps <Link href="/00x0/transfer"><a>here</a></Link></p>
         </div>
         }
+        
 
-        {compCount === -1 && <div>
-            <div style={{textAlign: 'center'}}>
-                <h2>Loading...</h2>
-            </div>
+        {comps === -102 && <Comps><Loader>Loading comps</Loader></Comps>}
+
+        {isArray(comps) && // THERE ARE COMPS
+        <div>
+            <CompNav>
+                <div onClick={prevCompsPage}>{'<'}</div>
+                <div onClick={nextCompsPage}>{'>'}</div>
+            </CompNav>
+            
+            <Comps>
+                {comps.map(comp => <Grid.Unit size={{sm: 1/2, md: 1/3}}>
+                    <CompImage pad image={comp.image} show={true}/>
+                </Grid.Unit>)}
+                {comps.map(comp => <Grid.Unit size={{sm: 1/2, md: 1/3}}>
+                    <CompImage pad image={comp.image} show={true}/>
+                </Grid.Unit>)}
+            </Comps>
         </div>}
+        
 
         <CompModal show={(comp && comp != -1)}>
             <Comp>

@@ -2942,10 +2942,10 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-abiapi@^0.2.4:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/abiapi/-/abiapi-0.2.4.tgz#e51fb263a431bb522032162f7cdbc761fdbbdef3"
-  integrity sha512-r9xvcVh94Ja81R9+a6VZL4WuA+p4ZCk0OLJWUf5BLK6QsrsneqCKJeMmnnW35orUpev+FQrYncrSujIY6Zj2Kg==
+abiapi@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/abiapi/-/abiapi-0.2.5.tgz#95f88769a625a144a87382febfb9a8e239d1e37f"
+  integrity sha512-Lu4U8NRDw8fNkTDKdkh11bOQVGzAKebTB/Jv5lIKOHpo6fqdjv9Pni25Qkl9nR1sQoGmacklBWnMjIs50DgLqw==
   dependencies:
     lodash "^4.17.21"
 

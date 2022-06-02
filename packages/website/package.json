@@ -29,7 +29,7 @@
     "web3": "^1.5.3"
   },
   "dependencies": {
-    "abiapi": "^0.2.4",
+    "abiapi": "^0.2.5",
     "babel-plugin-inline-react-svg": "^2.0.1",
     "babel-plugin-styled-components": "^1.8.0",
     "colors": "^1.4.0",

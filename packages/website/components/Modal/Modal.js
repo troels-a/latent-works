@@ -43,8 +43,8 @@ const Buttons = styled.div`
 
     padding: 2vw 0 0 0;
     display: flex;
-    justify-content: flex-end;
-    justify-items: flex-end;
+    justify-content: ${p => p.position ? p.position : 'flex-end'};
+    justify-items: ${p => p.position ? p.position : 'flex-end'};
     width: 100%;
     
 `

@@ -10,6 +10,7 @@ import useError from 'hooks/useError';
 import { ethers } from 'ethers';
 import useENS from 'hooks/useENS';
 import useEthNet from 'hooks/useEthNet';
+import Modal, { ModalActions, ModalInner } from 'components/Modal';
 
 export const injected = new InjectedConnector({ supportedChainIds: [1, 4, 31337]});
 export const wcConnector = new WalletConnectConnector({
@@ -64,16 +65,11 @@ const ConnectGroup = styled.div`
 const Connect = styled.a`
 
   cursor: pointer;
-  margin-right: 2vw;
   white-space: pre;
-
-  &:last-child {
-    margin-right: 0;
-  }
-
-  ${breakpoint('sm', 'md')`
-    margin-right: 4vw;
-  `}
+  display: block;
+  text-align: center;
+  margin: 0 auto;
+  font-size: 3em;
 
 `
 
@@ -134,18 +130,19 @@ export default function ConnectButton({onActivate}) {
     <Wrapper>
       
       <ConnectGroup $show={!connectIntent && !active}>
-        <Connect onClick={() => setConnectIntent(true)}>
+        <div onClick={() => setConnectIntent(true)}>
           Connect
-        </Connect>
+        </div>
       </ConnectGroup>
 
       <ConnectGroup $show={!connectIntent && active}>
-        <Connect onClick={deactivate}>
+        <div onClick={deactivate}>
           Disconnect <small>({ENS && ENS}{(!ENS && account) && (truncate(account, 6, '...')+account.slice(-4))})</small>
-        </Connect>
+        </div>
       </ConnectGroup>
-
-      <ConnectGroup choices $show={connectIntent}>
+      
+      <Modal show={connectIntent}>
+        <ModalInner>
         <Connect
           onClick={() => {
             if(onActivate)
@@ -167,7 +164,11 @@ export default function ConnectButton({onActivate}) {
         >
         <span>Walletconnect</span>
         </Connect>
-      </ConnectGroup>
+        <ModalActions position="center" actions={[
+          {label: 'Cancel', callback: () => setConnectIntent(false)}
+        ]}/>
+        </ModalInner>
+      </Modal>
 
     </Wrapper>
     );

@@ -23,6 +23,7 @@ function compToCompObject(comp){
 
 /// PARSERS
 abi.addParser('getCompCount', bigNumbersToNumber);
+abi.addParser('getComps', result => result.filter(comp => comp.id > 0));
 abi.addParser('getComps', (result) => result.map(comp => (compToCompObject(comp))))
 abi.addParser('getComp', (result) => compToCompObject(result))
 
