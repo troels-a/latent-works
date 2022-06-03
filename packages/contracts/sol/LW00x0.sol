@@ -517,7 +517,7 @@ contract LW00x0_Meta {
             '"image": "',comp_.image,'", '
             '"attributes": [',
             '{"trait_type": "orientation", "value":"',comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 'Landscape' : 'Portrait','"},',
-            '{"trait_type": "base", "value":',_00x0.getWorks(comp_id_).length,'}',
+            '{"trait_type": "base", "value":',Strings.toString(_00x0.getWorks(comp_id_).length),'}',
             ']',
         '}');
 
