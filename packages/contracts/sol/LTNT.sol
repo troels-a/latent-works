@@ -246,7 +246,7 @@ contract LTNT_Meta {
             stamper_ = LTNTIssuer(issuers_[i]).issuerInfo(id_, stamp_param_);
             has_stamp_ = _ltnt.hasStamp(id_, issuers_[i]);
 
-            stamps_svg_ = abi.encodePacked(stamps_svg_, '<text class="txt italic" fill-opacity="0" fill="',has_stamp_ ? 'white' : '#555','" y="',Strings.toString(25*i),'">',stamper_.name,' <animate attributeName="fill-opacity" values="0;1" dur="500ms" repeatCount="1" begin="',delay_,'ms" fill="freeze"/></text>');
+            stamps_svg_ = abi.encodePacked(stamps_svg_, '<text class="txt italic" fill-opacity="0" y="',Strings.toString(25*i),'">',stamper_.name,' <animate attributeName="fill-opacity" values="0;',has_stamp_ ? '1' : '0.5','" dur="500ms" repeatCount="1" begin="',delay_,'ms" fill="freeze"/></text>');
             if(has_stamp_)
                 ++stamp_count_;
 
@@ -255,16 +255,16 @@ contract LTNT_Meta {
         bytes memory image_;
         image_ = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1000" preserveAspectRatio="xMinYMin meet">',
-                '<defs><style>', _xanh_regular.fontFace(), _xanh_italic.fontFace(),' .txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em;} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect ry="30" rx="30" id="bg" height="1000" width="600" fill="black"/></defs>',
+                '<defs><style>', _xanh_regular.fontFace(), _xanh_italic.fontFace(),' .txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em; fill: rgba(0,0,0,0.85);} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect ry="30" rx="30" id="bg" height="1000" width="600" fill="white"/></defs>',
                 '<use href="#bg"/>',
                 '<g transform="translate(65, 980) rotate(-90)">',
-                    '<text class="txt large italic" fill="white">Latent Works</text>',
+                    '<text class="txt large italic">Latent Works</text>',
                 '</g>',
                 '<g transform="translate(537, 21) rotate(90)">',
-                    '<text class="txt large italic" fill="white">LTNT #',Strings.toString(id_),'</text>',
+                    '<text class="txt large italic">LTNT #',Strings.toString(id_),'</text>',
                 '</g>',
                 '<g transform="translate(517, 22) rotate(90)">',
-                    '<text class="txt small" fill="white">Issued by ',issuer_info_.name,unicode' · ', Strings.toString(stamp_count_) , stamp_count_ > 1 ? ' stamps' : ' stamp', '</text>',
+                    '<text class="txt small">Issued by ',issuer_info_.name,unicode' · ', Strings.toString(stamp_count_) , stamp_count_ > 1 ? ' stamps' : ' stamp', '</text>',
                 '</g>'
                 '<g transform="translate(25, 25)">',
                     '<image width="300" href="', issuer_info_.image, '"/>',
@@ -273,7 +273,7 @@ contract LTNT_Meta {
                     stamps_svg_,
                 '</g>',
                 '<g transform="translate(509, 980)">',
-                    '<text class="txt small" fill="white">latent.works</text>',
+                    '<text class="txt small">latent.works</text>',
                 '</g>',
             '</svg>'
         );

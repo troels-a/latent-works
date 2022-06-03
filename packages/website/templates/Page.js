@@ -61,7 +61,7 @@ ${p => p.$centerContent && `
   min-height: 70vh;
 `}
 ${breakpoint('sm', 'md')`
-  font-size: 1.5rem;
+  font-size: 1.2rem;
 `}
 `
 

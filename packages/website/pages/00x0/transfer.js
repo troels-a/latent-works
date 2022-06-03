@@ -30,17 +30,17 @@ const Works = styled(p => <Grid container {...p}/>)`
 
 const colorPulse = keyframes`
     0% {
-        background-color: rgba(255,255,255,0.05);
+        background-color: rgba(0,0,0,0.1);
     }
     50% {
-        background-color: rgba(255,255,255,0.1);
+        background-color: rgba(0,0,0,0.05)
     }
     100% {
-        background-color: rgba(255,255,255,0.05);
+        background-color: rgba(0,0,0,0.1);
     }
 `
 
-const Work = styled(({children, ...p}) => <Grid.Unit {...p} size={1/3}><AspectRatio style={{width: '100%'}} ratio="1/1">{children}</AspectRatio></Grid.Unit>)`
+const Work = styled(({children, ...p}) => <Grid.Unit {...p} size={{sm: 1/2, md: 1/6}}><AspectRatio style={{width: '100%'}} ratio="1/1">{children}</AspectRatio></Grid.Unit>)`
 
     padding: 0 .5vw 1vw .5vw;
     position: relative;
@@ -268,38 +268,9 @@ function _00x0_Transfer(props){
         <Grid>
             {!account && <Grid.Unit size={1/1}><Center><Button onClick={() => setConnectIntent(true)}>Connect to create 00x0 comps</Button></Center></Grid.Unit>}
             {account && <>
-            <Grid.Unit size={{sm: 1/1, md: 6/12}}>
-                <MintingSection disabled={transferring} padTop={0}>                    
-                    {(fetchingBalance) && <Loader>Looking for 77x7 works</Loader>}
-                    {(account && !fetchingBalance && !balance) && <div>No 77x7 works found</div>}
-                    {(balance && !fetchingBalance) && <Works>
-                        {map(balance, (_bal, _id) => {
-                        
-                        return <WorkProvider workID={_id}>
-                            <SelectableWork selected={selectedWorks.includes(_id)} index={selectedWorks.indexOf(_id)+1} onClick={() => setSelectedWorks(prev => {
 
-                                const index = prev.indexOf(_id);
-                                if(index > -1){
-                                    delete prev[index];
-                                }
-                                else{
-                                    if(prev.length == 7){
-                                        prev.shift();
-                                    }
-                                    prev.push(_id);
-                                }
-
-                                return prev.filter(val => val);
-                                    
-                            })}/>
-                        </WorkProvider>
-
-                        })}
-                    </Works>
-                    }
-                </MintingSection>
-            </Grid.Unit>
-            <Grid.Unit size={{sm: 1/1, md: 6/12}}>
+            <Grid.Unit size={{sm: 1/1}}>
+                <Section $padBottom={0}><h1>{props.page00x0.title}</h1></Section>
                 <Section $padBottom={0} dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
                 <Section $padTop={0}>
                     <small>
@@ -334,6 +305,39 @@ function _00x0_Transfer(props){
                 }
                 </Section>
             </Grid.Unit>
+
+            <Grid.Unit size={{sm: 1/1}}>
+                <MintingSection disabled={transferring} padTop={0}>                    
+                    {(fetchingBalance) && <Loader>Looking for 77x7 works</Loader>}
+                    {(account && !fetchingBalance && !balance) && <div>No 77x7 works found</div>}
+                    {(balance && !fetchingBalance) && <Works>
+                        {map(balance, (_bal, _id) => {
+                        
+                        return <WorkProvider workID={_id}>
+                            <SelectableWork selected={selectedWorks.includes(_id)} index={selectedWorks.indexOf(_id)+1} onClick={() => setSelectedWorks(prev => {
+
+                                const index = prev.indexOf(_id);
+                                if(index > -1){
+                                    delete prev[index];
+                                }
+                                else{
+                                    if(prev.length == 7){
+                                        prev.shift();
+                                    }
+                                    prev.push(_id);
+                                }
+
+                                return prev.filter(val => val);
+                                    
+                            })}/>
+                        </WorkProvider>
+
+                        })}
+                    </Works>
+                    }
+                </MintingSection>
+            </Grid.Unit>
+
             </>}
         </Grid>
 

@@ -12,7 +12,7 @@ right: 0;
 bottom: 0;
 width: 100vw;
 height: 100vh;
-background-color: rgba(0,0,0,0.8);
+background-color: ${p => p.theme.colors.modalBg};
 display: flex;
 flex-direction: column;
 place-items: center;

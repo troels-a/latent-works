@@ -46,10 +46,13 @@ const GlobalStyle = createGlobalStyle`
     margin-top: 0;
     font-weight: normal;
     letter-spacing: 0.06em;
+    font-style: italic;
+    margin-bottom: 0.1em;
   }
 
   p {
     margin: 0 0 20px 0;
+    font-size: inherit;
   }
 
   a {
@@ -94,7 +97,7 @@ const GlobalStyle = createGlobalStyle`
 
     color: ${theme.colors.text};
     font-family: ${theme.font};
-    font-size: inherit;
+    font-size: inherit!important;
     
     &:hover {
       background-color: ${theme.colors.emph9};

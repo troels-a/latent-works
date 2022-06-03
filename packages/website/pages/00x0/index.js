@@ -64,21 +64,22 @@ const CompImage = styled(({image, ...p}) => <div {...p}><img src={image}/></div>
     height: 100%;
     box-sizing: border-box;
     ${p => p.pad && 'padding: 0 2vw 2vw 2vw;'}
-
     ${p => p.onClick && 'cursor: pointer;'}
-
     opacity: 0;
     pointer-events: none;
     transition: opacity 300ms ease-out;
+
     ${p => p.show && `
         opacity: 1;
         pointer-events: all;
     `}
+
     > img {
+        position: relative;
+        top: -3vw;
         margin: 0 auto;
-        max-height: 73vh;
+        max-height: ${p => p.maxHeight ? p.maxHeight : 73}vh;
         width: auto;
-        max-width: 100%;
     }
 `
 
@@ -140,26 +141,23 @@ const Comp = styled.div`
     }
 `
 
-const Comps = styled(Grid)`
+const Comps = styled(Section)`
     min-height: 60vh;
     display: flex;
     flex-wrap: wrap;
     place-items: center;
     justify-content: center;
-    max-width: 90%;
+    max-width: 100%;
     margin: 0 auto;
 `
 
 const IntroSection = styled(Grid.Unit)`
 
-    ${breakpoint('lg')`
 
-        &:last-child {
-            text-align: right;
-        }
+    &:last-child {
+        text-align: right;
+    }
     
-    `}
-
 
     ${breakpoint('sm', 'md')`
         
@@ -168,6 +166,13 @@ const IntroSection = styled(Grid.Unit)`
     `}
 
 `
+
+// const FlexImg = styled.img`
+//     width: 100%;
+//     height: auto;
+//     box-sizing: border-box;
+//     ${p => p.pad && 'padding: 0 2vw 2vw 2vw'}
+// `
 
 
 function EnsAddress({input, ...p}){
@@ -292,27 +297,31 @@ function _00x0_Index(props){
 
     return <Page bgColor="#000">
         
-        <Section $padBottom={10} $padTop={8}>
+        <Section $padBottom={12} $padTop={6}>
             <Grid>
-                <Grid.Unit>
-                    <h1 style={{fontStyle: 'italic'}}>00x0</h1>
-                </Grid.Unit>
-                <IntroSection size={{sm: 1/1, md: 1/2}}>
+                <IntroSection size={{sm: 1/1, md: 4/12}}>
+                    <h1>{props.page00x0.title}</h1>
+                    <h3>{props.page00x0.subtitle}</h3>
                     <div dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
+                </IntroSection>
+                <IntroSection size={{sm: 1/1, md: 8/12}}></IntroSection>
+                <IntroSection size={{sm: 9/24, md: 6/12}}>
                     <Button onClick={() => router.push('/00x0/transfer')} expandOn={['sm', 'md']} invertColors>Create comp</Button>
                 </IntroSection>
-                <IntroSection size={{sm: 1/1, md: 1/2}}>
-                    <p>
-                    {compCount > 0 && `${compCount} comps created`}
+                <IntroSection size={{sm: 15/24, md: 6/12}}>
+                    {/* <p>
+                    {compCount === 1 && `One comp created`}
+                    {compCount > 1 && `${compCount} comps created`}
                     {compCount === -102 && <Loader>Fetching comps</Loader>}
                     <br/>
                     Load a specific comp or let the gods decide
-                    </p>
+                    </p> */}
                     <input type="number" onKeyPress={e => {e.key == 'Enter' && goToComp(inputRef.current.value)}} ref={inputRef} min={1} max={compCount}/>
                     <Button onClick={() => goToComp(inputRef.current.value)}>Load</Button>
                     <Button onClick={randomComp}>Random</Button>
 
                 </IntroSection>
+
             </Grid>
         </Section>
         
@@ -324,7 +333,7 @@ function _00x0_Index(props){
         <div>            
             <Comps>
                 {comps.map(comp => <Grid.Unit size={{sm: 1/2, md: 1/3}}>
-                    <CompImage pad onClick={() => goToComp(comp.id)} image={comp.image} show={true}/>
+                    <CompImage maxHeight={200} pad onClick={() => goToComp(comp.id)} image={comp.image} show={true}/>
                 </Grid.Unit>)}
             </Comps>
             <Section style={{display: 'flex', justifyContent: 'center'}} $padBottom={10} $padTop={10}>
