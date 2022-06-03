@@ -254,25 +254,25 @@ contract LTNT_Meta {
 
         bytes memory image_;
         image_ = abi.encodePacked(
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1000" preserveAspectRatio="xMinYMin meet">',
-                '<defs><style>', _xanh_regular.fontFace(), _xanh_italic.fontFace(),' .txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em;} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect id="bg" height="1000" width="750" fill="black"/></defs>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1000" preserveAspectRatio="xMinYMin meet">',
+                '<defs><style>', _xanh_regular.fontFace(), _xanh_italic.fontFace(),' .txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em;} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect ry="30" rx="30" id="bg" height="1000" width="600" fill="black"/></defs>',
                 '<use href="#bg"/>',
                 '<g transform="translate(65, 980) rotate(-90)">',
                     '<text class="txt large italic" fill="white">Latent Works</text>',
                 '</g>',
-                '<g transform="translate(687, 21) rotate(90)">',
+                '<g transform="translate(537, 21) rotate(90)">',
                     '<text class="txt large italic" fill="white">LTNT #',Strings.toString(id_),'</text>',
                 '</g>',
-                '<g transform="translate(667, 22) rotate(90)">',
+                '<g transform="translate(517, 22) rotate(90)">',
                     '<text class="txt small" fill="white">Issued by ',issuer_info_.name,unicode' · ', Strings.toString(stamp_count_) , stamp_count_ > 1 ? ' stamps' : ' stamp', '</text>',
                 '</g>'
                 '<g transform="translate(25, 25)">',
-                    '<image width="350" href="', issuer_info_.image, '"/>',
+                    '<image width="300" href="', issuer_info_.image, '"/>',
                 '</g>',
-                '<g transform="translate(393, 41)">',
+                '<g transform="translate(343, 41)">',
                     stamps_svg_,
                 '</g>',
-                '<g transform="translate(659, 980)">',
+                '<g transform="translate(509, 980)">',
                     '<text class="txt small" fill="white">latent.works</text>',
                 '</g>',
             '</svg>'
@@ -291,6 +291,9 @@ contract LTNT_Meta {
     /// @param encode_ encode output as base64 uri
     /// @return string the image string
     function getJSON(uint id_, bool encode_) public view returns(string memory) {
+        
+        LTNT.Issuer memory issuer_for_id_ = _ltnt.getIssuerFor(id_);
+        LTNT.IssuerInfo memory issuer_info_ = LTNTIssuer(issuer_for_id_.location).issuerInfo(id_, issuer_for_id_.param);
 
         bytes memory json_ = abi.encodePacked(
             '{',
@@ -298,7 +301,8 @@ contract LTNT_Meta {
                 '"image": "', getImage(id_, true),'", ',
                 '"description": "latent.works",',
                 '"attributes": [',
-                    '{"trait_type": "Stamps", "value": ',Strings.toString(_ltnt.getStamps(id_).length),'}',
+                    '{"trait_type": "Stamps", "value": ',Strings.toString(_ltnt.getStamps(id_).length),'},',
+                    '{"trait_type": "Issuer", "value": "', issuer_info_.name, '"}',
                 ']',
             '}'
         );
