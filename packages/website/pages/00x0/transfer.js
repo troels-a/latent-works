@@ -1,4 +1,5 @@
-import _00x0_meta_ABI from '@lw/contracts/abi/LTNT_Meta.json';
+import _00x0_ABI from '@lw/contracts/abi/LW00x0.json';
+import _00x0_meta_ABI from '@lw/contracts/abi/LW00x0_Meta.json';
 import Page from "templates/Page"
 import Grid from "styled-components-grid"
 import Section from "components/Section/Section";
@@ -19,6 +20,8 @@ import {breakpoint} from "styled-components-breakpoint";
 import Loader from 'components/Loader';
 import AbortController from "abort-controller";
 import Modal, {ModalActions, ModalInner} from 'components/Modal';
+import { ethers } from 'ethers';
+import { Router, useRouter } from 'next/dist/client/router';
 
 const Works = styled(p => <Grid container {...p}/>)`
     width: calc(100%+1vw);
@@ -74,6 +77,9 @@ const MintingSection = styled(Section)`
 
 const Center = styled.div`
     text-align: center;
+    align-self: center;
+    justify-self: center;
+    ${p => p.clickable && `cursor:pointer;`}
 `
 
 const Button = styled.button`
@@ -113,7 +119,7 @@ function _00x0_Transfer(props){
     const {account} = useWeb3React();
     const {balance, fetchBalance, fetchingBalance} = use77x7();
     const _77x7 = use77x7();
-    const _00x0 = use00x0();
+    const _00x0 = useContract({endpoint: '/api/00x0', abi: _00x0_ABI, address: process.env.NEXT_PUBLIC_ADDRESS_00X0});
     const _00x0_Meta = useContract({endpoint: '/api/00x0/meta', abi: _00x0_meta_ABI});
     
     const [selectedWorks, setSelectedWorks] = useState([]);
@@ -122,9 +128,8 @@ function _00x0_Transfer(props){
     const [transferPrompt, setTransferPrompt] = useState(false);
     const [transferPreview, setTransferPreview] = useState(false);
     const [transferring, setTransferring] = useState(false);
-    const [transferDone, setTransferDone] = useState(false);
     const [transferComp, setTransferComp] = useState(false);
-
+    const router = useRouter();
     const [preview, setPreview] = useState(false);
 
     const err = useError();
@@ -132,6 +137,7 @@ function _00x0_Transfer(props){
     useEffect(() => {
 
         if(_00x0.contract){
+            console.log(_00x0.contract)
             updateMetaContract();
         }
 
@@ -176,17 +182,39 @@ function _00x0_Transfer(props){
         
         try {
             
+            const onCreated = async (id, by, event) => {
+                // console.log(id, by, event)
+                if(by == account){
+                    try {
+                        const newComp = await _00x0.read('getComp', {comp_id_: id.toNumber()})
+                        if(newComp.result)
+                            setTransferComp(newComp.result);
+                    }
+                    catch(e){
+                        console.log(e)
+                        err.send(e);
+                    }
+                    setTransferring(false);
+                    resetTransferPrompt();
+                    fetchBalance(account);
+                    setSelectedWorks(prev => [])
+                }
+                _00x0.contract.off('CompCreated', onCreated);
+            };
+
+            _00x0.contract.on('CompCreated', onCreated)
+
             const tx =  works.length < 2 
             ? await _77x7.contract.safeTransferFrom(from, to, works[0], values[0], [])
             : await _77x7.contract.safeBatchTransferFrom(from, to, works, values, []);
 
-            const res = await tx.wait();
+
             // console.log(res)
             // const id = res.events[0].args[0];
             // const transferComp = _00x0.read('getComp', {comp_id_: id})
-            setTransferring(false);
-            fetchBalance(account);
-            setSelectedWorks(prev => [])
+            // setTransferring(false);
+            // fetchBalance(account);
+            // setSelectedWorks(prev => [])
             // setTransferComp(_transferComp)
 
         }
@@ -194,10 +222,10 @@ function _00x0_Transfer(props){
 
             err.setMessage(e.message)
             setTransferring(false);
+            resetTransferPrompt();
 
         }
 
-        resetTransferPrompt();
         
     }
 
@@ -238,11 +266,11 @@ function _00x0_Transfer(props){
 
     return <Page>
         <Grid>
-            {!account && <h2 style={{textAlign: 'center', width: '100%', paddingTop: '2vw'}}>Connect to create</h2>}
+            {!account && <Grid.Unit size={1/1}><Center><Button onClick={() => setConnectIntent(true)}>Connect to create 00x0 comps</Button></Center></Grid.Unit>}
             {account && <>
             <Grid.Unit size={{sm: 1/1, md: 6/12}}>
                 <MintingSection disabled={transferring} padTop={0}>                    
-                    {(fetchingBalance) && <div>Looking for 77x7 works...</div>}
+                    {(fetchingBalance) && <Loader>Looking for 77x7 works</Loader>}
                     {(account && !fetchingBalance && !balance) && <div>No 77x7 works found</div>}
                     {(balance && !fetchingBalance) && <Works>
                         {map(balance, (_bal, _id) => {
@@ -310,23 +338,6 @@ function _00x0_Transfer(props){
         </Grid>
 
 
-        {/* TRANSFER DONE MODAL */}
-        <Modal show={transferDone}>
-            
-            {transferComp !== -1 && <Preview src={transferComp}/>}
-
-            <ModalInner>
-                
-                {preview === -1 && <>
-                    <Loader>Generating preview</Loader>
-                    <ModalActions actions={[{label: 'Cancel', callback: cancelPreview}]}/>
-                </>}
-
-                {preview !== -1 && <ModalActions actions={[{label: 'Close', callback: () => setPreview(false)}]}/>}
-            </ModalInner>
-
-        </Modal>
-
         {/* PREVIEW MODAL */}
         <Modal show={preview !== false && preview !== -100}>
             
@@ -377,6 +388,26 @@ function _00x0_Transfer(props){
                 </ModalInner>
             
         </Modal>
+
+
+        {/* TRANSFER DONE MODAL */}
+        <Modal show={transferComp !== false}>
+
+            <Preview src={transferComp.image}/>
+
+            <ModalInner>
+                
+                <div>Comp #{transferComp.id} created! Check your wallet.</div>
+                <ModalActions actions={[
+                    {label: 'View', cta: true, callback: () => router.push(`/00x0?comp=${transferComp.id}`)},
+                    {label: 'Close', callback: () => setTransferComp(false)}
+                ]}/>
+
+            </ModalInner>
+
+        </Modal>
+
+
     </Page>
 
 }

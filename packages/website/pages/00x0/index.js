@@ -249,6 +249,12 @@ function _00x0_Index(props){
     }, [compsPage])
 
 
+    useEffect(() => {
+        if(router.query.comp)
+            fetchComp(router.query.comp)
+    }, [router])
+
+
     async function prevCompsPage(){
         if(comps !== -102 && compsPage-1 > 0) // loading
             setCompsPage(compsPage-1)
@@ -262,7 +268,6 @@ function _00x0_Index(props){
     async function goToComp(id){
         if(id <= compCount && id > 0){
             router.replace(`/00x0?comp=${id}`)
-            fetchComp(id)
         }
     }
 
@@ -271,7 +276,6 @@ function _00x0_Index(props){
         setComp(false);
     }
     
-
 
     return <Page bgColor="#000">
         
