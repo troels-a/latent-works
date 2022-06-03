@@ -3,9 +3,11 @@ import { breakpoint } from "styled-components-breakpoint";
 
 const Button = styled.button`
     
-    ${p => p.expandOn && breakpoint([...p.expandOn])`
-            width: 100%;
-    `}
+    ${p => p.expandOn && `
+        ${breakpoint(...p.expandOn)`
+            width: 100%!important;
+        `}
+    `};
 
     ${p => p.invertColors && `
         background-color: ${p.theme.colors.text}!important;

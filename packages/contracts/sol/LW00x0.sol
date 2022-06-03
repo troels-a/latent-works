@@ -512,10 +512,13 @@ contract LW00x0_Meta {
         LW00x0.Comp memory comp_ = _00x0.getComp(comp_id_);
         bytes memory meta_ = abi.encodePacked(
         '{',
-            '"name": "00x0 #',Strings.toString(comp_id_),'", ',
+            '"name": "00x0 comp #',Strings.toString(comp_id_),'", ',
             '"description": "latent.works", ',
             '"image": "',comp_.image,'", '
-            '"attributes": [{"trait_type": "Orientation", "value":"',comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 'Landscape' : 'Portrait','"}]'
+            '"attributes": [',
+            '{"trait_type": "orientation", "value":"',comp_.orientation == LW00x0.Orientation.LANDSCAPE ? 'Landscape' : 'Portrait','"},',
+            '{"trait_type": "base", "value":',_00x0.getWorks(comp_id_).length,'}',
+            ']',
         '}');
 
         return string(abi.encodePacked('data:application/json;base64,', Base64.encode(meta_)));

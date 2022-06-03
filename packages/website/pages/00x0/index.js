@@ -99,7 +99,7 @@ const CompInfo = styled(Section)`
 
         ${breakpoint('sm', 'md')`
             margin-top: 5vw;
-            max-width: 100%;
+            width: 100%;
         `}
 
         width: 33%;
@@ -146,7 +146,7 @@ const Comps = styled(Grid)`
     flex-wrap: wrap;
     place-items: center;
     justify-content: center;
-    max-width: 80%;
+    max-width: 90%;
     margin: 0 auto;
 `
 
@@ -264,7 +264,7 @@ function _00x0_Index(props){
     }
 
     async function nextCompsPage(){
-        if(comps !== -102 && (compsPage*compsLimit) < compCount) // loading
+        if(comps !== -102 && (compsPage*compsLimit) <= compCount) // loading
             setCompsPage(compsPage+1)
     }
 
@@ -299,7 +299,7 @@ function _00x0_Index(props){
                 </Grid.Unit>
                 <IntroSection size={{sm: 1/1, md: 1/2}}>
                     <div dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
-                    <Link href="/00x0/transfer"><Button invertColors>Create comp</Button></Link> 
+                    <Button onClick={() => router.push('/00x0/transfer')} expandOn={['sm', 'md']} invertColors>Create comp</Button>
                 </IntroSection>
                 <IntroSection size={{sm: 1/1, md: 1/2}}>
                     <p>
@@ -308,7 +308,7 @@ function _00x0_Index(props){
                     <br/>
                     Load a specific comp or let the gods decide
                     </p>
-                    <input type="number" ref={inputRef} min={1} max={compCount}/>
+                    <input type="number" onKeyPress={e => {e.key == 'Enter' && goToComp(inputRef.current.value)}} ref={inputRef} min={1} max={compCount}/>
                     <Button onClick={() => goToComp(inputRef.current.value)}>Load</Button>
                     <Button onClick={randomComp}>Random</Button>
 
@@ -328,8 +328,8 @@ function _00x0_Index(props){
                 </Grid.Unit>)}
             </Comps>
             <Section style={{display: 'flex', justifyContent: 'center'}} $padBottom={10} $padTop={10}>
-                <Button onClick={prevCompsPage}>Previous set</Button>
-                <Button onClick={nextCompsPage}>Next set</Button>
+                <Button disabled={compsPage === 1} onClick={prevCompsPage}>Previous set</Button>
+                <Button disabled={(compsPage*compsLimit) >= compCount} onClick={nextCompsPage}>Next set</Button>
             </Section>            
         </div>}
         
@@ -350,11 +350,11 @@ function _00x0_Index(props){
                     <div>
                         {account && comp.available > 0 
                         ? 
-                        <Button disabled={account == comp.creator} onClick={() => handleMint(comp)}>
+                        <Button expandOn={['sm', 'md']} disabled={account == comp.creator} onClick={() => handleMint(comp)}>
                             {account == comp.creator ? `Creator can't mint` : <>Mint <small>({ethers.utils.formatEther(PRICE)} ETH)</small></>}
                         </Button>
                         :
-                        <Button onClick={() => setConnectIntent(!connectIntent)}>{comp.available > 0 ? 'Connect to mint' : 'Sold out'}</Button>
+                        <Button expandOn={['sm', 'md']} onClick={() => setConnectIntent(!connectIntent)}>{comp.available > 0 ? 'Connect to mint' : 'Sold out'}</Button>
                         }
                     </div>
                 </div>
