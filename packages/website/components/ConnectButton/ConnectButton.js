@@ -18,6 +18,10 @@ export const wcConnector = new WalletConnectConnector({
 });
 
 
+const Clickable = styled.div`
+  cursor: pointer;
+`
+
 const Wrapper = styled.div`
   display: flex;
   justify-content: flex-start;
@@ -130,15 +134,15 @@ export default function ConnectButton({onActivate}) {
     <Wrapper>
       
       <ConnectGroup $show={!connectIntent && !active}>
-        <div onClick={() => setConnectIntent(true)}>
+        <Clickable onClick={() => setConnectIntent(true)}>
           Connect
-        </div>
+        </Clickable>
       </ConnectGroup>
 
       <ConnectGroup $show={!connectIntent && active}>
-        <div onClick={deactivate}>
+        <Clickable onClick={deactivate}>
           Disconnect <small>({ENS && ENS}{(!ENS && account) && (truncate(account, 6, '...')+account.slice(-4))})</small>
-        </div>
+        </Clickable>
       </ConnectGroup>
       
       <Modal show={connectIntent} zIndex={2000}>

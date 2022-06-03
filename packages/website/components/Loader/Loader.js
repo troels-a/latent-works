@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
 
 const Dots = styled.span`
-display: inline-block;
+    display: inline-block;
     width: 2em;
+    text-align: left;
 `
 
 export default function Loader({children, ...p}){
@@ -18,8 +19,8 @@ export default function Loader({children, ...p}){
             setDots('');
     }, 500);
 
-    return <div {...p}>
-        {children}<Dots>{dots}</Dots>
-    </div>
+    return <span {...p}>
+        <span>{children}</span><Dots>{dots}</Dots>
+    </span>
 
 }

@@ -3,10 +3,10 @@ import Grid from "styled-components-grid"
 import Section from "components/Section/Section";
 import use77x7, {_77x7Provider} from "hooks/use77x7";
 import { useWeb3React } from "@web3-react/core";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isArray, isObject, map, result } from "lodash";
 import useWork, { WorkProvider } from "hooks/useWork";
-import styled, { keyframes } from "styled-components";
+import styled, { keyframes, useTheme } from "styled-components";
 import use00x0, { _00x0Provider } from "hooks/use00x0";
 import { AspectRatio } from "react-aspect-ratio";
 import 'react-aspect-ratio/aspect-ratio.css'
@@ -64,6 +64,8 @@ const CompImage = styled(({image, ...p}) => <div {...p}><img src={image}/></div>
     height: 100%;
     box-sizing: border-box;
     ${p => p.pad && 'padding: 0 2vw 2vw 2vw;'}
+
+    ${p => p.onClick && 'cursor: pointer;'}
 
     opacity: 0;
     pointer-events: none;
@@ -138,24 +140,6 @@ const Comp = styled.div`
     }
 `
 
-const CompNav = styled.div`
-    position: relative;
-    width: 100%;
-    height: 0;
-    > div {
-        position: fixed;
-        top: 50%;
-        font-size: 30px;
-        &:first-child {
-            left: 2vw;
-        }
-        &:last-child {
-            right: 2vw;
-        }
-    }
-
-`
-
 const Comps = styled(Grid)`
     min-height: 60vh;
     display: flex;
@@ -164,6 +148,25 @@ const Comps = styled(Grid)`
     justify-content: center;
     max-width: 80%;
     margin: 0 auto;
+`
+
+const IntroSection = styled(Grid.Unit)`
+
+    ${breakpoint('lg')`
+
+        &:last-child {
+            text-align: right;
+        }
+    
+    `}
+
+
+    ${breakpoint('sm', 'md')`
+        
+        margin-bottom: 5vw;
+
+    `}
+
 `
 
 
@@ -184,7 +187,7 @@ function _00x0_Index(props){
     const [compsLimit, setCompsLimit] = useState(9);
     const {connectIntent, setConnectIntent} = useConnectIntent();
     const err = useError(); 
-    const [compCount, setCompCount] = useState(-1);
+    const [compCount, setCompCount] = useState(-102); // false = unset, -102 = loading, -404 = not
 
     useEffect(() => {
         updateCompCount();
@@ -275,23 +278,41 @@ function _00x0_Index(props){
         router.replace(`/00x0`)
         setComp(false);
     }
+
+    async function randomComp(){
+        if(compCount > 0){
+            const rand = Math.floor(Math.random() * compCount)+1;
+            goToComp(rand);
+        }
+    }
     
+    const theme = useTheme();
+
+    const inputRef = useRef();
 
     return <Page bgColor="#000">
         
-        <Section>
+        <Section $padBottom={10} $padTop={8}>
             <Grid>
-                <Grid.Unit size={{sm: 1/1, md: 1/2}}>
+                <Grid.Unit>
+                    <h1 style={{fontStyle: 'italic'}}>00x0</h1>
+                </Grid.Unit>
+                <IntroSection size={{sm: 1/1, md: 1/2}}>
                     <div dangerouslySetInnerHTML={{__html: props.page00x0.content}}/>
-                    <div>
-                        77x7 holders can create 00x0 comps <Link href="/00x0/transfer"><a>here</a></Link> 
-                    </div>
-                </Grid.Unit>
-                <Grid.Unit size={{sm: 1/1, md: 1/2}}>
-                    <div>
-                       {compCount > 0 && <>{compCount} 00x0 comps have been created.<br/></>}
-                    </div>
-                </Grid.Unit>
+                    <Link href="/00x0/transfer"><Button invertColors>Create comp</Button></Link> 
+                </IntroSection>
+                <IntroSection size={{sm: 1/1, md: 1/2}}>
+                    <p>
+                    {compCount > 0 && `${compCount} comps created`}
+                    {compCount === -102 && <Loader>Fetching comps</Loader>}
+                    <br/>
+                    Load a specific comp or let the gods decide
+                    </p>
+                    <input type="number" ref={inputRef} min={1} max={compCount}/>
+                    <Button onClick={() => goToComp(inputRef.current.value)}>Load</Button>
+                    <Button onClick={randomComp}>Random</Button>
+
+                </IntroSection>
             </Grid>
         </Section>
         
@@ -300,22 +321,21 @@ function _00x0_Index(props){
         {compCount === 0 && <Comps>No comps have been created yet</Comps>}
 
         {(isArray(comps) && compCount > 0) && // THERE ARE COMPS
-        <div>
-            <CompNav>
-                <div onClick={prevCompsPage}>{'<'}</div>
-                <div onClick={nextCompsPage}>{'>'}</div>
-            </CompNav>
-            
+        <div>            
             <Comps>
                 {comps.map(comp => <Grid.Unit size={{sm: 1/2, md: 1/3}}>
                     <CompImage pad onClick={() => goToComp(comp.id)} image={comp.image} show={true}/>
                 </Grid.Unit>)}
             </Comps>
+            <Section style={{display: 'flex', justifyContent: 'center'}} $padBottom={10} $padTop={10}>
+                <Button onClick={prevCompsPage}>Previous set</Button>
+                <Button onClick={nextCompsPage}>Next set</Button>
+            </Section>            
         </div>}
         
 
         <CompModal show={comp}>
-            {comp === -102 && <ModalInner center><Loader>Loading comp</Loader></ModalInner>}
+            {comp === -102 && <ModalInner center><Loader>Loading comp #{router.query.comp}</Loader></ModalInner>}
             {isObject(comp) && <>
 
                 <Comp>

@@ -71,7 +71,6 @@ const Title = styled.h1`
   left: -3px;
   font-size: 1em;
   font-style: italic;
-  letter-spacing: 0.1em;
   a {
     text-decoration: none;
   }

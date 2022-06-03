@@ -44,6 +44,8 @@ const GlobalStyle = createGlobalStyle`
 
   h1, h2, h3, h4, h5 {
     margin-top: 0;
+    font-weight: normal;
+    letter-spacing: 0.06em;
   }
 
   p {
@@ -59,13 +61,12 @@ const GlobalStyle = createGlobalStyle`
 
 
   input[type="text"], input[type="number"], input[type="password"], input[type="email"]{
-
-    border: 0px solid ${theme.colors.text};
-    border-bottom-width: 2px;
-    background-color: transparent;
+    color: ${theme.colors.text};
+    border: none;
+    background-color: ${theme.colors.emph4};
     font-family: ${theme.font};
     font-size: inherit;
-    padding: 1vw 2vw;
+    padding: 1vw;
     ${breakpoint('sm', 'md')`
       padding: 2vw 3vw;
     `}
