@@ -45,7 +45,7 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     event CompCreated(uint indexed comp_id, address indexed creator);
 
-    string public constant NAME = "Latent Works \xc2\xb7 00x0";
+    string public constant NAME = unicode"Latent Works · 00x0";
     string public constant DESCRIPTION = "latent.works";
     uint public constant PRICE = 0.07 ether;
     
@@ -72,7 +72,6 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     function issuerInfo(uint, LTNT.Param memory param_) public view override returns(LTNT.IssuerInfo memory){
 
-        // bool landscape_ = (getOrientation(param_._uint) == LW00x0.Orientation.LANDSCAPE);
         return LTNT.IssuerInfo(
             '00x0', getImage(param_._uint, true, true)
         );
@@ -424,8 +423,8 @@ contract LW00x0_Meta {
 
             comp_.id_string = Strings.toString(i+1);
             
-            comp_.left = Rando.number(comp_.seed1, comp_.last_left/10, 1000); //(i+1 == comp_.works.length) ? 100 : Rando.number(comp_.seed1, comp_.last_left+(min), comp_.last_left+max);
-            comp_.right = Rando.number(comp_.seed2, comp_.last_right/2, 1000);//(i+1 == comp_.works.length) ? 100 : Rando.number(comp_.seed2, comp_.last_right+(min), comp_.last_right+max);
+            comp_.left = Rando.number(comp_.seed1, comp_.last_left/10, 1000);
+            comp_.right = Rando.number(comp_.seed2, comp_.last_right/2, 1000);
             
             comp_.defs = abi.encodePacked(comp_.defs,
             '<clipPath id="clip',comp_.id_string,'"><polygon points="0,',Strings.toString(comp_.last_left),' 0,',Strings.toString(comp_.left),' 1000,',Strings.toString(comp_.right),' 1000,',Strings.toString(comp_.last_right),'">',

@@ -11,7 +11,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import './LTNT.sol';
 import 'base64-sol/base64.sol';
 import './lib/Rando.sol';
-import 'hardhat/console.sol';
 
 /**
 

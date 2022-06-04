@@ -5,13 +5,13 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./LTNTFont.sol";
 import "base64-sol/base64.sol";
-import "hardhat/console.sol";
 
 
 //////////////////////////////////
 //
 //
 // LTNT
+// Passport NFTs for Latent Works
 //
 //
 //////////////////////////////////
@@ -60,20 +60,23 @@ contract LTNT is ERC721, Ownable {
     }
 
 
-    /// @notice Check if a given address is a registered issuer
+
+
+    /// @notice Require a given address to be a registered issuer
     /// @param caller_ the address to check for issuer privilegies
     function _reqOnlyIssuer(address caller_) private view {
         require(isIssuer(caller_), 'ONLY_ISSUER');
     }
+
+
 
     /// @notice Issue a token to the address
     /// @param to_ the address to issue the LTNT to
     /// @param param_ a Param struct of parameters associated with the token
     /// @param stamp_ boolean determining wether the newly issued LTNT should be stamped by the issuer
     /// @return uint the id of the newly issued LTNT
-    function issueTo(address to_, Param memory param_, bool stamp_) public returns(uint){
-
-        _reqOnlyIssuer(msg.sender);
+    function issueTo(address to_, Param memory param_, bool stamp_) public returns(uint){ _reqOnlyIssuer(msg.sender);
+        
         _ids++;
         _safeMint(to_, _ids);
         _issuer_for_id[_ids] = Issuer(msg.sender, param_);
@@ -84,16 +87,19 @@ contract LTNT is ERC721, Ownable {
             _stamp(_ids, msg.sender, param_);
 
         return _ids;
+
     }
+
 
 
     /// @dev Lets a registered issuer stamp a given LTNT
     /// @param id_ the ID of the LTNT to stamp
     /// @param param_ a Param struct with any associated params
-    function stamp(uint id_, Param memory param_) public {
-        _reqOnlyIssuer(msg.sender);
+    function stamp(uint id_, Param memory param_) public { _reqOnlyIssuer(msg.sender);
         _stamp(id_, msg.sender, param_);
     }
+
+
 
     /// @dev internal stamping mechanism
     /// @param id_ the id of the LTNT to stamp
@@ -228,7 +234,6 @@ contract LTNT_Meta {
     function getImage(uint id_, bool encode_) public view returns(string memory){
 
         LTNT.Issuer memory issuer_for_id_ = _ltnt.getIssuerFor(id_);
-        // console.log(issuer_for_id_.location);
         LTNT.IssuerInfo memory issuer_info_ = LTNTIssuer(issuer_for_id_.location).issuerInfo(id_, issuer_for_id_.param);
         LTNT.IssuerInfo memory stamper_;
         LTNT.Param memory stamp_param_;
@@ -246,7 +251,7 @@ contract LTNT_Meta {
             stamper_ = LTNTIssuer(issuers_[i]).issuerInfo(id_, stamp_param_);
             has_stamp_ = _ltnt.hasStamp(id_, issuers_[i]);
 
-            stamps_svg_ = abi.encodePacked(stamps_svg_, '<text class="txt italic" fill-opacity="0" y="',Strings.toString(25*i),'">',stamper_.name,' <animate attributeName="fill-opacity" values="0;',has_stamp_ ? '1' : '0.5','" dur="500ms" repeatCount="1" begin="',delay_,'ms" fill="freeze"/></text>');
+            stamps_svg_ = abi.encodePacked(stamps_svg_, '<text class="txt italic" fill-opacity="0" y="',Strings.toString(25*i),'">',stamper_.name,' <animate attributeName="fill-opacity" values="0;',has_stamp_ ? '1' : '0.4','" dur="500ms" repeatCount="1" begin="',delay_,'ms" fill="freeze"/></text>');
             if(has_stamp_)
                 ++stamp_count_;
 
@@ -255,7 +260,7 @@ contract LTNT_Meta {
         bytes memory image_;
         image_ = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1000" preserveAspectRatio="xMinYMin meet">',
-                '<defs><style>', _xanh_regular.fontFace(), _xanh_italic.fontFace(),' .txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em; fill: rgba(0,0,0,0.85);} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect ry="30" rx="30" id="bg" height="1000" width="600" fill="white"/></defs>',
+                '<defs><style>', _xanh_regular.fontFace(), _xanh_italic.fontFace(),' .txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em; fill: #222;} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect ry="30" rx="30" id="bg" height="1000" width="600" fill="white" stroke="#222" stroke-width="1"/></defs>',
                 '<use href="#bg"/>',
                 '<g transform="translate(65, 980) rotate(-90)">',
                     '<text class="txt large italic">Latent Works</text>',
@@ -297,7 +302,7 @@ contract LTNT_Meta {
 
         bytes memory json_ = abi.encodePacked(
             '{',
-                '"name":"LTNT", ',
+                '"name":"LTNT #',Strings.toString(id_),'", ',
                 '"image": "', getImage(id_, true),'", ',
                 '"description": "latent.works",',
                 '"attributes": [',
