@@ -80,6 +80,7 @@ const CompImage = styled(({image, ...p}) => <div {...p}><img src={image}/></div>
         margin: 0 auto;
         max-height: ${p => p.maxHeight ? p.maxHeight : 73}vh;
         width: auto;
+        max-width: 100%;
     }
 `
 
@@ -87,7 +88,7 @@ const CompImage = styled(({image, ...p}) => <div {...p}><img src={image}/></div>
 const CompInfo = styled(Section)`
     display: flex;
     ${breakpoint('sm', 'md')`
-        flex-direction: column;
+        flex-wrap: wrap;
     `}
     justify-content: space-between;
     position: fixed;
@@ -101,11 +102,15 @@ const CompInfo = styled(Section)`
         ${breakpoint('sm', 'md')`
             margin-top: 5vw;
             width: 100%;
+            &:nth-child(2), &:nth-child(3){
+                width: 49%;
+            }
+            &:nt
         `}
 
         width: 33%;
 
-        ${breakpoint('lg')`
+        ${breakpoint('md')`
             &:nth-child(2) {
                 text-align: center;
             }
@@ -142,7 +147,6 @@ const Comp = styled.div`
 `
 
 const Comps = styled(Section)`
-    min-height: 60vh;
     display: flex;
     flex-wrap: wrap;
     place-items: center;
@@ -166,13 +170,6 @@ const IntroSection = styled(Grid.Unit)`
     `}
 
 `
-
-// const FlexImg = styled.img`
-//     width: 100%;
-//     height: auto;
-//     box-sizing: border-box;
-//     ${p => p.pad && 'padding: 0 2vw 2vw 2vw'}
-// `
 
 
 function EnsAddress({input, ...p}){
@@ -316,7 +313,7 @@ function _00x0_Index(props){
                     <br/>
                     Load a specific comp or let the gods decide
                     </p> */}
-                    <input type="number" onKeyPress={e => {e.key == 'Enter' && goToComp(inputRef.current.value)}} ref={inputRef} min={1} max={compCount}/>
+                    <input type="number" onKeyPress={e => {e.key == 'Enter' && goToComp(inputRef.current.value)}} ref={inputRef} min={1} max={compCount} placeholder="#"/>
                     <Button onClick={() => goToComp(inputRef.current.value)}>Load</Button>
                     <Button onClick={randomComp}>Random</Button>
 
@@ -360,7 +357,7 @@ function _00x0_Index(props){
                         {account && comp.available > 0 
                         ? 
                         <Button expandOn={['sm', 'md']} disabled={account == comp.creator} onClick={() => handleMint(comp)}>
-                            {account == comp.creator ? `Creator can't mint` : <>Mint <small>({ethers.utils.formatEther(PRICE)} ETH)</small></>}
+                            {account == comp.creator ? `Creator` : <>Mint <small>({ethers.utils.formatEther(PRICE)} ETH)</small></>}
                         </Button>
                         :
                         <Button expandOn={['sm', 'md']} onClick={() => setConnectIntent(!connectIntent)}>{comp.available > 0 ? 'Connect to mint' : 'Sold out'}</Button>
