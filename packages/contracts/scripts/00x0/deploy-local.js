@@ -51,20 +51,22 @@ async function main() {
   
   [deployer, user1, user2, user3] = await hre.ethers.getSigners();
   
-  // const _77x7HolderAddress = '0x3827014F2236519f1101Ae2E136985E0e603Be79';
-  // await hre.network.provider.request({
-  //     method: "hardhat_impersonateAccount",
-  //     params: [_77x7HolderAddress],
-  // });
+//   const _77x7HolderAddress = '0x3827014F2236519f1101Ae2E136985E0e603Be79';
+//   await hre.network.provider.request({
+//       method: "hardhat_impersonateAccount",
+//       params: [_77x7HolderAddress],
+//   });
 
-  // await network.provider.send("hardhat_setBalance", [
-  //     _77x7HolderAddress,
-  //     hre.ethers.utils.parseEther("1000").toHexString(),
-  // ]);
+//   await network.provider.send("hardhat_setBalance", [
+//       _77x7HolderAddress,
+//       hre.ethers.utils.parseEther("1000").toHexString(),
+//   ]);
 
-  // _77x7holder = await ethers.getSigner(_77x7HolderAddress)
+//   _77x7holder = await ethers.getSigner(_77x7HolderAddress)
 
-  // await _77x7.connect(_77x7holder).safeBatchTransferFrom(_77x7holder.address, deployer.address, [1, 3, 5, 6, 54, 56, 63], [1,1,1,1,1,1,1], [], {gasLimit: 300000});
+//   await _77x7.connect(_77x7holder).safeBatchTransferFrom(_77x7holder.address, _00x0.address, [1, 3], [1,1], [], {gasLimit: 300000});
+//   await _77x7.connect(_77x7holder).safeBatchTransferFrom(_77x7holder.address, _00x0.address, [5, 6], [1,1], [], {gasLimit: 300000});
+//   await _77x7.connect(_77x7holder).safeBatchTransferFrom(_77x7holder.address, _00x0.address, [54, 56, 63], [1,1,1], [], {gasLimit: 300000});
 
 }
 

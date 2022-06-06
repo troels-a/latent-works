@@ -18,7 +18,7 @@ describe("00x0", async function(){
     let minter3;
 
     const seeds = [
-        [1, 3, 63, 6, 54, 5]
+        [1, 3], [63, 6], [54, 5]
     ];
 
     const values = [];
@@ -157,7 +157,14 @@ describe("00x0", async function(){
 
         });
 
+        // it('can get comps', async function(){
+        //     const comps = await _00x0.getComps(2, 2, true);
+        //     console.log(comps.map(comp => comp.id))
+        //     // expect(await _00x0.getComps(1, 1, true)).to.be.array;
+        // })
+
     });
+
 
     describe('Generate 00x0 assets', async function(){
         

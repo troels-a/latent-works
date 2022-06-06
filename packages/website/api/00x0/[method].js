@@ -8,7 +8,7 @@ const abi = new ABIAPI(_00x0ABI);
 abi.supportedMethods = abi.getReadMethods();
 abi.cacheTTL = 3;
 
-function compToCompObject(comp){
+export function compToCompObject(comp){
 
     return {
         id: comp.id.toNumber(),

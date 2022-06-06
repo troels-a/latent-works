@@ -198,15 +198,16 @@ function _00x0_Transfer(props){
                     resetTransferPrompt();
                     fetchBalance(account);
                     setSelectedWorks(prev => [])
+                    _00x0.contract.off('CompCreated', onCreated);
                 }
-                _00x0.contract.off('CompCreated', onCreated);
-            };
 
-            _00x0.contract.on('CompCreated', onCreated)
+            };
 
             const tx =  works.length < 2 
             ? await _77x7.contract.safeTransferFrom(from, to, works[0], values[0], [])
             : await _77x7.contract.safeBatchTransferFrom(from, to, works, values, []);
+
+            _00x0.contract.on('CompCreated', onCreated)
 
 
             // console.log(res)

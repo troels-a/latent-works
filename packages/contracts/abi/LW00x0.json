@@ -433,6 +433,11 @@
         "internalType": "uint256",
         "name": "page_",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "ascending_",
+        "type": "bool"
       }
     ],
     "name": "getComps",
@@ -544,30 +549,6 @@
       {
         "internalType": "string",
         "name": "output_",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "comp_id_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "append_",
-        "type": "string"
-      }
-    ],
-    "name": "getSeed",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
         "type": "string"
       }
     ],

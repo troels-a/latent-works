@@ -13,6 +13,7 @@ import './LTNT.sol';
 import 'base64-sol/base64.sol';
 import './lib/Rando.sol';
 import './LTNTFont.sol';
+import 'hardhat/console.sol';
 
 
 /**
@@ -54,10 +55,11 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
     LW77x7_LTNTIssuer public immutable _77x7_ltnt_issuer;
     LW00x0_Meta public immutable _00x0_meta;
 
+ 
     uint private _comp_ids;
     mapping(uint => uint[]) private _comp_works;
     mapping(uint => address) private _comp_creators;
-    mapping(uint => uint) private _comp_seeds;
+
 
     constructor(address seven7x7_, address seven7x7_ltnt_issuer_, address ltnt_) ERC1155("") {
 
@@ -70,6 +72,14 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     }
 
+
+    /// @dev require function to check if an address is the 77x7 contract
+    function _req77x7Token(address address_) private view {
+        require(address_ == address(_77x7), 'ONLY_77X7_ACCEPTED');
+    }
+
+
+    /// @dev return issuer information for LTNT passports
     function issuerInfo(uint, LTNT.Param memory param_) public view override returns(LTNT.IssuerInfo memory){
 
         return LTNT.IssuerInfo(
@@ -78,14 +88,12 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     }
 
+    /// @dev override for supportsInterface
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, ERC1155Receiver) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
-    function _req77x7Token(address address_) private view {
-        require(address_ == address(_77x7), 'ONLY_77X7_ACCEPTED');
-    }
-
+    /// @dev recieves a batch of 77x7 works and creates a 00x from them as well as issues a LTNT for each work
     function onERC1155BatchReceived(address, address from_, uint[] memory ids_, uint[] memory, bytes memory) public override returns(bytes4){
         
         _req77x7Token(_msgSender());
@@ -102,21 +110,21 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
         return super.onERC1155BatchReceived.selector;
 
     }
-
+    
+    /// @dev recieves a single 77x7 work and issues a LTNT for it
     function onERC1155Received(address, address from_, uint256 id_, uint256, bytes memory) public override returns(bytes4){
         _req77x7Token(_msgSender());
         _77x7_ltnt_issuer.issueTo(from_, LTNT.Param(id_, from_, '', false), true);
         return super.onERC1155Received.selector;
     }
 
-    
+    /// @dev internal function to create a comp for a given set of 77x7 works
     function _create(address for_, uint[] memory works_) private returns(uint) {
 
         require((works_.length > 1 && works_.length <= 7), "MIN_2_MAX_7_WORKS");
 
         _comp_ids++;
         _comp_works[_comp_ids] = works_;
-        _comp_seeds[_comp_ids] = _generateSeed(works_);
         _comp_creators[_comp_ids] = for_;
 
         emit CompCreated(_comp_ids, for_);
@@ -126,23 +134,12 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     }
 
-    function _generateSeed(uint[] memory works_) private pure returns(uint){
-        return (works_[0]+works_[1])*(works_[0]+works_[1])*(77*works_.length);
-    }
-
+    /// @dev internal mint function
     function _mintFor(address for_, uint comp_id_) private {
         _mint(for_, comp_id_, 1, "");
     }
 
-    function getEditions(uint comp_id_) public view returns(uint) {
-        return _comp_works[comp_id_].length;
-    }
-
-    function getCreator(uint comp_id_) public view returns(address){
-        return _comp_creators[comp_id_];
-    }
-
-
+    /// @dev mint yeah
     function mint(uint comp_id_) public payable nonReentrant {
 
         require(msg.sender != _comp_creators[comp_id_], 'COMP_CREATOR');
@@ -161,44 +158,64 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     }
 
+    /// @dev get the number of total editions for a given comp
+    function getEditions(uint comp_id_) public view returns(uint) {
+        return _comp_works[comp_id_].length;
+    }
 
+    /// @dev get the creator adress of a given comp id
+    function getCreator(uint comp_id_) public view returns(address){
+        return _comp_creators[comp_id_];
+    }
+
+    /// @dev get the total available editions left for comp
     function getAvailable(uint comp_id_) public view returns(uint){
         return _comp_works[comp_id_].length - totalSupply(comp_id_);
     }
 
 
-    function getSeed(uint comp_id_, string memory append_) public view returns(string memory){
-        return string(abi.encodePacked(Strings.toString(_comp_seeds[comp_id_]), append_));
-    }
-
+    /// @dev get the 77x7 work IDs used to create a given comp
     function getWorks(uint comp_id_) public view returns(uint[] memory){
         return _comp_works[comp_id_];
     }
 
+    /// @dev get the image of a given comp
     function getImage(uint comp_id_, bool mark_, bool encode_) public view returns(string memory output_){
         require(totalSupply(comp_id_) > 0, 'DOES_NOT_EXIST');
         return _00x0_meta.getImage(comp_id_, mark_, encode_);
     }
 
-    function getComps(uint limit_, uint page_) public view returns(LW00x0.Comp[] memory){
+    function getComps(uint limit_, uint page_, bool ascending_) public view returns(LW00x0.Comp[] memory){
 
-        uint max_ = _comp_ids;
+        uint count_ = _comp_ids;
 
         if(limit_ < 1 && page_ < 1){
-            limit_ = max_;
+            limit_ = count_;
             page_ = 1;
         }
 
         LW00x0.Comp[] memory comps_ = new LW00x0.Comp[](limit_);
-        uint i = 0;
-        uint index;
-        uint offset = page_ == 1 ? 0 : (page_-1)*limit_;
-        while(i < limit_ && i < max_){
-            index = i+(offset);
-            if(max_ > index){
-                comps_[i] = getComp(index+1);
+        uint i;
+
+        if(ascending_){
+            // ASCENDING
+            uint id = page_ == 1 ? 1 : ((page_-1)*limit_)+1;
+            while(id <= count_ && i < limit_){
+                 console.log(i, 'Index');
+                comps_[i] = getComp(id);
+                ++i;
+                ++id;
             }
-            i++;
+        }
+        else {
+            /// DESCENDING
+            uint id = page_ == 1 ? count_ : count_ - (limit_*(page_-1));
+            while(id > 0 && i < limit_){
+                comps_[i] = getComp(id);
+                ++i;
+                --id;
+            }
+
         }
 
         return comps_;
@@ -207,6 +224,7 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
     }
 
 
+    /// @dev get the comp struct for a given comp ID
     function getComp(uint comp_id_) public view returns(LW00x0.Comp memory){
 
         return LW00x0.Comp(
@@ -221,15 +239,14 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
 
     }
 
+    /// @dev get total number of comps created
     function getCompCount() public view returns(uint){
         return _comp_ids;
     }
 
-
+    /// @dev return the metadata uri for a given url
     function uri(uint comp_id_) public view override returns(string memory){
-        
         return _00x0_meta.getJSON(comp_id_);
-
     }
 
 

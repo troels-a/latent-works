@@ -225,7 +225,7 @@ function _00x0_Index(props){
             return;
 
         setComps(-102);
-        const data = await _00x0.api('getComps', {page_: compsPage, limit_: compsLimit});
+        const data = await _00x0.api('getComps', {page_: compsPage, limit_: compsLimit, ascending_: false});
 
         if(data.error){
             setComps(false);
