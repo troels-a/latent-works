@@ -54,7 +54,7 @@ contract LTNT is ERC721, Ownable {
     /// @dev pass address of onchain fonts to the constructor
     constructor(address regular_, address italic_) ERC721("Latents", "LTNT"){
 
-        LTNT_Meta ltnt_meta_ = new LTNT_Meta(regular_, italic_);
+        LTNT_Meta ltnt_meta_ = new LTNT_Meta(address(this), regular_, italic_);
         _ltnt_meta = LTNT_Meta(address(ltnt_meta_));
 
     }
@@ -219,9 +219,9 @@ contract LTNT_Meta {
     XanhMonoRegularLatin public immutable _xanh_regular;
     XanhMonoItalicLatin public immutable _xanh_italic;
 
-    constructor(address regular_, address italic_){
+    constructor(address ltnt_, address regular_, address italic_){
 
-        _ltnt = LTNT(msg.sender);
+        _ltnt = LTNT(ltnt_);
         _xanh_regular = XanhMonoRegularLatin(regular_);
         _xanh_italic = XanhMonoItalicLatin(italic_);
 
@@ -260,7 +260,7 @@ contract LTNT_Meta {
         bytes memory image_;
         image_ = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1000" preserveAspectRatio="xMinYMin meet">',
-                '<defs><style>', _xanh_regular.fontFace(), _xanh_italic.fontFace(),' .txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em; fill: #222;} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect ry="30" rx="30" id="bg" height="1000" width="600" fill="white" stroke="#222" stroke-width="1"/></defs>',
+                '<defs><style>', _xanh_regular.fontFace(), _xanh_italic.fontFace(),' .txt {font-family: "Xanh Mono"; font-size:20px; font-weight: normal; letter-spacing: 0.01em; fill: white;} .italic {font-style: italic;} .large {font-size: 55px;} .small {font-size: 12px;}</style><rect ry="30" rx="30" id="bg" height="1000" width="600" fill="black"/></defs>',
                 '<use href="#bg"/>',
                 '<g transform="translate(65, 980) rotate(-90)">',
                     '<text class="txt large italic">Latent Works</text>',

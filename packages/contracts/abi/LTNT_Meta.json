@@ -3,6 +3,11 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "ltnt_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "regular_",
         "type": "address"
       },

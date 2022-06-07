@@ -3,12 +3,10 @@ const networkName = hre.network.name;
 require("colors");
 const Verify = require('../verify.js');
 
-const NETWORK = 'rinkeby';
-const ADDRESS_77X7 = '0x81e4002C4F96B901fD97f8c5D9128020568d4EC5';
-// const ADDRESS_77X7_ISSUER = '0xC4b219Ce2510c26f0527Ed6EA058409a9118F107';
-// const ADDRESS_LTNT = '0xeDbF3134217D6223EEF411EF796635830a8ad8D5';
-const REGULAR_ADDRESS = '0x5f5319b6A8bF5c26b6021CEB5f26d1f6fBc33FAf';
-const ITALIC_ADDRESS = '0x50C1803A4FF4Ed29568f8c123c2583a688BAF5A9';
+const NETWORK = 'mainnet';
+const ADDRESS_77X7 = '0xEF7c89F051ac48885b240eb53934B04fcF3339ab';
+const ADDRESS_77X7_ISSUER = '0x56965521CA0fd26d1A6733a87848C00bcd56a0Ac';
+const ADDRESS_LTNT = '0x6f2Ff40F793776Aa559644F52e58D83E21871EC3';
 
 async function main() {
 
@@ -20,35 +18,23 @@ async function main() {
   console.log(`Deploying to ${networkName}`.bgGreen);
   const verify = Verify(networkName);
 
-  
 
-  /// ATTACH
+  /// ATTACH 77x7
   const LW77x7 = await hre.ethers.getContractFactory("LW77x7");
   _77x7 = LW77x7.attach(ADDRESS_77X7);
   await _77x7.deployed();
 
 
-  /// LTNT
+  /// ATTACH LTNT
   const LTNT = await hre.ethers.getContractFactory("LTNT");
-  _ltnt = await LTNT.deploy(REGULAR_ADDRESS, ITALIC_ADDRESS);
+  _ltnt = await LTNT.attach(ADDRESS_LTNT);
   await _ltnt.deployed();
-  console.log("LTNT deployed to:", _ltnt.address.green.bold);
-  verify.add(_ltnt.address, [REGULAR_ADDRESS, ITALIC_ADDRESS]);
-
-  const _ltnt_meta = await _ltnt.getMetaContract();
-  console.log("LTNT_Meta deployed to:", _ltnt_meta.green.bold);
-  verify.add(_ltnt_meta, [_ltnt.address, REGULAR_ADDRESS, ITALIC_ADDRESS]);
 
 
   /// LW77x7
   const LW77x7_LTNTIssuer = await hre.ethers.getContractFactory("LW77x7_LTNTIssuer");
-  _77x7_ltnt_issuer = await LW77x7_LTNTIssuer.deploy(_77x7.address, _ltnt.address);
+  _77x7_ltnt_issuer = await LW77x7_LTNTIssuer.attach(ADDRESS_77X7_ISSUER);
   await _77x7_ltnt_issuer.deployed();
-  
-  await _ltnt.addIssuer(_77x7_ltnt_issuer.address);
-
-  console.log("77x7 issuer deployed to:", _77x7_ltnt_issuer.address.green.bold);
-  verify.add(_77x7_ltnt_issuer.address, [_77x7.address, _ltnt.address]);
 
 
   /// LW00x0

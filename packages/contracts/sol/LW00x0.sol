@@ -13,7 +13,6 @@ import './LTNT.sol';
 import 'base64-sol/base64.sol';
 import './lib/Rando.sol';
 import './LTNTFont.sol';
-import 'hardhat/console.sol';
 
 
 /**
@@ -201,7 +200,6 @@ contract LW00x0 is ERC1155, ERC1155Supply, ERC1155Holder, Ownable, ReentrancyGua
             // ASCENDING
             uint id = page_ == 1 ? 1 : ((page_-1)*limit_)+1;
             while(id <= count_ && i < limit_){
-                 console.log(i, 'Index');
                 comps_[i] = getComp(id);
                 ++i;
                 ++id;

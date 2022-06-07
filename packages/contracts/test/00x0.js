@@ -196,8 +196,8 @@ describe("00x0", async function(){
             await _77x7_ltnt_issuer.connect(migrater).setIteration(3, 4);
             await expect(_77x7_ltnt_issuer.connect(wallet1).setIteration(3, 7)).to.be.revertedWith('NOT_OWNER');
 
-            let i = 10;
-            const max = 10;
+            let i = 5;
+            const max = 7;
             while(i <= max){
                 let svg = await _ltnt_meta.getImage(i, false);
                 await fs.writeFileSync(`${preview_dir}/LTNT_${i}.svg`, svg, {flag: 'w'});

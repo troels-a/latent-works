@@ -1,5 +1,6 @@
 const hre = require("hardhat");
 const networkName = hre.network.name;
+const Verify = require('../verify.js');
 require("colors");
 
 async function main() {
@@ -11,19 +12,21 @@ async function main() {
 
   console.log('DEPLOYING TO MAINNET'.bgGreen);
 
+  const verify = Verify(networkName);
+
   const XanhMonoRegularLatin = await hre.ethers.getContractFactory("XanhMonoRegularLatin");
   _xmrl = await XanhMonoRegularLatin.deploy();
   await _xmrl.deployed();
+  verify.add(_xmrl.address);
+
   const XanhMonoItalicLatin = await hre.ethers.getContractFactory("XanhMonoItalicLatin");
   _xmil = await XanhMonoItalicLatin.deploy();
   await _xmil.deployed();
-
-  console.log('FONTS')
-  console.log(_xmrl.address)
-  console.log(_xmil.address)
+  verify.add(_xmil.address);
 
   console.log("Regular deployed to:", _xmrl.address.green.bold);
   console.log("Italic deployed to:", _xmil.address.green.bold);
+  console.log(verify.command);
 
 }
 
