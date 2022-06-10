@@ -32,8 +32,8 @@ contract LWMempool {
 
         pool_.base = _bases[Rando.number(pool_.seed2, 0, _bases.length)];
 
-        uint age_ = 80;
-        uint max = Rando.number(seed_, age_+1, age_+5); // Increase over time
+        uint age_ = 80; // Advances in different increments for each
+        uint max = Rando.number(seed_, age_+1, age_+2); // Increase over time
 
         uint i;
         while(i < max){
@@ -74,8 +74,8 @@ contract LWMempool {
         bytes memory svg_ = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMinYMin meet">',
                 '<defs>',
-                    '<style></style><rect id="bg" height="1000" width="1000" fill="white"/>',
-                    '<rect id="shape1" width="50" height="',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'shape1')), 20, 300)),'"/>',
+                    '<style></style><rect id="bg" height="1000" width="1000" fill="url(#base1)"/>',
+                    '<rect id="shape1" width="',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'shape1line')), 1, 50)),'" height="',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'shape1')), 20, 300)),'"/>',
                     '<rect id="shape2" width="30" height="',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'shape2')), 20, 200)),'"/>',
                     '<rect id="shape3" width="20" height="',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'shape3')), 20, 100)),'"/>',
                     '<image id="base" width="1000" height="1000" href="',pool_.base,'"/>',
@@ -95,7 +95,7 @@ contract LWMempool {
                 '<use href="#pool" transform="scale(.5, 0.5)"/>',
                 '<use href="#pool" transform="scale(.5, 0.5) translate(0, 1000)"/>'
                 '<use href="#pool" transform="scale(0.8, 0.8) translate(1000, 0)"/>'
-                '<use href="#pool" transform="scale(1, 1.5) translate(500, 500)"/>'
+                '<use href="#pool" transform="scale(1, 1.5) translate(',Strings.toString(Rando.number(pool_.seed1, 0, 500)),', ',Strings.toString(Rando.number(string(abi.encodePacked(pool_.seed1)), 0, 500)),')"/>'
             '</svg>'
         );
 

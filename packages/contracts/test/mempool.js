@@ -36,7 +36,7 @@ describe('mempool', async function(){
         let i = 1;
 
         while(i <= max){
-            let svg = await _mempool.generateImage((new Date().getTime()*i)+'');
+            let svg = await _mempool.generateImage((256*i)+(100000/i)+'');
             await fs.writeFileSync(`${preview_dir}/mempool_${i}.svg`, svg, {flag: 'w'});
             i++;
         }
