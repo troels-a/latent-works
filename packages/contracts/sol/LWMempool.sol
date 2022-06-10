@@ -31,8 +31,8 @@ contract LWMempool {
         Pool memory pool_;
 
         pool_.base = _bases[Rando.number(pool_.seed2, 0, _bases.length)];
-        
-        uint age_ = 90;
+
+        uint age_ = 80;
         uint max = Rando.number(seed_, age_+1, age_+5); // Increase over time
 
         uint i;
@@ -78,21 +78,18 @@ contract LWMempool {
                     '<rect id="shape1" width="50" height="',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'shape1')), 20, 300)),'"/>',
                     '<rect id="shape2" width="30" height="',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'shape2')), 20, 200)),'"/>',
                     '<rect id="shape3" width="20" height="',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'shape3')), 20, 100)),'"/>',
-                    '<pattern id="base1" x="0" y="0" width="1" height="1" viewBox="0 0 200 200"><image width="1000" height="1000" href="',pool_.base,'"/></pattern>',
-                    '<pattern id="base2" x="0" y="0" width="1" height="1" viewBox="200 200 200 200" preserveAspectRatio="xMidYMid slice"><image width="1000" height="1000" href="',pool_.base,'"/></pattern>',
-                    '<pattern id="base3" x="0" y="0" width="1" height="1" viewBox="400 400 200 200" preserveAspectRatio="xMidYMid slice"><image width="1000" height="1000" href="',pool_.base,'"/></pattern>',
-                    '<pattern id="base4" x="0" y="0" width="1" height="1" viewBox="600 600 200 200" preserveAspectRatio="xMidYMid slice"><image width="1000" height="1000" href="',pool_.base,'"/></pattern>',
-                    '<pattern id="base5" x="0" y="0" width="1" height="1" viewBox="800 800 200 200" preserveAspectRatio="xMidYMid slice"><image width="1000" height="1000" href="',pool_.base,'"/></pattern>',
+                    '<image id="base" width="1000" height="1000" href="',pool_.base,'"/>',
+                    '<pattern id="base1" x="0" y="0" width="1" height="1" viewBox="0 0 200 200"><use href="#base"/></pattern>',
+                    '<pattern id="base2" x="0" y="0" width="1" height="1" viewBox="200 200 200 200" preserveAspectRatio="xMidYMid slice"><use href="#base"/></pattern>',
+                    '<pattern id="base3" x="0" y="0" width="1" height="1" viewBox="400 400 200 200" preserveAspectRatio="xMidYMid slice"><use href="#base"/></pattern>',
+                    '<pattern id="base4" x="0" y="0" width="1" height="1" viewBox="600 600 200 200" preserveAspectRatio="xMidYMid slice"><use href="#base"/></pattern>',
+                    '<pattern id="base5" x="0" y="0" width="1" height="1" viewBox="800 800 200 200" preserveAspectRatio="xMidYMid slice"><use href="#base"/></pattern>',
                     '<filter id="blur" x="0" y="0"><feGaussianBlur in="SourceGraphic" stdDeviation="5" /></filter>',
                 '</defs>',
                 '<use href="#bg"/>',
-                // '<rect fill-opacity="0.25" width="1000" height="1000" fill="url(#base1)"/>',
-                // '<rect fill-opacity="0.25" width="1000" height="1000" fill="url(#base2)"/>',
-                // '<rect fill-opacity="0.25" width="1000" height="1000" fill="url(#base3)"/>',
-                // '<rect fill-opacity="0.25" width="1000" height="1000" fill="url(#base4)"/>',
+                '<rect fill-opacity="0.8" width="1000" height="1000" fill="url(#base',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'bg1')), 1, 5)),')"/>',
+                '<rect fill-opacity="0.8" width="1000" height="1000" fill="url(#base',Strings.toString(Rando.number(string(abi.encodePacked(seed_, 'bg2')), 1, 5)),')"/>',
                 '<g filter="url(#blur)" transform="translate(0, -100)" id="pool">',
-                pool_.items,
-                pool_.items,
                 pool_.items,
                 '</g>',
                 '<use href="#pool" transform="scale(.5, 0.5)"/>',
