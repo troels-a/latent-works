@@ -2,9 +2,9 @@
   "name": "@lw/contracts",
   "version": "1.0.0",
   "scripts": {
-    "test": "npx hardhat test test/00x0.js;",
+    "test": "npx hardhat test test/mempool.js;",
     "watch": "npx nodemon --watch sol --watch test -e sol,js --exec \"npm run test\"",
-    "develop": "npx hardhat run --network localhost scripts/00x0/deploy-local.js ",
+    "develop": "npx hardhat run --network localhost scripts/mempool/deploy-local.js ",
     "build": "next build",
     "serve": "next build && next export && serve out",
     "start": "next start"
