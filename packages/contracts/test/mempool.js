@@ -51,8 +51,8 @@ describe('mempool', async function(){
         let max_epochs = await _mempool.MAX_EPOCHS();
         max_epochs = max_epochs.toNumber();
 
-        while(epoch <= max_epochs){
-            const epoch = await _mempool.getCurrentEpoch(pool_id);
+        while(epoch.toNumber() <= max_epochs){
+            epoch = await _mempool.getCurrentEpoch(pool_id);
             console.log(i, epoch.toNumber());
             const svg = await _mempool.getEpochImage(pool_id, epoch, false);
             await fs.writeFileSync(`${preview_dir}/mempool_${pool_id}_${epoch}.svg`, svg, {flag: 'w'});
