@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import './LTNT.sol';
 import './lib/Rando.sol';
 
-contract LWMempool is ERC721 {
+contract LWMempoolGenerator is ERC721 {
 
     struct Pool {
         bytes items;
@@ -16,7 +16,7 @@ contract LWMempool is ERC721 {
         uint max;
     }
 
-    uint public constant MAX_EPOCHS = 20;
+    uint public constant MAX_EPOCHS = 10;
 
     uint private _pool_ids;
     mapping(uint => uint) private _pool_timestamps;
@@ -109,7 +109,7 @@ contract LWMempool is ERC721 {
         bytes memory svg_ = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMinYMin meet">',
                 '<defs>',
-                    '<style></style><circle cx="500" cy="500" r="500" id="bg"/>',
+                    '<style></style><rect height="1000" width="1000" id="bg"/>',
                     '<clipPath id="clip"><use href="#bg"/></clipPath>',
                     '<rect id="shape1" width="',Strings.toString(Rando.number(getSeed(pool_id_, 'shape1width'), 1, 50)),'" height="',Strings.toString(Rando.number(getSeed(pool_id_, 'shape1height'), 20, 300)),'"/>',
                     '<rect id="shape2" width="30" height="',Strings.toString(Rando.number(getSeed(pool_id_, 'shape2width'), 20, 200)),'"/>',
@@ -123,7 +123,7 @@ contract LWMempool is ERC721 {
                     '<filter id="blur" x="0" y="0"><feGaussianBlur in="SourceGraphic" stdDeviation="4" /></filter>',
                 '</defs>',
                 '<g clip-path="url(#clip)">',
-                '<use href="#bg" fill="white"/>',
+                '<use href="#bg" fill="black"/>',
                 '<use href="#bg" fill-opacity="0.8" fill="url(#base',Strings.toString(Rando.number(getSeed(pool_id_, 'bg1'), 2, 5)),')"/>',
                 '<use href="#bg" fill-opacity="0.8" fill="url(#base',Strings.toString(Rando.number(getSeed(pool_id_, 'bg2'), 2, 5)),')"/>',
                 '<g filter="url(#blur)" transform="translate(0, -100)" id="pool">',
