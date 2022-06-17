@@ -27,7 +27,7 @@ class Preview {
     }
     
     async getMetaData(tokenId){
-        let metadata = await this.contract.uri(tokenId);
+        let metadata = await this.contract.tokenURI(tokenId);
         metadata = Buffer.from(metadata.replace(/^data\:application\/json\;base64\,/, ''), 'base64');
         metadata = metadata.toString('utf-8');
         return JSON.parse(metadata);

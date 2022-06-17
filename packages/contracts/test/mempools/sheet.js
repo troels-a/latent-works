@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path').dirname(__dirname);
 
-async function generateSheet({filename, title, items, dir, bgcolor, columns}){
+async function generateSheet({filename, title, items, dir, bgcolor, txtcolor, columns}){
 
     await fs.promises.mkdir(dir, {recursive: true}).catch(console.error);
 
@@ -27,7 +27,7 @@ async function generateSheet({filename, title, items, dir, bgcolor, columns}){
                     box-sizing: border-box;
                     background-color: ${bgcolor};
                     font-family: Arial, Helvetica, sans-serif;
-                    color: white;
+                    color: ${txtcolor};
                 }
                 
                 body > div {
@@ -48,7 +48,7 @@ async function generateSheet({filename, title, items, dir, bgcolor, columns}){
         <body>
                 ${items.map(item => `<div>
                     <img src="${item.src}"/>
-                    <div>${item.label}</div>
+                    ${item.url && `<div><a href="${item.url}" target="_blank">${item.label}</a></div>`}
                 </div>`).join('')}
         </body>
     </html>
