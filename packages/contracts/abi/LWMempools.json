@@ -19,7 +19,7 @@
             "type": "string[4]"
           }
         ],
-        "internalType": "struct LWMempools_Bases.Base[]",
+        "internalType": "struct LWMempools_Meta.Base[]",
         "name": "init_bases_",
         "type": "tuple[]"
       }
@@ -135,6 +135,32 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "_ltnt",
+    "outputs": [
+      {
+        "internalType": "contract LTNT",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_meta",
+    "outputs": [
+      {
+        "internalType": "contract LWMempools_Meta",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -231,7 +257,7 @@
             "type": "string[4]"
           }
         ],
-        "internalType": "struct LWMempools_Bases.Base",
+        "internalType": "struct LWMempools_Meta.Base",
         "name": "",
         "type": "tuple"
       }
@@ -291,35 +317,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "pool_id_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "epoch_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "encode_",
-        "type": "bool"
-      }
-    ],
-    "name": "getEpochImage",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
       }
     ],
     "stateMutability": "view",

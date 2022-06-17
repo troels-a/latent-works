@@ -31,7 +31,7 @@ ${p => p.show && `
 
 export const ModalInner = styled.div`
 padding: 1vw;
-max-width: 650px;
+max-width: 800px;
 ${p => p.center && `
     display:flex;
     justify-content: center;

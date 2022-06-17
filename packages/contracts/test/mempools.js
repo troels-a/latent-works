@@ -11,7 +11,7 @@ const LTNT_ADDRESS = '0x6f2Ff40F793776Aa559644F52e58D83E21871EC3';
 
 describe('mempools', async function(){
 
-    let _mempool, preview_dir, base_dir;
+    let _mempools, preview_dir, base_dir;
     
     it('init', async function(){
 
@@ -41,16 +41,21 @@ describe('mempools', async function(){
             bases.push([name, parts]);
         }
 
-        const LWMempool = await hre.ethers.getContractFactory("LWMempools");
-        _mempool = await LWMempool.deploy(LTNT_ADDRESS, bases);
-        await _mempool.deployed();
+        const LWMempools = await hre.ethers.getContractFactory("LWMempools");
+        _mempools = await LWMempools.deploy(LTNT_ADDRESS, bases);
+        await _mempools.deployed();
+
+        const LWMempools_Meta = await hre.ethers.getContractFactory("LWMempools_Meta");
+        _mempools_meta = await LWMempools_Meta.attach(await _mempools._meta());
+        await _mempools_meta.deployed();
+
 
     })
 
     it('mints', async function(){
         let i = 1;
         while(i <= MINT_MAX){
-            await _mempool.mint();
+            await _mempools.mint({value: ethers.utils.parseEther('0.1')});
             i++;
         }
     })
@@ -60,7 +65,7 @@ describe('mempools', async function(){
         
     //     this.timeout(500000);
 
-    //     const preview = new Preview(_mempool);
+    //     const preview = new Preview(_mempools);
 
     //     const sheet = {
     //         filename: 'pools.html',
@@ -81,7 +86,7 @@ describe('mempools', async function(){
     //     while(i <= MINT_MAX){
 
     //         console.log(i);
-    //         const tokenURI = await _mempool.tokenURI(i);
+    //         const tokenURI = await _mempools.tokenURI(i);
 
     //         let json = JSON.parse(Buffer.from(tokenURI.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8'));
                 
@@ -93,7 +98,7 @@ describe('mempools', async function(){
 
     //         const svg = Buffer.from(json.image.replace(/^data\:image\/svg+xml\;base64\,/, ''), 'base64').toString('utf-8');
     
-    //         // const svg = await _mempool.getEpochImage(i, epoch, false);
+    //         // const svg = await _mempools.getEpochImage(i, epoch, false);
     //         const image_file = `${preview_dir}/mempool_${i}.svg`;
     //         const json_file = `${preview_dir}/mempool_${i}.json`;
             
@@ -130,19 +135,19 @@ describe('mempools', async function(){
             columns: 5
         }
 
-        const pool_id = 26;
-        const increase = await _mempool.getEpochLength(pool_id);
+        const pool_id = 63;
+        const increase = await _mempools.getEpochLength(pool_id);
 
         let epoch = 0
 
         const max_epochs = 30;
         while(epoch < max_epochs){
             
-            epoch = await _mempool.getCurrentEpoch(pool_id);
+            epoch = await _mempools.getCurrentEpoch(pool_id);
             epoch = epoch.toNumber();
             console.log(pool_id, epoch);
 
-            const svg = await _mempool.getEpochImage(pool_id, epoch, false);
+            const svg = await _mempools_meta.getEpochImage(pool_id, epoch, false);
             const filename = `${preview_dir}/mempool_${pool_id}_${epoch}.svg`;
             
             await fs.writeFileSync(filename, svg, {flag: 'w'});
