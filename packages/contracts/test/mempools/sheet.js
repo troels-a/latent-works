@@ -29,6 +29,10 @@ async function generateSheet({filename, title, items, dir, bgcolor, txtcolor, co
                     font-family: Arial, Helvetica, sans-serif;
                     color: ${txtcolor};
                 }
+
+                a {
+                    color: inherit;
+                }
                 
                 body > div {
                     width: ${100/columns}%;

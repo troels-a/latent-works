@@ -17,7 +17,7 @@ describe('mempools', async function(){
 
         
         preview_dir = `${path}/temp/preview`;
-        base_dir = `${path}/test/mems`;
+        base_dir = `${path}/test/oldie`;
 
         let pools = await fs.readdirSync(base_dir, { withFileTypes: true });
         pools = pools.filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)
@@ -61,110 +61,110 @@ describe('mempools', async function(){
     })
 
 
-    // it('generates all pools', async function(){
-        
-    //     this.timeout(500000);
-
-    //     const preview = new Preview(_mempools);
-
-    //     const sheet = {
-    //         filename: 'pools.html',
-    //         title: 'Mempools',
-    //         items: [],
-    //         dir: preview_dir,
-    //         bgcolor: 'white',
-    //         txtcolor: '#777',
-    //         columns: 8
-    //     }
-
-
-    //     // await network.provider.send("evm_increaseTime", [60*60*24*365*1]);
-    //     // await network.provider.send("evm_mine");
-
-    //     const resolveAll = [];
-    //     let i = 1;
-    //     while(i <= MINT_MAX){
-
-    //         console.log(i);
-    //         const tokenURI = await _mempools.tokenURI(i);
-
-    //         let json = JSON.parse(Buffer.from(tokenURI.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8'));
-                
-    //         let epoch = 0;
-    //         json.attributes.map(attr => {
-    //             if(attr.trait_type == 'epoch')
-    //                 epoch = attr.value
-    //         });
-
-    //         const svg = Buffer.from(json.image.replace(/^data\:image\/svg+xml\;base64\,/, ''), 'base64').toString('utf-8');
-    
-    //         // const svg = await _mempools.getEpochImage(i, epoch, false);
-    //         const image_file = `${preview_dir}/mempool_${i}.svg`;
-    //         const json_file = `${preview_dir}/mempool_${i}.json`;
-            
-    //         await fs.writeFileSync(image_file, svg, {flag: 'w'});
-            
-    //         sheet.items.push({
-    //             src: image_file,
-    //             label: `mempool ${i}`,
-    //             url: tokenURI
-    //         })
-
-    //         i++;
-
-    //     }
-
-    //     await Promise.all(resolveAll);
-    //     await generateSheet(sheet)
-    //     // sheet.filename = 'pools.svg';
-    //     // sheet.columns = 4;
-    //     // await generateSVG(sheet)
-
-    // });
-
-    it('generates epochs', async function(){
+    it('generates all pools', async function(){
         
         this.timeout(500000);
 
+        const preview = new Preview(_mempools);
+
         const sheet = {
-            filename: 'epochs.html',
-            title: 'Mempool #1 - epochs',
+            filename: 'pools.html',
+            title: 'Mempools',
             items: [],
             dir: preview_dir,
-            bgcolor: 'black',
-            columns: 5
+            bgcolor: 'white',
+            txtcolor: 'black',
+            columns: 8
         }
 
-        const pool_id = 63;
-        const increase = await _mempools.getEpochLength(pool_id);
 
-        let epoch = 0
+        // await network.provider.send("evm_increaseTime", [60*60*24*365*10]);
+        // await network.provider.send("evm_mine");
 
-        const max_epochs = 30;
-        while(epoch < max_epochs){
+        const resolveAll = [];
+        let i = 1;
+        while(i <= MINT_MAX){
+
+            console.log(i);
+            const tokenURI = await _mempools.tokenURI(i);
+
+            let json = JSON.parse(Buffer.from(tokenURI.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8'));
+                
+            let epoch = 0;
+            json.attributes.map(attr => {
+                if(attr.trait_type == 'epoch')
+                    epoch = attr.value
+            });
+
+            const svg = Buffer.from(json.image.replace(/^data\:image\/svg+xml\;base64\,/, ''), 'base64').toString('utf-8');
+    
+            // const svg = await _mempools.getEpochImage(i, epoch, false);
+            const image_file = `${preview_dir}/mempool_${i}.svg`;
+            const json_file = `${preview_dir}/mempool_${i}.json`;
             
-            epoch = await _mempools.getCurrentEpoch(pool_id);
-            epoch = epoch.toNumber();
-            console.log(pool_id, epoch);
-
-            const svg = await _mempools_meta.getEpochImage(pool_id, epoch, false);
-            const filename = `${preview_dir}/mempool_${pool_id}_${epoch}.svg`;
-            
-            await fs.writeFileSync(filename, svg, {flag: 'w'});
+            await fs.writeFileSync(image_file, svg, {flag: 'w'});
             
             sheet.items.push({
-                src: filename
+                src: image_file,
+                label: `mempool ${i}`,
+                url: tokenURI
             })
-            
-            await network.provider.send("evm_increaseTime", [increase.toNumber()]);
-            await network.provider.send("evm_mine");
-            
+
+            i++;
 
         }
 
+        await Promise.all(resolveAll);
         await generateSheet(sheet)
+        // sheet.filename = 'pools.svg';
+        // sheet.columns = 4;
+        // await generateSVG(sheet)
 
     });
+
+    // it('generates epochs', async function(){
+        
+    //     this.timeout(500000);
+
+    //     const sheet = {
+    //         filename: 'epochs.html',
+    //         title: 'Mempool #1 - epochs',
+    //         items: [],
+    //         dir: preview_dir,
+    //         bgcolor: 'black',
+    //         columns: 5
+    //     }
+
+    //     const pool_id = 63;
+    //     const increase = await _mempools.getEpochLength(pool_id);
+
+    //     let epoch = 0
+
+    //     const max_epochs = 30;
+    //     while(epoch < max_epochs){
+            
+    //         epoch = await _mempools.getCurrentEpoch(pool_id);
+    //         epoch = epoch.toNumber();
+    //         console.log(pool_id, epoch);
+
+    //         const svg = await _mempools_meta.getEpochImage(pool_id, epoch, false);
+    //         const filename = `${preview_dir}/mempool_${pool_id}_${epoch}.svg`;
+            
+    //         await fs.writeFileSync(filename, svg, {flag: 'w'});
+            
+    //         sheet.items.push({
+    //             src: filename
+    //         })
+            
+    //         await network.provider.send("evm_increaseTime", [increase.toNumber()]);
+    //         await network.provider.send("evm_mine");
+            
+
+    //     }
+
+    //     await generateSheet(sheet)
+
+    // });
 
 
 })
