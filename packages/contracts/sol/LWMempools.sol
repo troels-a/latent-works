@@ -57,6 +57,11 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
     }
 
 
+    function exists(uint pool_id_) public view returns(bool){
+        return _exists(pool_id_);
+    }
+
+
     function getBase(uint pool_id_) public view returns(LWMempools_Meta.Base memory){
         string memory seed_base_ = getSeed(pool_id_, '');
         uint base_index_ = Rando.number(seed_base_, 1, _meta.getBaseCount());
@@ -96,6 +101,8 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
 
     function getImage(uint pool_id_, bool encode_) public view returns(string memory){
 
+        require(exists(pool_id_), 'POOL_DOES_NOT_EXIST');
+
         uint epoch_ = _pool_fixed_epochs[pool_id_];
         if(epoch_ < 1) // Fixed epoch is 
             epoch_ = getCurrentEpoch(pool_id_);
@@ -106,6 +113,8 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
 
     function tokenURI(uint pool_id_) override public view returns(string memory) {
         
+        require(exists(pool_id_), 'POOL_DOES_NOT_EXIST');
+
         LWMempools_Meta.Base memory base_ = getBase(pool_id_);
 
         bytes memory json_ = abi.encodePacked(
@@ -127,6 +136,11 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
         
         return string(json_);
 
+    }
+
+    // Balance
+    function withdrawAll() public payable onlyOwner {
+      require(payable(msg.sender).send(address(this).balance));
     }
 
 }
@@ -183,6 +197,8 @@ contract LWMempools_Meta is Ownable {
 
 
     function getEpochImage(uint pool_id_, uint epoch_, bool encode_) public view returns(string memory){
+
+        require(_pools.exists(pool_id_), 'POOL_DOES_NOT_EXIST');
 
         Pool memory pool_;
         pool_.epoch = _pools.getCurrentEpoch(pool_id_); // Advances in different increments for each
@@ -277,7 +293,7 @@ contract LWMempools_Meta is Ownable {
         );
 
         if(encode_)
-            return Base64.encode(svg_);
+            return string(abi.encodePacked('data:image/svg+xml;base64,', Base64.encode(svg_)));
 
         return string(svg_);
 

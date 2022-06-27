@@ -105,7 +105,7 @@ export default function Page({children, $centerContent, ...props}){
   }, [active, chainId])
 
     return <>
-
+    
       <Head>
         <title>{TITLE}{props.title && ` >> ${props.title}`}</title> 
         <meta name="description" content={props.description ? props.description : DESCRIPTION}/>
