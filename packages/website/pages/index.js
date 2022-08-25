@@ -26,12 +26,17 @@ export default function Home({pageIndex, ...p}){
         <Section>
         <Grid>
             <Grid.Unit style={projectStyle}><h2>SERIES</h2></Grid.Unit>
-            <Grid.Unit style={projectStyle} size={{sm: 1/1, md: 6/12}}>
-                <Link href="/77x7">77x7</Link>
+
+            <Grid.Unit style={projectStyle} size={{sm: 1/1, md: 4/12}}>
+                <Link href="/mempools">mempools</Link>
             </Grid.Unit>
-            <Grid.Unit style={projectStyle} size={{sm: 1/1, md: 6/12}}>
+            <Grid.Unit style={projectStyle} size={{sm: 1/1, md: 4/12}}>
                 <Link href="/00x0">00x0</Link>
             </Grid.Unit>
+            <Grid.Unit style={projectStyle} size={{sm: 1/1, md: 4/12}}>
+                <Link href="/77x7">77x7</Link>
+            </Grid.Unit>
+            
             <Grid.Unit>
                 <Section style={projectStyle}>
                     <Link href="https://t.co/qRrVVkm0Rh">

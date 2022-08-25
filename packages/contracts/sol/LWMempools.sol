@@ -29,7 +29,7 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
     }
 
     function mintWithLTNT(uint ltnt_id_) public payable {
-        require(msg.value == PRICE/4, 'INVALID_PRICE');
+        require(msg.value == PRICE/2, 'INVALID_PRICE');
         require(_ltnt.ownerOf(ltnt_id_) == msg.sender, 'NOT_LTNT_HOLDER');
         require(!_ltnt.hasStamp(ltnt_id_, address(this)), 'ALREADY_STAMPED');
         uint id_ = _mintFor(msg.sender);
@@ -37,9 +37,24 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
     }
 
 
-    function mint() public payable {
+    function mint(uint ltnt_id_) public payable {
+
         require(msg.value == PRICE, 'INVALID_PRICE');
-        _mintFor(msg.sender);
+
+        if(ltnt_id_ > 0){
+            require(_ltnt.ownerOf(ltnt_id_) == msg.sender, 'NOT_LTNT_HOLDER');
+            require(!_ltnt.hasStamp(ltnt_id_, address(this)), 'ALREADY_STAMPED');
+        }
+
+        uint pool_ids_ = _mintFor(msg.sender);
+
+        if(ltnt_id_ > 0){
+            _ltnt.stamp(ltnt_id_, LTNT.Param(pool_ids_, address(0), '', false));
+        }
+        else {
+            _ltnt.issueTo(msg.sender, LTNT.Param(pool_ids_, address(0), '', false), true);
+        }
+
     }
 
 

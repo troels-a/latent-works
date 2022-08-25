@@ -13,12 +13,25 @@ import useError from 'hooks/useError';
 const Wrapper = styled.div`
 
   width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: top;
   position: relative;
+
+    ${p => p.bgImage && `
+        background-image: url(${p.bgImage});
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+    `}
+
+    ${p => p.txtColor && `
+        color: ${p.txtColor};
+    `}
 
   &:before {
     content: '';
@@ -110,7 +123,7 @@ export default function Page({children, $centerContent, ...props}){
         <title>{TITLE}{props.title && ` >> ${props.title}`}</title> 
         <meta name="description" content={props.description ? props.description : DESCRIPTION}/>
       </Head>
-        <Wrapper bgColor={props.bgColor}>
+        <Wrapper bgColor={props.bgColor} bgImage={props.bgImage} txtColor={props.txtColor}>
 
           <Header fixHeader={props.fixHeader}>
             

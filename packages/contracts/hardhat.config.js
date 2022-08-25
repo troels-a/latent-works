@@ -5,6 +5,7 @@ require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ganache");
+require("./tasks.js");
 
 const accounts = require('./hhaccounts.js');
 accounts[0] = {privateKey: process.env.DEPLOYER_KEY, balance: '10000000000000000000000'};
@@ -49,7 +50,7 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        blockNumber: 15035116,
+        blockNumber: 15409521,
         url: process.env.MAINNET_FORK_URL,
       },
       accounts: accounts
