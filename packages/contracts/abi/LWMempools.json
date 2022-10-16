@@ -5,23 +5,6 @@
         "internalType": "address",
         "name": "ltnt_",
         "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "string",
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "string[4]",
-            "name": "parts",
-            "type": "string[4]"
-          }
-        ],
-        "internalType": "struct LWMempools_Meta.Base[]",
-        "name": "init_bases_",
-        "type": "tuple[]"
       }
     ],
     "stateMutability": "nonpayable",
@@ -123,6 +106,32 @@
   },
   {
     "inputs": [],
+    "name": "MAX_BANKS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_MINTS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "PRICE",
     "outputs": [
       {
@@ -163,6 +172,34 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string[]",
+        "name": "parts_",
+        "type": "string[]"
+      },
+      {
+        "internalType": "string",
+        "name": "_filter",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "price_",
+        "type": "uint256"
+      }
+    ],
+    "name": "addBank",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "to",
         "type": "address"
@@ -192,25 +229,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "pool_id_",
-        "type": "uint256"
-      }
-    ],
-    "name": "exists",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -257,26 +275,36 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "pool_id_",
+        "name": "index_",
         "type": "uint256"
       }
     ],
-    "name": "getBase",
+    "name": "getBank",
     "outputs": [
       {
         "components": [
           {
             "internalType": "string",
-            "name": "name",
+            "name": "_name",
             "type": "string"
           },
           {
-            "internalType": "string[4]",
-            "name": "parts",
-            "type": "string[4]"
+            "internalType": "string[]",
+            "name": "_parts",
+            "type": "string[]"
+          },
+          {
+            "internalType": "string",
+            "name": "_filter",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_minted",
+            "type": "uint256"
           }
         ],
-        "internalType": "struct LWMempools_Meta.Base",
+        "internalType": "struct LWMempools.Bank",
         "name": "",
         "type": "tuple"
       }
@@ -285,14 +313,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "pool_id_",
-        "type": "uint256"
-      }
-    ],
-    "name": "getBaseIndex",
+    "inputs": [],
+    "name": "getBankCount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -311,7 +333,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getBasePart",
+    "name": "getBankPart",
     "outputs": [
       {
         "internalType": "string",
@@ -374,6 +396,104 @@
       }
     ],
     "name": "getImage",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "pool_id_",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPoolBank",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "_name",
+            "type": "string"
+          },
+          {
+            "internalType": "string[]",
+            "name": "_parts",
+            "type": "string[]"
+          },
+          {
+            "internalType": "string",
+            "name": "_filter",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_minted",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct LWMempools.Bank",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "pool_id_",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPoolBankIndex",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "pool_id_",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPoolBankPart",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "pool_id_",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPoolFilter",
     "outputs": [
       {
         "internalType": "string",
@@ -494,7 +614,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "ltnt_id_",
+        "name": "bank_",
         "type": "uint256"
       }
     ],
@@ -508,6 +628,11 @@
       {
         "internalType": "uint256",
         "name": "ltnt_id_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bank_",
         "type": "uint256"
       }
     ],
@@ -722,13 +847,6 @@
     "name": "transferOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "withdrawAll",
-    "outputs": [],
-    "stateMutability": "payable",
     "type": "function"
   }
 ]

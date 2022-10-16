@@ -6,27 +6,30 @@ const Preview = require('../preview.js');
 const generateSheet = require("./mempools/sheet.js");
 const generateSVG = require("./mempools/svg.js");
 
-const MINT_MAX = 30;
 const LTNT_ADDRESS = '0x6f2Ff40F793776Aa559644F52e58D83E21871EC3';
 
 describe('mempools', async function(){
 
-    let _mempools, preview_dir, base_dir;
+    let _mempools, preview_dir, base_dir, minted = 0, PRICE, MAX_MINTS;
     
     it('init', async function(){
 
-        
+
         preview_dir = `${path}/temp/preview`;
-        base_dir = `${path}/test/oldie`;
+        base_dir = `${path}/test/mems`;
 
         let pools = await fs.readdirSync(base_dir, { withFileTypes: true });
         pools = pools.filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)
-        const bases = [];
+        const banks = [];
+
+        const filters = ['bw', 'sat', 'hue', 'none'];
+        let filter_index = 0;
 
         for (let pool = 0; pool < pools.length; pool++) {
 
-            const name = pools[pool];
-            const pool_dir = `${base_dir}/${name}`;
+            const name = pools[pool].split('-')[0];
+            const filter = pools[pool].split('-')[1];
+            const pool_dir = `${base_dir}/${pools[pool]}`;
             
             await fs.promises.mkdir(preview_dir, {recursive: true}).catch(console.error);
             let files = await fs.readdirSync(pool_dir);
@@ -38,25 +41,48 @@ describe('mempools', async function(){
                 return base;
             }))
 
-            bases.push([name, parts]);
+            
+            banks.push([name, parts, filter ? filter : filters[filter_index], ethers.utils.parseEther('0.25')]);
+            filter_index++;
+            if(filter_index >= filters.length) filter_index = 0;
+
         }
 
         const LWMempools = await hre.ethers.getContractFactory("LWMempools");
-        _mempools = await LWMempools.deploy(LTNT_ADDRESS, bases);
+        _mempools = await LWMempools.deploy(LTNT_ADDRESS);
         await _mempools.deployed();
 
         const LWMempools_Meta = await hre.ethers.getContractFactory("LWMempools_Meta");
         _mempools_meta = await LWMempools_Meta.attach(await _mempools._meta());
         await _mempools_meta.deployed();
 
+        for (let i = 0; i < banks.length; i++) {
+            await _mempools.addBank(...banks[i]);
+        }
+
+        const _ltnt = await hre.ethers.getContractAt("LTNT", LTNT_ADDRESS);
+        await _ltnt.addIssuer(_mempools.address);
+
+        PRICE = await _mempools.PRICE();
+        MAX_MINTS = await _mempools.MAX_MINTS();
+
 
     })
 
     it('mints', async function(){
-        let i = 1;
-        while(i <= MINT_MAX){
-            await _mempools.mint(0, {value: ethers.utils.parseEther('0.1')});
-            i++;
+        let bank_count = await _mempools.getBankCount();
+        bank_count = bank_count.toNumber();
+        while(bank_count > 0){
+            const bank_index = bank_count-1;
+            const bank = await _mempools.getBank(bank_index);
+            let i = 1;
+            while(i <= MAX_MINTS){
+                await _mempools.mint(bank_index, {value: PRICE});
+                minted++;
+                i++;
+            }
+    
+            bank_count--;
         }
     })
 
@@ -74,57 +100,51 @@ describe('mempools', async function(){
             dir: preview_dir,
             bgcolor: 'white',
             txtcolor: 'black',
-            columns: 3
+            columns: 5
         }
 
 
-        // await network.provider.send("evm_increaseTime", [60*60*24*365*10]);
+        // await network.provider.send("evm_increaseTime", [60*60*24*365*2]);
         // await network.provider.send("evm_mine");
 
         const resolveAll = [];
         let i = 1;
+        while(i <= minted){
 
-        async function resolve(i){
-
+            console.log(i);
             const tokenURI = await _mempools.tokenURI(i);
-            const json_string = Buffer.from(tokenURI.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8');
-            let json = JSON.parse(json_string);
+
+            let json = JSON.parse(Buffer.from(tokenURI.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8'));
                 
-            let epoch = 0;
+            let epoch = 10;
             json.attributes.map(attr => {
                 if(attr.trait_type == 'epoch')
                     epoch = attr.value
             });
 
-            const svg = Buffer.from(json.image.replace(/^data\:image\/svg\+xml\;base64\,/, ''), 'base64').toString('utf-8');
-            // const svg = json.image.replace(/^data\:image\/svg+xml\;base64\,/, '');
-            // console.log(svg)
+            const svg = Buffer.from(json.image.replace(/^data\:image\/svg+xml\;base64\,/, ''), 'base64').toString('utf-8');
+    
             // const svg = await _mempools.getEpochImage(i, epoch, false);
             const image_file = `${preview_dir}/mempool_${i}.svg`;
             const json_file = `${preview_dir}/mempool_${i}.json`;
             
             await fs.writeFileSync(image_file, svg, {flag: 'w'});
-            await fs.writeFileSync(json_file, json_string, {flag: 'w'});
             
-            sheet.items[i] = {
+            sheet.items.push({
                 src: image_file,
                 label: `mempool ${i}`,
-                url: json_file
-            };
+                url: tokenURI
+            })
 
-        }
-
-
-        while(i <= MINT_MAX){
-
-            console.log(i);
-            resolveAll.push(resolve(i));
             i++;
 
         }
 
         await Promise.all(resolveAll);
-        await generateSheet(sheet);
+        await generateSheet(sheet)
+        // sheet.filename = 'pools.svg';
+        // sheet.columns = 4;
+        // await generateSVG(sheet)
 
     });
 
@@ -141,32 +161,26 @@ describe('mempools', async function(){
     //         columns: 5
     //     }
 
-    //     const pool_id = 2;
+    //     const pool_id = 63;
     //     const increase = await _mempools.getEpochLength(pool_id);
 
     //     let epoch = 0
 
     //     const max_epochs = 30;
-
-    //     async function generateEpoch(pool_id, epoch){
-    //         const svg = await _mempools_meta.getEpochImage(pool_id, epoch, false);
-    //         const filename = `${preview_dir}/mempool_${pool_id}_${epoch}.svg`;
-            
-    //         await fs.writeFileSync(filename, svg, {flag: 'w'});
-            
-    //         sheet.items[epoch] = {
-    //             src: filename
-    //         };
-    //     }
-
-    //     const resolveAll = [];
     //     while(epoch < max_epochs){
             
     //         epoch = await _mempools.getCurrentEpoch(pool_id);
     //         epoch = epoch.toNumber();
     //         console.log(pool_id, epoch);
 
-    //         resolveAll.push(generateEpoch(pool_id, epoch));
+    //         const svg = await _mempools_meta.getEpochImage(pool_id, epoch, false);
+    //         const filename = `${preview_dir}/mempool_${pool_id}_${epoch}.svg`;
+            
+    //         await fs.writeFileSync(filename, svg, {flag: 'w'});
+            
+    //         sheet.items.push({
+    //             src: filename
+    //         })
             
     //         await network.provider.send("evm_increaseTime", [increase.toNumber()]);
     //         await network.provider.send("evm_mine");
@@ -174,7 +188,6 @@ describe('mempools', async function(){
 
     //     }
 
-    //     await Promise.all(resolveAll);
     //     await generateSheet(sheet)
 
     // });

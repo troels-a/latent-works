@@ -12,6 +12,8 @@
     "contracts:deploy": "cd packages/contracts; npm run develop",
     "contracts:watch": "cd packages/contracts; npm run watch",
     "website:watch": "vercel dev",
-    "contracts:compile": "cd packages/contracts; npx hardhat compile"
+    "contracts:compile": "cd packages/contracts; npx hardhat compile",
+    "mempools:test": "cd packages/contracts; npm run mempools:test",
+    "mempools:watch": "cd packages/contracts; npm run mempools:watch"
   }
 }
