@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path').dirname(__dirname);
 const Preview = require('../preview.js');
 const generateSheet = require("./mempools/sheet.js");
-const generateSVG = require("./mempools/svg.js");
+// const generateSVG = require("./mempools/svg.js");
 
 const LTNT_ADDRESS = '0x6f2Ff40F793776Aa559644F52e58D83E21871EC3';
 
@@ -70,11 +70,14 @@ describe('mempools', async function(){
     })
 
     it('mints', async function(){
+
         let bank_count = await _mempools.getBankCount();
         bank_count = bank_count.toNumber();
         while(bank_count > 0){
+
             const bank_index = bank_count-1;
             const bank = await _mempools.getBank(bank_index);
+
             let i = 1;
             while(i <= MAX_MINTS){
                 await _mempools.mint(bank_index, {value: PRICE});
@@ -104,37 +107,40 @@ describe('mempools', async function(){
         }
 
 
-        // await network.provider.send("evm_increaseTime", [60*60*24*365*2]);
-        // await network.provider.send("evm_mine");
+        await network.provider.send("evm_increaseTime", [60*60*24*365*1]);
+        await network.provider.send("evm_mine");
 
         const resolveAll = [];
         let i = 1;
         while(i <= minted){
 
-            console.log(i);
             const tokenURI = await _mempools.tokenURI(i);
 
-            let json = JSON.parse(Buffer.from(tokenURI.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8'));
+            const json = Buffer.from(tokenURI.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8');
+            const meta = JSON.parse(json);
                 
             let epoch = 10;
-            json.attributes.map(attr => {
+            meta.attributes.map(attr => {
                 if(attr.trait_type == 'epoch')
                     epoch = attr.value
             });
 
-            const svg = Buffer.from(json.image.replace(/^data\:image\/svg+xml\;base64\,/, ''), 'base64').toString('utf-8');
-    
+            const svg = Buffer.from(meta.image.replace(/^data\:image\/svg\+xml\;base64\,/, ''), 'base64').toString('utf-8');
+
             // const svg = await _mempools.getEpochImage(i, epoch, false);
             const image_file = `${preview_dir}/mempool_${i}.svg`;
             const json_file = `${preview_dir}/mempool_${i}.json`;
             
             await fs.writeFileSync(image_file, svg, {flag: 'w'});
+            await fs.writeFileSync(json_file, json, {flag: 'w'});
             
             sheet.items.push({
                 src: image_file,
                 label: `mempool ${i}`,
-                url: tokenURI
+                url: json_file
             })
+
+            console.log('Generated mempool', i);
 
             i++;
 

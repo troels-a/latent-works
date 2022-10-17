@@ -50,7 +50,7 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        blockNumber: 15409521,
+        blockNumber: 15762208,
         url: process.env.MAINNET_FORK_URL,
       },
       accounts: accounts

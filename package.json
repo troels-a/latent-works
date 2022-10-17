@@ -14,6 +14,7 @@
     "website:watch": "vercel dev",
     "contracts:compile": "cd packages/contracts; npx hardhat compile",
     "mempools:test": "cd packages/contracts; npm run mempools:test",
-    "mempools:watch": "cd packages/contracts; npm run mempools:watch"
+    "mempools:watch": "cd packages/contracts; npm run mempools:watch",
+    "mempools:deploy": "cd packages/contracts; npx hardhat mempools:deploy --network=$npm_config_network"
   }
 }

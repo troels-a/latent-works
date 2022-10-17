@@ -2,14 +2,31 @@ import _MEMPOOLS_ABI from '@lw/contracts/abi/LWMempools.json';
 import { ethers } from "ethers";
 import ABIAPI from 'abiapi';
 import { getProvider } from '@lw/website/base/provider';
-import {bigNumbersToNumber} from 'abiapi/parsers';
+import { bigNumbersToNumber } from 'abiapi/parsers';
+import { Protocol } from 'puppeteer-core';
 
+function parseBank(bank){
+    return {
+        name: bank[0],
+        parts: bank[1],
+        filter: bank[2],
+        pools: bank[3].map(pool => pool.toNumber())
+    }
+}
 
 const abi = new ABIAPI(_MEMPOOLS_ABI);
 abi.supportedMethods = abi.getReadMethods();
 abi.cacheTTL = 60*60;
 
-abi.addGlobalParser(bigNumbersToNumber)
+abi.setMethodCacheTTL('getBankPools', 3);
+abi.setMethodCacheTTL('getBank', 3);
+abi.setMethodCacheTTL('getBanks', 3);
+
+abi.addParser('getBankPools', bigNumbersToNumber);
+abi.addParser('getBank', parseBank);
+abi.addParser('getBanks', (banks) => {
+    return banks.map(parseBank);
+});
 
 export default async (req, res) => {
 

@@ -11,18 +11,16 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
         string _name;
         string[] _parts;
         string _filter;
-        uint _minted;
+        uint[15] _pools;
     }
 
     uint public constant MAX_BANKS = 15;
-    uint public constant MAX_MINTS = 15;
     uint public constant PRICE = 0.15 ether;
 
     uint private _pool_ids;
     Bank[] private _banks;
     mapping(uint => uint) private _pool_timestamps;
     mapping(uint => uint) private _pool_banks;
-    mapping(uint => uint) private _bank_pools;
     mapping(uint => uint) private _pool_fixed_epochs;
 
     LTNT public immutable _ltnt;
@@ -37,9 +35,14 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
         return LTNT.IssuerInfo('mempools', getImage(param_._uint, true));
     }
 
-    function addBank(string memory name, string[] memory parts_, string memory _filter, uint price_) public onlyOwner {
+    function addBank(string memory name, string[] memory parts_, string memory _filter) public onlyOwner {
         require(_banks.length < MAX_BANKS, "MAX_BANKS");
-        _banks.push(Bank(name, parts_, _filter, 0));
+        uint[15] memory pools_;
+        _banks.push(Bank(name, parts_, _filter, pools_));
+    }
+
+    function getBanks() public view returns(Bank[] memory){
+        return _banks;
     }
 
     function getBank(uint index_) public view returns(Bank memory) {
@@ -58,28 +61,27 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
         return _exists(pool_id_);
     }
 
-    function mintWithLTNT(uint ltnt_id_, uint bank_) public payable {
+    function mintWithLTNT(uint ltnt_id_, uint bank_, uint index_) public payable {
         require(msg.value == (PRICE/3)*2, 'INVALID_PRICE');
         require(_ltnt.ownerOf(ltnt_id_) == msg.sender, 'NOT_LTNT_HOLDER');
         require(!_ltnt.hasStamp(ltnt_id_, address(this)), 'ALREADY_STAMPED');
-        uint id_ = _mintFor(msg.sender, bank_);
+        uint id_ = _mintFor(msg.sender, bank_, index_);
         _ltnt.stamp(ltnt_id_, LTNT.Param(id_, address(0), '', false));
     }
 
 
-    function mint(uint bank_) public payable {
+    function mint(uint bank_, uint index_) public payable {
 
         require(msg.value == PRICE, 'INVALID_PRICE');
         require(bank_ < _banks.length, 'INVALID_BANK');
-        require(_banks[bank_]._minted < MAX_MINTS, 'BANK_TOTAL_SUPPLY_REACHED');
+        require(_banks[bank_]._pools[index_] == 0, 'POOL_INDEX_USED');
 
-        uint id_ = _mintFor(msg.sender, bank_);
-        _ltnt.issueTo(msg.sender, LTNT.Param(id_, address(0), '', false), true);
+        _mintFor(msg.sender, bank_, index_);
 
     }
 
 
-    function _mintFor(address for_, uint bank_) private returns(uint) {
+    function _mintFor(address for_, uint bank_, uint index_) private returns(uint) {
 
         _pool_ids++;
 
@@ -87,8 +89,7 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
 
         _pool_timestamps[_pool_ids] = block.timestamp;
         _pool_banks[_pool_ids] = bank_;
-        _bank_pools[bank_] = _pool_ids;
-        _banks[bank_]._minted++;
+        _banks[bank_]._pools[index_] = _pool_ids;
 
         return _pool_ids;
 

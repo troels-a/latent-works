@@ -292,7 +292,7 @@ function _00x0_Index(props){
 
     const inputRef = useRef();
 
-    return <Page bgColor="#000">
+    return <Page>
         
         <Section $padBottom={12} $padTop={6}>
             <Grid>

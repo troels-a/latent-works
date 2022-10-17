@@ -18,7 +18,7 @@ export const wcConnector = new WalletConnectConnector({
 });
 
 
-const Clickable = styled.div`
+const Clickable = styled.span`
   cursor: pointer;
 `
 
@@ -34,13 +34,14 @@ const ConnectGroup = styled.div`
   transition: opacity 500ms ease-out, transform 150ms ease-out;
   position: absolute;
   top: -0.6em;
+  bottom: 0;
   right: 0;
   opacity: 1;
   text-align: right;
   
   ${p => !p.$show && `
     transition: opacity 150ms ease-out, transform 500ms ease-out;
-    transform: translateX(100%);
+    transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;
   `}
@@ -111,7 +112,7 @@ export function useConnectIntent() {
   return context
 }
 
-export default function ConnectButton({onActivate}) {
+export default function ConnectButton({onActivate, beforeConnected, ...props}) {
   
   const {activate, active, deactivate, account, library, chainId} = useWeb3React();
   const {connectIntent, setConnectIntent} = useConnectIntent();
@@ -140,6 +141,7 @@ export default function ConnectButton({onActivate}) {
       </ConnectGroup>
 
       <ConnectGroup $show={!connectIntent && active}>
+          {beforeConnected && beforeConnected()} 
         <Clickable onClick={deactivate}>
           Disconnect <small>({ENS && ENS}{(!ENS && account) && (truncate(account, 6, '...')+account.slice(-4))})</small>
         </Clickable>

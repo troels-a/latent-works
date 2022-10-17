@@ -299,7 +299,7 @@ function SeventySevenBySeven(props){
         setAutoplay(!autoplay);
     }
 
-    return <Page bgColor={work && work.colors[iteration]}>
+    return <Page>
         <Grid>
             <GridUnit size={{sm: 1/1, md: 1/2}}>
                 <WorkDisplay iteration={iteration} {...swipeHandlers} onClick={iterate}/>

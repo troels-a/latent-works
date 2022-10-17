@@ -9,7 +9,7 @@ const theme = {
       bg: 'rgba(255,255,255,1)',
       altBg: '#ececec',
       text: 'rgba(0,0,0,0.85)',
-      modalBg: 'rgba(255,255,255,0.6)',
+      modalBg: 'rgba(255,255,255,0.9)',
       emph1: 'rgba(0,0,0,0.01)',
       emph2: 'rgba(0,0,0,0.02)',
       emph3: 'rgba(0,0,0,0.03)',

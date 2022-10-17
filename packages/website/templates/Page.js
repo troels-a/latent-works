@@ -7,8 +7,12 @@ import ConnectButton from 'components/ConnectButton';
 import {breakpoint} from 'styled-components-breakpoint';
 import { useWeb3React } from '@web3-react/core';
 import useEthNet from 'hooks/useEthNet';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import useError from 'hooks/useError';
+import Balance from 'components/LTNT/Balance';
+import Picker from 'components/LTNT/Picker';
+import Button from 'components/Button';
+import { useLTNT } from 'components/LTNT/Provider';
 
 const Wrapper = styled.div`
 
@@ -27,6 +31,10 @@ const Wrapper = styled.div`
         background-position: center;
         background-attachment: fixed;
         background-repeat: no-repeat;
+    `}
+
+    ${p => p.bgColor && `
+        background-color: ${p.bgColor};
     `}
 
     ${p => p.txtColor && `
@@ -62,7 +70,7 @@ const Header = styled(Grid)`
   `}
   height: auto;
   place-items: center;
-  ${p => p.fixHeader && 'position: fixed; z-index: 100; top: 0; left: 0; right: 0;'}
+  ${p => p.fixheader && 'position: fixed; z-index: 100; top: 0; left: 0; right: 0;'}
 `
 
 const Content = styled.main`
@@ -97,12 +105,21 @@ const Footer = styled.footer`
   padding: 2vw 4vw;
 `
 
+const Flex = styled.div`
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+`
+
 
 
 export default function Page({children, $centerContent, ...props}){
-    
-  const {isChainID, switchNet} = useEthNet();
-  const {active, chainId, deactivate} = useWeb3React();
+
+    const {balance, tokens, picked, isPicking, setIsPicking} = useLTNT();
+    const {isChainID, switchNet} = useEthNet();
+  const {active, account, chainId, deactivate} = useWeb3React();
   const err = useError();
   function check(){
     if(active && !isChainID()){
@@ -125,9 +142,9 @@ export default function Page({children, $centerContent, ...props}){
       </Head>
         <Wrapper bgColor={props.bgColor} bgImage={props.bgImage} txtColor={props.txtColor}>
 
-          <Header fixHeader={props.fixHeader}>
+          <Header fixheader={props.fixheader}>
             
-            <Grid.Unit component={Title} size={{sm: 1/2}}>
+            <Grid.Unit component={Title} size={{sm: 2/3}}>
               <Link href="/">
                 <a>
                   Latent Works
@@ -135,8 +152,19 @@ export default function Page({children, $centerContent, ...props}){
               </Link>
             </Grid.Unit>
             
-            <Grid.Unit size={{sm: 1/2}}>
-              <ConnectButton/>
+            <Grid.Unit size={{sm: 1/3}}>
+                <ConnectButton beforeConnected={() => {
+                    if(balance > 0){
+                        return <span className='clickable'>
+                            <Picker/>
+                            <span onClick={() => setIsPicking(true)}>{balance} LTNT {picked && '*'}</span>
+                            {` | `}
+                      </span>
+                    }
+                    else {
+                        return <></>
+                    }
+                }}/>
             </Grid.Unit>
 
           </Header>

@@ -18,7 +18,7 @@ const Section = styled.div`
     ${p => p.$marginBottom > -1 && `margin-bottom: ${p.$marginBottom > -1 ? p.$marginBottom : 0}vw;`}
     ${p => p.$marginLeft > -1 && `margin-left: ${p.$marginLeft > -1 ? p.$marginLeft : 0}vw;`}
     ${p => p.$marginRight > -1 && `margin-right: ${p.$marginRight > -1 ? p.$marginRight : 0}vw;`}
-
+    ${p => p.disable && `pointer-events: none; opacity: 0.8;`}
     ${breakpoint('sm', 'md')`
         padding: 4vw;
     `}

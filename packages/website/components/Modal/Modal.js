@@ -12,6 +12,7 @@ right: 0;
 bottom: 0;
 width: 100vw;
 height: 100vh;
+color: ${p => p.theme.colors.text};
 background-color: ${p => p.theme.colors.modalBg};
 display: flex;
 flex-direction: column;
@@ -56,7 +57,7 @@ const Buttons = styled.div`
 export const ModalActions = function({actions, ...p}){
 
     return <Buttons {...p}>
-        {actions && actions.map(action => <Button invertColors={action.cta} onClick={action.callback}>{action.label}</Button>)}
+        {actions && actions.map((action, i) => <Button key={i} invertColors={action.cta} onClick={action.callback}>{action.label}</Button>)}
     </Buttons>
 
 }
