@@ -137,7 +137,8 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
 
     function getImage(uint pool_id_, bool encode_) public view returns(string memory){
 
-        require(exists(pool_id_), 'POOL_DOES_NOT_EXIST');
+        if(!exists(pool_id_))
+            return '';
 
         uint epoch_ = _pool_fixed_epochs[pool_id_];
         if(epoch_ < 1) // Fixed epoch is 0, go to current epoch
@@ -215,12 +216,14 @@ contract LWMempools_Meta is Ownable {
 
     function getEpochImage(uint pool_id_, uint epoch_, bool encode_) public view returns(string memory){
 
-        require(_pools.exists(pool_id_), 'POOL_DOES_NOT_EXIST');
+        if(!_pools.exists(pool_id_))
+            return '';
 
         Pool memory pool_;
         pool_.epoch = _pools.getCurrentEpoch(pool_id_); // Advances in different increments for each
 
-        require(epoch_ <= pool_.epoch, 'EPOCH_NOT_REACHED');
+        if(epoch_ > pool_.epoch)
+            return '';
         
         pool_.id = pool_id_;
         pool_.seed = _pools.getSeed(pool_id_, 'bank_seed');

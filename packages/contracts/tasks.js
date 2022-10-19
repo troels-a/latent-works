@@ -5,6 +5,21 @@ const path = require('path').dirname(__dirname);
 
 require("colors");
 
+task("transfer-eth", "Transfer ETH to an address", async (args, hre) => {
+    const { ethers } = hre;
+    const [deployer] = await ethers.getSigners();
+    const deployerAddress = await deployer.getAddress();
+    const { address, amount } = args;
+    const tx = await deployer.sendTransaction({
+        to: address,
+        value: ethers.utils.parseEther(amount),
+    });
+    await tx.wait();
+    console.log(`Sent ${amount} ETH to ${address}`.green);
+})
+.addParam("address", "The address to send ETH to", undefined, types.string)
+.addParam("amount", "The amount of ETH to send", undefined, types.string);
+
 task("mempools:deploy", "Deploy mempool contract", async (taskArgs, hre) => {
 
   await hre.run('compile');
