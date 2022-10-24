@@ -9,10 +9,10 @@
     "setup": "ln .env packages/contracts/.env; ln .env packages/website/.env; ",
     "node": "cd packages/contracts; hardhat node",
     "dev": "lerna run develop --stream --no-prefix",
+    "website:watch": "vercel dev",
     "contracts:deploy": "cd packages/contracts; npm run develop",
     "contracts:watch": "cd packages/contracts; npm run watch",
-    "website:watch": "vercel dev",
-    "contracts:compile": "cd packages/contracts; npx hardhat compile",
+    "contracts:compile": "cd packages/contracts; npx hardhat compile --force",
     "mempools:test": "cd packages/contracts; npm run mempools:test",
     "mempools:watch": "cd packages/contracts; npm run mempools:watch",
     "mempools:deploy": "cd packages/contracts; npx hardhat mempools:deploy --network=$npm_config_network"

@@ -235,6 +235,12 @@ const Flex = styled.div`
 `
 
 
+const LTNTBalance = styled.div`
+  display: inline-block;
+  cursor: pointer;
+`
+
+
 
 function _Page({children, $centerContent, ...props}){
 
@@ -287,7 +293,7 @@ function _Page({children, $centerContent, ...props}){
                             if(balance > 0){
                                 return <span className='clickable'>
                                     <Picker/>
-                                    <span onClick={() => setIsPicking(true)}>{balance} LTNT {picked && '*'}</span>
+                                    <LTNTBalance onClick={() => setIsPicking(true)}>LTNT <small>{picked && `#${picked}`}</small></LTNTBalance>
                                     {` | `}
                             </span>
                             }

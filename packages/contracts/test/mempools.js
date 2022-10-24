@@ -22,7 +22,7 @@ describe('mempools', async function(){
         pools = pools.filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)
         const banks = [];
 
-        const filters = ['bw', 'sat', 'hue', 'none'];
+        const filters = ['bw', 's1', 'r2', 'none', 'bw', 's5', 'r6', 'none', 'bw', 's10', 'r10', 'none'];
         let filter_index = 0;
 
         for (let pool = 0; pool < pools.length; pool++) {
@@ -42,7 +42,7 @@ describe('mempools', async function(){
             }))
 
             
-            banks.push([name, parts, filter ? filter : filters[filter_index], ethers.utils.parseEther('0.25')]);
+            banks.push([name, parts, filter ? filter : filters[filter_index]]);
             filter_index++;
             if(filter_index >= filters.length) filter_index = 0;
 
@@ -53,10 +53,11 @@ describe('mempools', async function(){
         await _mempools.deployed();
 
         const LWMempools_Meta = await hre.ethers.getContractFactory("LWMempools_Meta");
-        _mempools_meta = await LWMempools_Meta.attach(await _mempools._meta());
+        const meta_address = await _mempools.getMeta();
+        _mempools_meta = await LWMempools_Meta.attach(meta_address);
         await _mempools_meta.deployed();
 
-        for (let i = 0; i < banks.length; i++) {
+        for(let i = 0; i < banks.length; i++) {
             await _mempools.addBank(...banks[i]);
         }
 
@@ -64,8 +65,7 @@ describe('mempools', async function(){
         await _ltnt.addIssuer(_mempools.address);
 
         PRICE = await _mempools.PRICE();
-        MAX_MINTS = await _mempools.MAX_MINTS();
-
+        MAX_MINTS = 15;
 
     })
 
@@ -76,11 +76,10 @@ describe('mempools', async function(){
         while(bank_count > 0){
 
             const bank_index = bank_count-1;
-            const bank = await _mempools.getBank(bank_index);
 
-            let i = 1;
-            while(i <= MAX_MINTS){
-                await _mempools.mint(bank_index, {value: PRICE});
+            let i = 0;
+            while(i < MAX_MINTS){
+                await _mempools.mint(bank_index, i, {value: PRICE});
                 minted++;
                 i++;
             }
@@ -113,7 +112,7 @@ describe('mempools', async function(){
         const resolveAll = [];
         let i = 1;
         while(i <= minted){
-
+            // console.log(i)
             const tokenURI = await _mempools.tokenURI(i);
 
             const json = Buffer.from(tokenURI.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8');

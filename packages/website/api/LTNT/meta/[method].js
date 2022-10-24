@@ -6,7 +6,7 @@ import { getProvider } from '@lw/website/base/provider';
 
 const abi = new ABIAPI(ABI);
 abi.supportedMethods = abi.getReadMethods();
-abi.cacheTTL = 60*60;
+abi.cacheTTL = 3;
 
 // function compToCompObject(comp){
 //     console.log(comp)

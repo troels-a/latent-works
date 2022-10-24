@@ -1,0 +1,6 @@
+---
+title: Mempools
+---
+In a blockchain system, a _mempool_ stores a batch of still unprocessed transactions within the network. These transactions might be included, rejected or even forgotten by the collective state machine. While the canonical ledger can be interpreted as objective truth, the mempools are very much subjective snapshots of possible _other states_. Not everything in a mempool is valid for inclusion in the collective memory, but it is nonetheless there, as an intangible and free-floating artifact of unlived truth.
+
+__Mempools__ is a collection of 225 generative pieces spread across 15 distinct banks. Each pool evolves indefinitely according to an individually set epoch length making them increasingly more complex over time. The series draws on concepts like Giordano Bruno's _memory seals_ as well as Proust's chaotic associative memory explorations in an attempt to create a contemporary mnemonic for the digital realm. Thus, Mempools serve both as a visual snapshot of blockchain data _and_ a placeholder for more subjective, personal, or even private, states.

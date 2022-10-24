@@ -47,6 +47,26 @@ module.exports = {
   paths: {
     sources: "./sol",
   },
+  latent: {
+    localhost: {
+        '77x7': process.env.ADDRESS_77X7,
+        '00x0': process.env.ADDRESS_00X0,
+        'ltnt': process.env.ADDRESS_LTNT,
+        'mempools': process.env.ADDRESS_MEMPOOLS
+    },
+    goerli: {
+        '77x7': '',
+        '00x0': '',
+        'ltnt': '',
+        'mempools': ''
+    },
+    mainnet: {
+        '77x7': '0xEF7c89F051ac48885b240eb53934B04fcF3339ab',
+        '00x0': '0x589280D35CD0baF6F9e6F0Be8d78EB01C7539429',
+        'ltnt': '0x6f2Ff40F793776Aa559644F52e58D83E21871EC3',
+        'mempools': ''
+    }
+  },
   networks: {
     hardhat: {
       forking: {

@@ -16,11 +16,11 @@ function parseBank(bank){
 
 const abi = new ABIAPI(_MEMPOOLS_ABI);
 abi.supportedMethods = abi.getReadMethods();
-abi.cacheTTL = 60*60;
+abi.cacheTTL = 3;
 
-abi.setMethodCacheTTL('getBankPools', 3);
-abi.setMethodCacheTTL('getBank', 3);
-abi.setMethodCacheTTL('getBanks', 3);
+// abi.setMethodCacheTTL('getBankPools', 3);
+// abi.setMethodCacheTTL('getBank', 3);
+// abi.setMethodCacheTTL('getBanks', 3);
 
 abi.addParser('getBankPools', bigNumbersToNumber);
 abi.addParser('getBank', parseBank);

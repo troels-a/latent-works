@@ -16,6 +16,7 @@ export function useLTNT() {
 }
 
 const createLTNT = (p) => {
+
     const {account} = useWeb3React();
     const [balance, setBalance] = useState(0);
     const [tokens, setTokens] = useState([]);
@@ -44,7 +45,14 @@ const createLTNT = (p) => {
             .then(res => setTokens(res));
     }, [balance])
 
-    return {balance, tokens, pick, picked, isPicking, setIsPicking}
+    async function hasStamp(id, address){
+        if(!picked) return false;
+            return await LTNT.read('hasStamp', {id_: id, address_: address}).then(res => res.result);
+    }
+
+    
+
+    return {hasStamp, balance, tokens, pick, picked, isPicking, setIsPicking}
 
 }
 

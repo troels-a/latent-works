@@ -18,16 +18,18 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
     uint public constant PRICE = 0.15 ether;
 
     uint private _pool_ids;
-    Bank[] private _banks;
+    Bank[15] private _banks;
     mapping(uint => uint) private _pool_timestamps;
     mapping(uint => uint) private _pool_banks;
     mapping(uint => uint) private _pool_fixed_epochs;
 
     LTNT public immutable _ltnt;
-    LWMempools_Meta public immutable _meta;
+    LWMempools_Gen public immutable _generator;
+    LWMempools_Meta private _meta;
 
     constructor(address ltnt_) ERC721("Mempools", "MEMPOOLS"){
         _ltnt = LTNT(ltnt_);
+        _generator = new LWMempools_Gen();
         _meta = new LWMempools_Meta();
     }
 
@@ -35,14 +37,36 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
         return LTNT.IssuerInfo('mempools', getImage(param_._uint, true));
     }
 
+    function getMeta() public view returns (address){
+        return address(_meta);
+    }
+
+    function setMeta(address meta_) public onlyOwner {
+        _meta = LWMempools_Meta(meta_);
+    }
+
     function addBank(string memory name, string[] memory parts_, string memory _filter) public onlyOwner {
-        require(_banks.length < MAX_BANKS, "MAX_BANKS");
-        uint[15] memory pools_;
-        _banks.push(Bank(name, parts_, _filter, pools_));
+
+        uint next_index_ = getBankCount();
+        require(next_index_ <= MAX_BANKS, "MAX_BANKS");
+        
+        _banks[next_index_]._name = name;
+        _banks[next_index_]._parts = parts_;
+        _banks[next_index_]._filter = _filter;
+
     }
 
     function getBanks() public view returns(Bank[] memory){
-        return _banks;
+        
+        uint count = getBankCount();
+
+        Bank[] memory banks_ = new Bank[](count);
+
+        for(uint i = 0; i < count; i++)
+            banks_[i] = _banks[i];
+
+        return banks_;
+
     }
 
     function getBank(uint index_) public view returns(Bank memory) {
@@ -50,7 +74,13 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
     }
 
     function getBankCount() public view returns(uint) {
-        return _banks.length;
+
+        uint count_;
+        for(uint i = 0; i < MAX_BANKS; i++)
+            if(bytes(_banks[i]._name).length > 0)
+                count_++;
+
+        return count_;
     }
 
     function getPoolFilter(uint pool_id_) public view returns(string memory){
@@ -65,19 +95,18 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
         require(msg.value == (PRICE/3)*2, 'INVALID_PRICE');
         require(_ltnt.ownerOf(ltnt_id_) == msg.sender, 'NOT_LTNT_HOLDER');
         require(!_ltnt.hasStamp(ltnt_id_, address(this)), 'ALREADY_STAMPED');
+        require(bank_ < getBankCount(), 'INVALID_BANK');
+        require(_banks[bank_]._pools[index_] == 0, 'POOL_INDEX_USED');
         uint id_ = _mintFor(msg.sender, bank_, index_);
         _ltnt.stamp(ltnt_id_, LTNT.Param(id_, address(0), '', false));
     }
 
 
     function mint(uint bank_, uint index_) public payable {
-
         require(msg.value == PRICE, 'INVALID_PRICE');
-        require(bank_ < _banks.length, 'INVALID_BANK');
+        require(bank_ < getBankCount(), 'INVALID_BANK');
         require(_banks[bank_]._pools[index_] == 0, 'POOL_INDEX_USED');
-
         _mintFor(msg.sender, bank_, index_);
-
     }
 
 
@@ -102,7 +131,6 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
     function getPoolBank(uint pool_id_) public view returns(LWMempools.Bank memory){
         return getBank(getPoolBankIndex(pool_id_));
     }
-
 
     function getPoolBankPart(uint pool_id_) public view returns(uint){
         Bank memory bank_ = getPoolBank(pool_id_);
@@ -129,6 +157,10 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
         return epoch;
     }
 
+    function getFixedEpoch(uint pool_id_) public view returns(uint){
+        return _pool_fixed_epochs[pool_id_];
+    }
+
     function fixEpoch(uint pool_id_, uint epoch_) public {
         require(ownerOf(pool_id_) == msg.sender, 'NOT_OWNER');
         require(getCurrentEpoch(pool_id_) <= epoch_, 'EPOCH_NOT_REACHED');
@@ -144,44 +176,67 @@ contract LWMempools is ERC721, LTNTIssuer, Ownable {
         if(epoch_ < 1) // Fixed epoch is 0, go to current epoch
             epoch_ = getCurrentEpoch(pool_id_);
 
-        return _meta.getEpochImage(pool_id_, epoch_, encode_);
+        return _generator.getEpochImage(pool_id_, epoch_, encode_);
 
     }
 
     function tokenURI(uint pool_id_) override public view returns(string memory) {
-        
-        LWMempools.Bank memory bank_ = getPoolBank(pool_id_);
-
-        bytes memory json_ = abi.encodePacked(
-            '{',
-                '"name":"mempool #',Strings.toString(pool_id_),'", ',
-                '"image": "', getImage(pool_id_, true),'", ',
-                '"description": "infinitly evolving mempools",',
-                '"attributes": [',
-                    '{"trait_type": "bank", "value": "',bank_._name,'"},',
-                    '{"trait_type": "bank_index", "value": "',bank_._name,'-',Strings.toString(getPoolBankPart(pool_id_)),'"},',
-                    '{"trait_type": "epoch", "value": ', Strings.toString(getCurrentEpoch(pool_id_)), '},',
-                    '{"trait_type": "fixed_epoch", "value": ', Strings.toString(_pool_fixed_epochs[pool_id_]), '},',
-                    '{"trait_type": "epoch_length", "value": ', Strings.toString(getEpochLength(pool_id_)), '}',
-                ']',
-            '}'
-        );
-
-        json_ = abi.encodePacked('data:application/json;base64,', Base64.encode(json_));
-        
-        return string(json_);
-
+        return _meta.getJSON(pool_id_, true);
     }
 
     // Balance
-    function withdrawAll() public payable onlyOwner {
-      require(payable(msg.sender).send(address(this).balance));
+    function withdrawAllTo(address to_) public payable onlyOwner {
+      require(payable(to_).send(address(this).balance));
     }
 
 }
 
 
-contract LWMempools_Meta is Ownable {
+
+contract LWMempools_Meta {
+
+    using Strings for string;
+
+    LWMempools public _pools;
+
+    constructor() {
+        _pools = LWMempools(msg.sender);
+    }
+    
+    function getJSON(uint pool_id_, bool encode_) public view returns(string memory) {
+        
+        if(!_pools.exists(pool_id_))
+            return '';
+
+        LWMempools.Bank memory bank_ = _pools.getPoolBank(pool_id_);
+
+        bytes memory json_ = abi.encodePacked(
+            '{',
+                '"name":"mempool #',Strings.toString(pool_id_),'",',
+                '"image": "', _pools.getImage(pool_id_, true),'",',
+                '"description": "infinitly evolving mempools",',
+                '"attributes": [',
+                    '{"trait_type": "bank", "value": "',bank_._name,'"},',
+                    '{"trait_type": "bank_index", "value": "',bank_._name,'-',Strings.toString(_pools.getPoolBankPart(pool_id_)),'"},',
+                    '{"trait_type": "epoch", "value": ', Strings.toString(_pools.getCurrentEpoch(pool_id_)), '},',
+                    '{"trait_type": "fixed_epoch", "value": ', Strings.toString(_pools.getFixedEpoch(pool_id_)), '},',
+                    '{"trait_type": "epoch_length", "value": ', Strings.toString(_pools.getEpochLength(pool_id_)), '}',
+                ']',
+            '}'
+        );
+
+        if(encode_)
+            return string(abi.encodePacked('data:application/json;base64,', Base64.encode(json_)));        
+        return string(json_);
+
+    }
+
+
+}
+
+
+
+contract LWMempools_Gen {
     
     struct Pool {
         uint id;
@@ -192,7 +247,6 @@ contract LWMempools_Meta is Ownable {
         string seed2;
         string filter;
         uint epoch;
-        uint max;
         string shape1_width;
         string shape1_height;
         string shape2_width;
@@ -201,13 +255,6 @@ contract LWMempools_Meta is Ownable {
         string shape3_height;
     }
 
-    struct Bank {
-        string name;
-        string[4] parts;
-    }
-
-    uint private _bases_count;
-    mapping(uint => Bank) private _bases;
     LWMempools public immutable _pools;
 
     constructor(){
@@ -229,10 +276,9 @@ contract LWMempools_Meta is Ownable {
         pool_.seed = _pools.getSeed(pool_id_, 'bank_seed');
         pool_.base = _pools.getBankPart(pool_id_);
         pool_.filter = _pools.getPoolFilter(pool_id_);
-        pool_.max = pool_.epoch;
 
         uint i;
-        while(i < pool_.max){
+        while(i < pool_.epoch){
             pool_.seed1 =_pools.getSeed(pool_id_, string(abi.encodePacked('1x', Strings.toString(i))));
             pool_.seed2 = _pools.getSeed(pool_id_, string(abi.encodePacked('1y', Strings.toString(i))));
             pool_.items = abi.encodePacked(
@@ -244,7 +290,7 @@ contract LWMempools_Meta is Ownable {
         }
 
         i = 0;
-        while(i < pool_.max){
+        while(i < pool_.epoch){
             pool_.seed1 = _pools.getSeed(pool_id_, string(abi.encodePacked('2x', Strings.toString(i))));
             pool_.seed2 = _pools.getSeed(pool_id_, string(abi.encodePacked('2y', Strings.toString(i))));
             pool_.items = abi.encodePacked(
@@ -256,7 +302,7 @@ contract LWMempools_Meta is Ownable {
         }
 
         i = 0;
-        while(i < pool_.max){
+        while(i < pool_.epoch){
             pool_.seed1 = _pools.getSeed(pool_id_, string(abi.encodePacked('3x', Strings.toString(i))));
             pool_.seed2 = _pools.getSeed(pool_id_, string(abi.encodePacked('3y', Strings.toString(i))));
             pool_.items = abi.encodePacked(
@@ -278,7 +324,7 @@ contract LWMempools_Meta is Ownable {
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMinYMin meet">',
                 '<defs>',
                     '<circle cx="500" cy="500" r="500" id="bg"/>',
-                    '<filter id="none"><feColorMatrix in="SourceGraphic" type="saturate" values="1"/></filter>',
+                    '<filter id="none"><feColorMatrix in="SourceGraphic" type="saturate" values="0"/></filter>',
                     '<filter id="bw"><feColorMatrix type="matrix" values="0.491 1.650 0.166 0.000 -0.464 0.491 1.650 0.166 0.000 -0.464 0.491 1.650 0.166 0.000 -0.464 0.000 0.000 0.000 1.000 0.000"></feColorMatrix></filter>',
                     '<filter id="s1"><feColorMatrix in="SourceGraphic" type="saturate" values="2"/></filter>',
                     '<filter id="s2"><feColorMatrix in="SourceGraphic" type="saturate" values="4"/></filter>',

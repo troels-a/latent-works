@@ -7,7 +7,7 @@ import {bigNumbersToNumber} from 'abiapi/parsers';
 
 const abi = new ABIAPI(_LTNTABI);
 abi.supportedMethods = abi.getReadMethods();
-abi.cacheTTL = 60*60;
+abi.cacheTTL = 3;
 
 abi.addGlobalParser(bigNumbersToNumber)
 

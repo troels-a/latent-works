@@ -4,16 +4,17 @@ import Page from "templates/Page";
 import MEMPOOLS_ABI from "@lw/contracts/abi/LWMempools.json"
 import useContract from "hooks/useContract";
 import {ethers} from 'ethers';
-
+import { getEntryBySlug } from "base/contentAPI";
 import { useWeb3React } from "@web3-react/core";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useConnectIntent } from "components/ConnectButton";
 import Loader from "components/Loader";
 import Grid from "styled-components-grid";
 import {breakpoint} from "styled-components-breakpoint";
 import { useLTNT } from "components/LTNT/Provider";
 import Modal, { ModalInner, ModalActions } from "components/Modal";
-
+import Countdown from "react-countdown";
+import Button from "components/Button";
 
 const fifteen = Array(15).fill(0).map((_, i) => i);
 
@@ -92,8 +93,6 @@ const BankOption = styled.li`
         background-color: rgba(255,255,255,0.4);
     `}
 
-
-
 `
 
 
@@ -125,6 +124,14 @@ const BankImgs = styled.div`
     
     position: relative;
     aspect-ratio: 1/1;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    min-width: 100%;
+    width: 100%;
 
     ${p => p.filter && `
         filter: url(#${p.filter});
@@ -174,7 +181,7 @@ const Pool = styled(({children, ...p}) => <div {...p}><div>{children}</div></div
         border-top-width: 1px;
     }
 
-    ${breakpoint('sm', 'md')`
+    ${breakpoint('sm', 'lg')`
         &:nth-child(1),
         &:nth-child(2),
         &:nth-child(3),
@@ -227,18 +234,58 @@ const Mint = styled.div`
     }
 `
 
+const SelImg = styled.img`
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+`
+
+const Notice = styled.span`
+
+    display: block;
+    font-size: 0.8em;
+    font-style: italic;
+    border: 1px solid ${p => p.theme.colors.emph9};
+    border-radius: 0.5em;
+    margin: 0.5em 0;
+    padding: 0.5em;
+
+    &:before {
+        content: "!";
+        display: block;
+        font-size: 1em;
+        line-height: 1em;
+        text-align: center;
+        font-weight: 600;
+        width: 1.2em;
+        height: 1.2em;
+        padding: 3px;
+        background-color: ${p => p.theme.colors.emph9};
+        color: ${p => p.theme.colors.txt};
+        border-radius: 3px;
+        margin-bottom: 0.5em;
+    }
+
+`
+
 const mainWidth = 37.46;
 
-export default function Mempools_index(){
+export default function Mempools_index({page, ...p}){
     
-    const {account} = useWeb3React();
+    const {account, provider} = useWeb3React();
     const [banks, setBanks] = useState();
     const [selBank, setSelBank] = useState(false);
     const [bank, setBank] = useState(false);
     const [selPool, setSelPool] = useState(false);
     const {setConnectIntent} = useConnectIntent();
     const [minting, setMinting] = useState(false);
+    const [mintPool, setMintPool] = useState(false);
+    const [hasStamp, setHasStamp] = useState(false);
     const [pools, setPools] = useState({});
+    const [contractBalance, setContractBalance] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [withdrawTo, setWithdrawTo] = useState(false);
+    const wdRef = useRef();
 
     const LTNT = useLTNT();
 
@@ -248,13 +295,30 @@ export default function Mempools_index(){
         endpoint: '/api/mempools'
     });
 
+
+    async function fetchContractBalance(){
+        let balance = await fetch(`/api/balance?address=${process.env.NEXT_PUBLIC_ADDRESS_MEMPOOLS}`).then(res => res.json());
+        console.log(balance)
+        setContractBalance(balance);
+    }
+
+    async function fetchAdmin(){
+        let admin = await mempools.read('owner').then(res => res.result);
+        console.log(admin)
+        setIsAdmin(admin.toLowerCase() === account.toLowerCase());
+    }
+
+    async function handleWithdraw(){
+        await mempools.write('withdrawAllTo', {to_: withdrawTo});
+    }
+
     async function handleMint(bank_index, index){
         setMinting(index);
         try {
             const price = await mempools.read('PRICE').then(res => res.result);
 
             let tx;
-            if(LTNT.picked > 0)
+            if(LTNT.picked > 0 && !hasStamp)
                 tx = await mempools.contract.mintWithLTNT(LTNT.picked, bank_index, index, {value: ethers.utils.parseEther('0.1')});
             else
                 tx = await mempools.contract.mint(bank_index, index, {value: ethers.BigNumber.from(price.hex)});
@@ -262,10 +326,11 @@ export default function Mempools_index(){
             await updateBank(bank_index);
         }
         catch(e){
+            console.log(e)
             setMinting(false);
         }
         setMinting(false);
-        setSelPool(false);
+        setMintPool(false);
     }
 
     async function populatePools(bank_index, update = true){
@@ -281,12 +346,10 @@ export default function Mempools_index(){
             return false;
 
         if(pool_id){
-            const meta = await mempools.read('tokenURI', {pool_id_: pool_id}).then(res => res.result);
-            pool = JSON.parse(Buffer.from(meta.replace('data:application/json;base64,', ''), 'base64').toString('utf-8'));
-            pool.id = pool_id;   
+            let image = await mempools.read('getImage', {pool_id_: pool_id, encode_: true}).then(res => res.result);
             setPools(oldPools => {
                 const newPools = {...oldPools};
-                newPools[pool_id] = pool;
+                newPools[pool_id] = {image, bank_index, pool_index};
                 return newPools;
             });
         }
@@ -310,6 +373,8 @@ export default function Mempools_index(){
 
     async function fetchBanks(){
         let newbanks = await mempools.read('getBanks').then(res => res.result)
+        if(!newbanks)
+            return null;
         newbanks = newbanks.map(bank => {
             bank.pools = bank.pools.map(pool_id => pool_id > 0 ? pool_id : false);
             return bank;
@@ -324,12 +389,23 @@ export default function Mempools_index(){
     }, []);
 
     useEffect(() => {
+        if(account)
+            fetchAdmin();
+    }, [account])
+
+    useEffect(() => {
+        if(isAdmin)
+            fetchContractBalance();
+    }, [isAdmin])
+
+    useEffect(() => {
         if(selBank !== false && banks[selBank]){
             setBank(banks[selBank]);
             populatePools(selBank, false);
         }
         return () => {
             setSelPool(false);
+            setMintPool(false);
         }
     }, [selBank])
 
@@ -343,31 +419,28 @@ export default function Mempools_index(){
         }
     }, [banks])
 
-
-    function wantToMint(){
-
-        if(
-            selBank >= 0
-            &&
-            selPool >= 0
-            &&
-            banks
-            &&
-            banks[selBank]
-        ){
-            return (banks[bank_index].pools[pool_index] !== false);
+    useEffect(() => {
+        if(LTNT.picked){
+            LTNT.hasStamp(LTNT.picked, process.env.NEXT_PUBLIC_ADDRESS_MEMPOOLS)
+            .then(hasStamp => {
+                setHasStamp(hasStamp);
+            })
         }
+    }, [LTNT.picked, mintPool])
 
-        return false
 
-    }
-
-    return <Page theme="dark">
+    return <Page theme="dark" title={page.title} description={page.description}>
+        
         <Filters/>
+        
         <Section>
             <h1>Mempools</h1>
+            {isAdmin && <div>
+                Hello admin! 
+                {contractBalance && <> You have {contractBalance} ETH in the contract. Withdraw to <input type="text" ref={wdRef} onChange={e => setWithdrawTo(e.target.value)}/><Button onClick={() => handleWithdraw()}>Withdraw to {withdrawTo}</Button></>}
+            </div>}
         </Section>
-        {(banks && banks.length > 0) &&
+
         <Section disable={minting}>
             
             <Grid as={BankSelector}>
@@ -387,18 +460,18 @@ export default function Mempools_index(){
             {banks && banks[selBank] && 
             <Grid as={Bank}>
                 <Grid.Unit as={BankMain} size={{sm: 1/1, lg: mainWidth/100}}>
-                    
-                    {(selPool !== false && pools[selPool]) && 
-                        <img src={banks[selBank].pools[selPool].image}/>
+
+                    {(selPool !== false && pools[banks[selBank].pools[selPool]]) && 
+                        <img src={pools[banks[selBank].pools[selPool]].image}/>
                     }
                     
-                    {(selPool === false || (selPool !== false && !pools[selPool])) && 
-                    <BankImgs filter={selPool === false ? bank.filter : false} >
-                        <BankImg src={banks[selBank].parts[3]} index={3}/>
-                        <BankImg src={banks[selBank].parts[0]} animated index={0}/>
-                        <BankImg src={banks[selBank].parts[1]} animated index={1}/>
-                        <BankImg src={banks[selBank].parts[2]} animated index={2}/>
-                        <BankImg src={banks[selBank].parts[3]} animated index={3}/>                    
+                    {(selPool === false || (selPool !== false && !pools[banks[selBank].pools[selPool]])) && 
+                    <BankImgs filter={(banks && selPool === false) ? banks[selBank].filter : false} >
+                        <BankImg src={banks && banks[selBank].parts[3]} index={3}/>
+                        <BankImg src={banks && banks[selBank].parts[0]} animated index={0}/>
+                        <BankImg src={banks && banks[selBank].parts[1]} animated index={1}/>
+                        <BankImg src={banks && banks[selBank].parts[2]} animated index={2}/>
+                        <BankImg src={banks && banks[selBank].parts[3]} animated index={3}/>                    
                     </BankImgs>
                     }
                 </Grid.Unit>
@@ -411,8 +484,8 @@ export default function Mempools_index(){
                             const loading = (pool && typeof pool === 'undefined');
 
                             return <Grid.Unit as={Pool} size={1/5} key={i} loading={loading}>
-                                {pool && <img src={pool.image} onClick={() => setSelPool(i)}/>}
-                                {!pool && <Mint onClick={() => account ? setSelPool(i) : setConnectIntent(true)}>
+                                {pool && <SelImg src={pool.image} onClick={() => setSelPool(i)}/>}
+                                {!pool && <Mint onClick={() => account ? setMintPool(i) : setConnectIntent(true)}>
                                 {(minting === i) ? <Loader/> : '+'}
                                 </Mint>}
                             </Grid.Unit>
@@ -423,33 +496,73 @@ export default function Mempools_index(){
             </Grid>
             }
 
-            {banks === false && <p>loading...</p>}
-        </Section>
-        }
+            
+            {(!banks || banks.length < 1) && 
+            <Grid as={Bank}>
+                <Grid.Unit as={BankMain} size={{sm: 1/1, lg: mainWidth/100}}>
+                    <BankImgs filter={false}>
+                    <Countdown date={1666818000000} renderer={({
+                    total
+                }) => {
+                    return <h1 style={{minWidth: '100%', textAlign: 'center'}}>{total/1000}</h1>
+                    // return <p>{days > 0 && `${days} day${days > 1 && 's'}${minutes > 0 ? ',' : ' and'} `}{hours > 0 && `${hours} hour${hours > 1 ? 's' : ''}`}{minutes > 0 && ` and ${minutes} minute${minutes > 1 ? 's' : ''}`}</p>
+                }}>
+                    <p style={{minWidth: '100%', textAlign: 'center'}}><Loader>Loading banks</Loader><br/>
+                    <small>Please reload the page if this takes too long</small>
+                    </p>
+                </Countdown>
 
-        {selPool !== false && 
-        <Modal show={wantToMint}>
-            <ModalInner>
-            You're about to generate and mint a pool from bank "{banks[selBank].name}".
-            {LTNT.picked &&
-            <>You have activated LTNT #{LTNT.picked} for this mint.</>}
-            {(LTNT.balance && !LTNT.picked) &&
-            <>You are have LTNT in your wallet and by <a href="#" onClick={e => {event.preventDefault(); LTNT.setIsPicking(true); setSelPool(false)}}>picking</a> one to stamp, you might be able to mint at a reduced price.</>
+                    </BankImgs>
+                </Grid.Unit>
+
+                <Grid.Unit size={{sm: 1/1, lg: (100-mainWidth)/100}}>
+                    <Grid as={Pools}>
+                        {fifteen.map((_, i) => {
+                            return <Grid.Unit as={Pool} size={1/5} key={i}>
+                                <Mint/>
+                            </Grid.Unit>
+                        })}
+                    </Grid>
+                </Grid.Unit>
+            </Grid>
             }
+
+            {banks === false && <p>loading...</p>}
+
+        </Section>
+
+                
+        <Section dangerouslySetInnerHTML={{__html: page.content}}/>
+
+        <Modal show={mintPool !== false}>
+            {mintPool !== false && 
+            <ModalInner>
+            <>You're about to generate and mint a pool from bank "{banks[selBank].name}" at slot index {mintPool}. </>
+
+            {(LTNT.picked && !hasStamp) && <Notice>You have activated LTNT #{LTNT.picked} for this mint and the price is reduced to 0.1 ETH</Notice>}
+            {(LTNT.picked && hasStamp) && <Notice>You have activated LTNT (#{LTNT.picked}) - it is already stamped by Mempools and will be ignored</Notice>}
+            {(LTNT.balance && !LTNT.picked) && <Notice>You have LTNT in your wallet and by <a href="#" onClick={e => {e.preventDefault(); LTNT.setIsPicking(true); setMintPool(false)}}>picking</a> one to stamp, you might be able to mint at a reduced price</Notice>}
+
             <ModalActions actions={[
-                {label: 'Cancel', callback: () => setSelPool(false)},
-                {label: `Mint (${LTNT.picked ? '0.1' : '0.15'} ETH)`, callback: () => {!minting && handleMint(selBank, selPool);}},
+                {label: 'Cancel', callback: () => setMintPool(false)},
+                {label: minting ? <Loader>Minting</Loader> : `Mint (${(LTNT.picked && !hasStamp) ? '0.1' : '0.15'} ETH)`, disabled: minting, callback: () => {!minting && handleMint(selBank, mintPool);}},
             ]}/>
             </ModalInner>
+            }
         </Modal>
-        }
-
-        <Section $small>
-            <p>
-                Malleable pieces of art.
-            </p>
-        </Section>
+    
 
     </Page>
 
+}
+
+
+export async function getStaticProps(){
+    
+    const page = await getEntryBySlug('pages', 'mempools');
+    return {
+        props: {
+            page: page,
+        }
+    }
 }

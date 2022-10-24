@@ -6,23 +6,7 @@ import { getProvider } from '@lw/website/base/provider';
 
 const abi = new ABIAPI(ABI);
 abi.supportedMethods = abi.getReadMethods();
-abi.cacheTTL = 60*60;
-
-// function compToCompObject(comp){
-//     console.log(comp)
-//     return {
-//         id: comp.id.toNumber(),
-//         creator: comp.creator,
-//         seed: comp.seed.toNumber(),
-//         artwork: comp.artwork,
-//         price: comp.price.toString(),
-//         editions: comp.editions.toNumber(),
-//         available: comp.available.toNumber()
-//     }
-
-// }
-
-// abi.addParser('getComps', (result) => result.map(comp => (compToCompObject(comp))))
+abi.cacheTTL = 3;
 
 export default async (req, res) => {
 
