@@ -35,7 +35,7 @@
         "type": "bool"
       }
     ],
-    "name": "getEpochImage",
+    "name": "generateImage",
     "outputs": [
       {
         "internalType": "string",

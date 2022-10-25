@@ -32,7 +32,7 @@ module.exports = {
   solidity: "0.8.4",
   gasReporter: {
     currency: 'ETH',
-    // gasPrice: 30,
+    gasPrice: 25,
     coinmarketcap: '430b4c0c-3705-426c-9056-92196dca927a'
   },
   settings: {
@@ -64,13 +64,13 @@ module.exports = {
         '77x7': '0xEF7c89F051ac48885b240eb53934B04fcF3339ab',
         '00x0': '0x589280D35CD0baF6F9e6F0Be8d78EB01C7539429',
         'ltnt': '0x6f2Ff40F793776Aa559644F52e58D83E21871EC3',
-        'mempools': ''
+        'mempools': '0x631662418cc251ab6105aa3dde815f6359583399'
     }
   },
   networks: {
     hardhat: {
       forking: {
-        blockNumber: 15762208,
+        blockNumber: 15827856,
         url: process.env.MAINNET_FORK_URL,
       },
       accounts: accounts

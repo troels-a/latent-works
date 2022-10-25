@@ -16,19 +16,16 @@ describe('mempools', async function(){
 
 
         preview_dir = `${path}/temp/preview`;
-        base_dir = `${path}/test/mems`;
+        base_dir = process.env.MEMPOOLS_BANKS_DIR;
 
         let pools = await fs.readdirSync(base_dir, { withFileTypes: true });
         pools = pools.filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)
         const banks = [];
 
-        const filters = ['bw', 's1', 'r2', 'none', 'bw', 's5', 'r6', 'none', 'bw', 's10', 'r10', 'none'];
-        let filter_index = 0;
-
         for (let pool = 0; pool < pools.length; pool++) {
-
-            const name = pools[pool].split('-')[0];
-            const filter = pools[pool].split('-')[1];
+            
+            const name = pools[pool].split('_')[0];
+            const filter = pools[pool].split('_')[1];
             const pool_dir = `${base_dir}/${pools[pool]}`;
             
             await fs.promises.mkdir(preview_dir, {recursive: true}).catch(console.error);
@@ -42,9 +39,7 @@ describe('mempools', async function(){
             }))
 
             
-            banks.push([name, parts, filter ? filter : filters[filter_index]]);
-            filter_index++;
-            if(filter_index >= filters.length) filter_index = 0;
+            banks.push([name, parts, filter ? filter : 'none']);
 
         }
 
@@ -58,6 +53,7 @@ describe('mempools', async function(){
         await _mempools_meta.deployed();
 
         for(let i = 0; i < banks.length; i++) {
+            console.log('bank', i);
             await _mempools.addBank(...banks[i]);
         }
 
@@ -70,6 +66,10 @@ describe('mempools', async function(){
     })
 
     it('mints', async function(){
+
+        await expect(_mempools.mint(0, 16)).to.be.reverted;
+        await expect(_mempools.mint(0, 200)).to.be.reverted;
+
 
         let bank_count = await _mempools.getBankCount();
         bank_count = bank_count.toNumber();
@@ -86,6 +86,12 @@ describe('mempools', async function(){
     
             bank_count--;
         }
+
+        const [owner] = await hre.ethers.getSigners();
+        expect(await _mempools.balanceOf(owner.address)).to.equal(minted);
+        await expect(_mempools.mint(0, 0)).to.be.reverted;
+
+
     })
 
 
