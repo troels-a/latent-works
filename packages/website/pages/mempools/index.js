@@ -346,7 +346,7 @@ export default function Mempools_index({page, ...p}){
             return false;
 
         if(pool_id){
-            let image = await mempools.read('getImage', {pool_id_: pool_id, encode_: true}).then(res => res.result);
+            let image = await mempools.read('getPoolImage', {pool_id_: pool_id, encode_: true}).then(res => res.result);
             setPools(oldPools => {
                 const newPools = {...oldPools};
                 newPools[pool_id] = {image, bank_index, pool_index};
