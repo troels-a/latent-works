@@ -3,6 +3,21 @@ const { types } = require("hardhat/config")
 const fs = require('fs');
 const path = require('path').dirname(__dirname);
 
+
+function formatFromFilename(filename) {
+
+    const suffix = filename.split('.')[1].toLowerCase();
+
+    if(suffix === 'gif')
+        return 'gif';
+    if(suffix === 'jpg' || suffix === 'jpeg')
+        return 'jpeg';
+
+    throw new Error(`Unknown file extension: ${suffix}`);
+
+}
+
+
 require("colors");
 
 task("transfer-eth", "Transfer ETH to an address", async (args, hre) => {
@@ -52,15 +67,15 @@ task("mempools:add-bank", "Add bank to mempools contract", async ({bankpath}, hr
     const base = [];
     const dirparts = bankpath.split('/');
     const folder = dirparts[dirparts.length-1];
-    console.log(folder)
     const name = folder.split('_')[0];
     const filter = folder.split('_')[1] || 'none';
     const files = await fs.readdirSync(bankpath);
 
-    const parts = await Promise.all(files.filter(file => file.match(/.jpg$/i)).map(async file => {
+    const parts = await Promise.all(files.filter(file => file.match(/.(jpeg|jpg|gif)$/i)).map(async file => {
         const filepath = `${bankpath}/${file}`;
         const file_buffer = await fs.readFileSync(filepath);
-        const part = 'data:image/jpeg;base64,'+file_buffer.toString('base64');
+        const format = formatFromFilename(file);
+        const part = 'data:image/'+format+';base64,'+file_buffer.toString('base64');
         return part;
     }))
 
