@@ -13,8 +13,8 @@ import Grid from "styled-components-grid";
 import {breakpoint} from "styled-components-breakpoint";
 import { useLTNT } from "components/LTNT/Provider";
 import Modal, { ModalInner, ModalActions } from "components/Modal";
-import Countdown from "react-countdown";
 import Button from "components/Button";
+import { useRouter } from "next/dist/client/router";
 
 const fifteen = Array(15).fill(0).map((_, i) => i);
 
@@ -128,8 +128,8 @@ const BankImgs = styled.div`
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-between;
-    align-items: center;
-    align-content: center;
+    place-items: center;
+    justify-items: center;
     min-width: 100%;
     width: 100%;
 
@@ -295,6 +295,7 @@ export default function Mempools_index({page, ...p}){
         endpoint: '/api/mempools'
     });
 
+    const router = useRouter();
 
     async function fetchContractBalance(){
         let balance = await fetch(`/api/balance?address=${process.env.NEXT_PUBLIC_ADDRESS_MEMPOOLS}`).then(res => res.json());
@@ -383,6 +384,12 @@ export default function Mempools_index({page, ...p}){
         if(newbanks)
             setSelBank(0);
     }
+
+    useEffect(() => {
+        const _bank = router.query.bank ? parseInt(router.query.bank) : false;
+        if(_bank && banks && banks.length >= _bank)
+            setSelBank(_bank);
+    }, [router.query.bank, banks])
 
     useEffect(() => {
         fetchBanks();
@@ -501,17 +508,7 @@ export default function Mempools_index({page, ...p}){
             <Grid as={Bank}>
                 <Grid.Unit as={BankMain} size={{sm: 1/1, lg: mainWidth/100}}>
                     <BankImgs filter={false}>
-                    <Countdown date={1666810800000} renderer={({
-                    total
-                }) => {
-                    return <h1 style={{minWidth: '100%', textAlign: 'center'}}>{total/1000}</h1>
-                    // return <p>{days > 0 && `${days} day${days > 1 && 's'}${minutes > 0 ? ',' : ' and'} `}{hours > 0 && `${hours} hour${hours > 1 ? 's' : ''}`}{minutes > 0 && ` and ${minutes} minute${minutes > 1 ? 's' : ''}`}</p>
-                }}>
-                    <p style={{minWidth: '100%', textAlign: 'center'}}><Loader>Loading banks</Loader><br/>
-                    <small>Please reload the page if this takes too long</small>
-                    </p>
-                </Countdown>
-
+                        <Loader style={{margin: '0 auto'}}>Loading banks</Loader>
                     </BankImgs>
                 </Grid.Unit>
 
