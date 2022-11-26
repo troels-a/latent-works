@@ -534,11 +534,11 @@ export default function Mempools_index({page, ...p}){
         <Modal show={mintPool !== false}>
             {mintPool !== false && 
             <ModalInner>
-            <>You're about to generate and mint a pool from bank "{banks[selBank].name}" at slot index {mintPool}. </>
+            <>You are about to generate and mint a pool from bank "{banks[selBank].name}" at slot index {mintPool}. </>
 
             {(LTNT.picked && !hasStamp) && <Notice>You have activated LTNT #{LTNT.picked} for this mint and the price is reduced to 0.1 ETH</Notice>}
             {(LTNT.picked && hasStamp) && <Notice>You have activated LTNT (#{LTNT.picked}) - it is already stamped by Mempools and will be ignored</Notice>}
-            {(LTNT.balance && !LTNT.picked) && <Notice>You have LTNT in your wallet and by <a href="#" onClick={e => {e.preventDefault(); LTNT.setIsPicking(true); setMintPool(false)}}>picking</a> one to stamp, you might be able to mint at a reduced price</Notice>}
+            {(LTNT.balance > 0 && !LTNT.picked) && <Notice>You have LTNT in your wallet and by <a href="#" onClick={e => {e.preventDefault(); LTNT.setIsPicking(true); setMintPool(false)}}>picking</a> one to stamp, you might be able to mint at a reduced price</Notice>}
 
             <ModalActions actions={[
                 {label: 'Cancel', callback: () => setMintPool(false)},
