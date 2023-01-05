@@ -6,7 +6,7 @@ import { getProvider } from '@lw/website/base/provider';
 
 const abi = new ABIAPI(ABI);
 abi.supportedMethods = abi.getReadMethods();
-abi.cacheTTL = 3;
+abi.cacheTTL = 5;
 
 export default async (req, res) => {
 

@@ -16,7 +16,7 @@ function parseBank(bank){
 
 const abi = new ABIAPI(_MEMPOOLS_ABI);
 abi.supportedMethods = abi.getReadMethods();
-abi.cacheTTL = 1;
+abi.cacheTTL = 5;
 
 // abi.setMethodCacheTTL('getBankPools', 3);
 // abi.setMethodCacheTTL('getBank', 3);
@@ -54,7 +54,7 @@ export default async (req, res) => {
     const status = data.error ? 400 : 200;
     
     if(status == 200)
-        res.setHeader(`Cache-Control`, `s-maxage=1, stale-while-revalidate`)
+        res.setHeader(`Cache-Control`, `s-maxage=${abi.cacheTTL}, stale-while-revalidate`)
 
     res.status(status).json(data);
 

@@ -22,7 +22,7 @@ async function generateSheet({filename, title, items, dir, bgcolor, txtcolor, co
                     height: 100vh;
                     place-items: center;
                     flex-wrap: wrap;
-                    padding: 20px;
+                    padding: 0;
                     margin: 0;
                     box-sizing: border-box;
                     background-color: ${bgcolor};
@@ -36,7 +36,7 @@ async function generateSheet({filename, title, items, dir, bgcolor, txtcolor, co
                 
                 body > div {
                     width: ${100/columns}%;
-                    padding: 20px;
+                    padding: 0;
                     box-sizing: border-box;
                     display: flex;
                     place-items: center;
@@ -44,7 +44,7 @@ async function generateSheet({filename, title, items, dir, bgcolor, txtcolor, co
                 }
 
                 body > div > img {
-                    margin-bottom: 10px;
+                    margin-bottom: 0;
                 }
 
             </style>
@@ -52,7 +52,7 @@ async function generateSheet({filename, title, items, dir, bgcolor, txtcolor, co
         <body>
                 ${items.map(item => `<div>
                     <img src="${item.src}"/>
-                    ${item.url && `<div><a href="${item.url}" target="_blank">${item.label}</a></div>`}
+                    ${item.url ? `<div><a href="${item.url}" target="_blank">${item.label}</a></div>` : ''}
                 </div>`).join('')}
         </body>
     </html>

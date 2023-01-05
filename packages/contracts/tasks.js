@@ -1,8 +1,10 @@
 const { task } = require("hardhat/config");
 const { types } = require("hardhat/config")
 const fs = require('fs');
-const path = require('path').dirname(__dirname);
-
+const path = require('path');
+const Preview = require('./preview.js');
+const generateSheet = require("./test/mempools/sheet.js");
+const puppeteer = require('puppeteer');
 
 function formatFromFilename(filename) {
 
@@ -164,3 +166,137 @@ task("ltnt:add-issuer", "Add issuer to contract", async ({address}, hre) => {
     
 })
 .addParam('address', types.Address, "Address of issuer")
+
+
+// Generate a html sheet for a collection of tokens
+task("mempools:generate", "Generate a html sheet for a collection of tokens", async ({bankpath}, hre) => {
+    
+    // Deploy font contracts
+    const Regular = await hre.ethers.getContractFactory("XanhMonoRegularLatin");
+    const Italic = await hre.ethers.getContractFactory("XanhMonoItalicLatin");
+    const regular = await Regular.deploy();
+    const italic = await Italic.deploy();
+
+    await regular.deployed();
+    await italic.deployed();
+    
+    // Deplpy LTNT contract
+    const LTNT = await hre.ethers.getContractFactory("LTNT");
+    const ltnt = await LTNT.deploy(regular.address, italic.address);
+    await ltnt.deployed();
+
+    // Deploy mempools contract
+    const Mempools = await hre.ethers.getContractFactory("LWMempools");
+    const mempools = await Mempools.deploy(ltnt.address);
+    await mempools.deployed();
+
+    // Add Mempools to LTNT
+    await ltnt.addIssuer(mempools.address);
+
+    // Add bank to mempools
+    const base = [];
+    const dirparts = bankpath.split('/');
+    const folder = dirparts[dirparts.length-1];
+    const name = folder.split('_')[0];
+    const filter = folder.split('_')[1] || 'none';
+    const files = await fs.readdirSync(bankpath);
+
+    const parts = await Promise.all(files.filter(file => file.match(/.(jpeg|jpg|gif)$/i)).map(async file => {
+        const filepath = `${bankpath}/${file}`;
+        const file_buffer = await fs.readFileSync(filepath);
+        const format = formatFromFilename(file);
+        const part = 'data:image/'+format+';base64,'+file_buffer.toString('base64');
+        return part;
+    }))
+  
+    const tx = await mempools.addBank(name, parts, filter);
+
+    // Mint all tokens
+    const price = await mempools.PRICE();
+    let poolindex = 0;
+    while(poolindex < 15){
+        const tx = await mempools.mint(0, poolindex, {value: price});
+        await tx.wait();
+        poolindex++;
+    }
+
+    // Generate preview
+    const preview = new Preview(mempools);
+    // Get full path to preview directory
+    const preview_dir = path.join(__dirname, 'temp/generated');
+
+    const sheet = {
+        filename: 'pools.html',
+        title: 'Mempools',
+        items: [],
+        dir: preview_dir,
+        bgcolor: 'white',
+        txtcolor: 'black',
+        columns: 3
+    }
+
+    // three epochs five years apart
+    let y = 1;
+    while(y <= 3){
+
+        let i = 1;
+        while(i <= 9){
+            
+            const tokenURI = await mempools.tokenURI(i);
+    
+            const json = Buffer.from(tokenURI.replace(/^data\:application\/json\;base64\,/, ''), 'base64').toString('utf-8');
+            const meta = JSON.parse(json);
+            const filename = `mem_${y}_${i}.svg`;
+            
+            // let epoch = 10;
+            // meta.attributes.map(attr => {
+            //     if(attr.trait_type == 'epoch')
+            //         epoch = attr.value
+            // });
+    
+            const svg = Buffer.from(meta.image.replace(/^data\:image\/svg\+xml\;base64\,/, ''), 'base64').toString('utf-8');
+    
+            // const svg = await _mempools.getEpochImage(i, epoch, false);
+            const image_file = `${preview_dir}/${filename}`;
+            // const json_file = `${preview_dir}/mempool_${i}.json`;
+            
+            await fs.writeFileSync(image_file, svg, {flag: 'w'});
+            // await fs.writeFileSync(json_file, json, {flag: 'w'});
+            
+            sheet.items.push({
+                src: filename,
+            })
+    
+            console.log('Generated mempool', i);
+    
+            i++;
+
+        }
+
+        sheet.filename = `pools_${y}.html`;
+        await generateSheet(sheet)
+
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.goto('file://'+preview_dir+'/'+sheet.filename, {waitUntil: 'networkidle2'});
+        await page.setViewport({width: 6000, height: 6000});
+        await page.screenshot({path: preview_dir+'/pools_'+y+'.png', fullPage: false});
+        await browser.close();
+
+
+        await network.provider.send("evm_increaseTime", [60*60*24*365*5]);
+        await network.provider.send("evm_mine");
+
+        y++;
+        sheet.items = [];      
+
+    }
+
+    // sheet.filename = 'pools.svg';
+    // sheet.columns = 4;
+    // await generateSVG(sheet)
+
+
+    
+})
+.addParam('bankpath', types.string, "Path to bank folder")
