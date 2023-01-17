@@ -64,7 +64,7 @@ task("mempools:deploy", "Deploy mempool contract", async (taskArgs, hre) => {
 
 });
 
-task("mempools:add-bank", "Add bank to mempools contract", async ({bankpath}, hre) => {
+task("mempools:add-bank", "Add bank to mempools contract", async ({bankpath, mint}, hre) => {
 
     const base = [];
     const dirparts = bankpath.split('/');
@@ -87,10 +87,20 @@ task("mempools:add-bank", "Add bank to mempools contract", async ({bankpath}, hr
   
     const mempools = await hre.ethers.getContractAt("LWMempools", process.env.ADDRESS_MEMPOOLS);
     const tx = await mempools.addBank(name, parts, filter);
+    await tx.wait();
 
     console.log(`Added ${name} bank to mempools`);
+
+    if(hre.network.name !== 'mainnet' && mint){
+        // Get bank count
+        const bankcount = await mempools.getBankCount();
+        // Mint all tokens
+        await hre.run('mempools:mint-bank', {bankindex: bankcount-1});
+    }
+
 })
-.addParam("bankpath", "Path to bank folder", undefined, types.string);;  
+.addParam("bankpath", "Path to bank folder", undefined, types.string)
+.addOptionalParam("mint", "Mint all tokens", false, types.boolean);
 
 
 task("mempools:mint-bank", "Mint all tokens", async ({bankindex}, hre) => {
@@ -116,7 +126,7 @@ task("mempools:mint-bank", "Mint all tokens", async ({bankindex}, hre) => {
     console.log(`Minted available tokens of bank "${bank._name}" to ${address}`.green);
 
 })
-.addParam("bankindex", "Index of bank to mint", undefined, types.string);;
+.addParam("bankindex", "Index of bank to mint", undefined, types.int);
 
 
 /**

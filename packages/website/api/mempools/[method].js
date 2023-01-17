@@ -16,7 +16,7 @@ function parseBank(bank){
 
 const abi = new ABIAPI(_MEMPOOLS_ABI);
 abi.supportedMethods = abi.getReadMethods();
-abi.cacheTTL = 5;
+abi.cacheTTL = 1;
 
 // abi.setMethodCacheTTL('getBankPools', 3);
 // abi.setMethodCacheTTL('getBank', 3);
@@ -34,7 +34,7 @@ export default async (req, res) => {
     const {method, ...query} = req.query;
 
     // If the bank image is requested check if the bank is in the fully_minted array and set the cache to 1 day
-    const fully_minted = [0,1,2,3,4,5,6];
+    const fully_minted = [0,1,2,3,4,5,6,7,8,9];
     if(method == 'getPoolImage' && query.pool_id_){
 
         const mempools = new ethers.Contract(process.env.NEXT_PUBLIC_ADDRESS_MEMPOOLS, _MEMPOOLS_ABI, getProvider());
