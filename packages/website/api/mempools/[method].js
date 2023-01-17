@@ -18,6 +18,7 @@ const abi = new ABIAPI(_MEMPOOLS_ABI);
 abi.supportedMethods = abi.getReadMethods();
 abi.cacheTTL = 1;
 
+abi.setMethodCacheTTL('getPoolImage', 60*60*24);
 // abi.setMethodCacheTTL('getBankPools', 3);
 // abi.setMethodCacheTTL('getBank', 3);
 // abi.setMethodCacheTTL('getBanks', 3);
@@ -32,20 +33,6 @@ export default async (req, res) => {
 
     const data = {};
     const {method, ...query} = req.query;
-
-    // If the bank image is requested check if the bank is in the fully_minted array and set the cache to 1 day
-    const fully_minted = [0,1,2,3,4,5,6,7,8,9];
-    if(method == 'getPoolImage' && query.pool_id_){
-
-        const mempools = new ethers.Contract(process.env.NEXT_PUBLIC_ADDRESS_MEMPOOLS, _MEMPOOLS_ABI, getProvider());
-        let bank_index = await mempools.getPoolBankIndex(query.pool_id_);
-        bank_index = bank_index.toNumber();
-
-        if(fully_minted.includes(parseInt(bank_index))){
-            abi.setMethodCacheTTL('getPoolImage', 60*60*24);
-        }
-
-    }
 
     if(abi.supportsMethod(method)){
 
