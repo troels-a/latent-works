@@ -35,6 +35,7 @@
     "colors": "^1.4.0",
     "dotenv": "^10.0.0",
     "gray-matter": "^4.0.3",
+    "moment": "^2.29.4",
     "react-countdown": "^2.3.3",
     "react-icons": "^4.3.1",
     "react-swipeable": "^6.2.0",
@@ -42,6 +43,7 @@
     "remark-html": "^14.0.1",
     "styled-breakpoints": "^10.0.1",
     "swiper": "^8.0.7",
+    "swr": "^2.0.3",
     "web3-react": "^5.0.5"
   }
 }

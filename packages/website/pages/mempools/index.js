@@ -1,9 +1,8 @@
 import Section from "components/Section/Section";
-import styled, { css, keyframes, useTheme } from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 import Page from "templates/Page";
 import MEMPOOLS_ABI from "@lw/contracts/abi/LWMempools.json"
 import useContract from "hooks/useContract";
-import {ethers} from 'ethers';
 import { getEntryBySlug } from "base/contentAPI";
 import { useWeb3React } from "@web3-react/core";
 import { useEffect, useState, useRef } from "react";
@@ -12,10 +11,9 @@ import Loader from "components/Loader";
 import Grid from "styled-components-grid";
 import {breakpoint} from "styled-components-breakpoint";
 import { useLTNT } from "components/LTNT/Provider";
-import Modal, { ModalInner, ModalActions } from "components/Modal";
-import Button from "components/Button";
 import { useRouter } from "next/dist/client/router";
-
+import { useMempool } from "hooks/useMempool";
+import useInterval from "hooks/useInterval";
 const fifteen = Array(15).fill(0).map((_, i) => i);
 
 const Filters = () => {
@@ -268,6 +266,80 @@ const Notice = styled.span`
 
 `
 
+const Progress = styled(p => {
+    return <div {...p}><div></div></div>
+})`
+    height: 0.5rem;
+    background-color: ${p => p.theme.colors.emph9};
+    overflow: hidden;
+    position: relative;
+    > div {
+        height: 100%;
+        background-color: ${p => p.theme.colors.emph8};
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: ${p => (p.value/p.max)*100}%;
+    }
+`
+
+const humanizeProps = {
+    M: 1000
+}
+const PoolStats = styled(({id, ...p}) => {
+
+    const {loading, error, ...mempool} = useMempool(id);
+    const [left, setLeft] = useState(0)
+
+    useInterval(() => {
+        if(loading) return setLeft(0)
+        setLeft(prev => {
+            if(prev <= 0) return mempool.epoch_remaining
+            return prev - 1;
+        })
+    }, 1000)
+
+    useEffect(() => {
+        return () => {
+            setLeft(0)
+        }
+    }, [])
+    
+    return <div {...p}>
+        {loading && <small><Loader></Loader></small>}
+        {error && <small>Error fetching stats</small>}
+        {!loading && <div>
+            
+            <div style={{display: 'flex', placeContent: 'space-between'}}>
+                <small>{`+`.repeat(mempool.epoch)}</small>
+                {left > 0 && <small>{left}</small>}
+                {/* Epoch length: {moment.duration(mempool.epoch_length, "seconds").humanize(humanizeProps)}
+                Next epoch begins in {moment.duration(mempool.epoch_remaining, "seconds").humanize(humanizeProps)} */}
+            </div>
+            <Progress value={mempool.epoch_length - left} max={mempool.epoch_length}></Progress>
+
+        </div>}
+    </div>
+})`
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    min-width: 100%;
+    padding: 0.5em;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    background-color: rgba(0,0,0,0.5);
+    color: ${p => p.theme.colors.txt};
+    > div {
+        flex: 1;
+        min-width: 100%;
+    }
+`
+
 const mainWidth = 37.46;
 
 export default function Mempools_index({page, ...p}){
@@ -277,15 +349,8 @@ export default function Mempools_index({page, ...p}){
     const [selBank, setSelBank] = useState(false);
     const [bank, setBank] = useState(false);
     const [selPool, setSelPool] = useState(false);
-    const {setConnectIntent} = useConnectIntent();
-    const [minting, setMinting] = useState(false);
     const [mintPool, setMintPool] = useState(false);
-    const [hasStamp, setHasStamp] = useState(false);
     const [pools, setPools] = useState({});
-    const [contractBalance, setContractBalance] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [withdrawTo, setWithdrawTo] = useState(false);
-    const wdRef = useRef();
 
     const LTNT = useLTNT();
 
@@ -296,43 +361,7 @@ export default function Mempools_index({page, ...p}){
     });
 
     const router = useRouter();
-
-    async function fetchContractBalance(){
-        let balance = await fetch(`/api/balance?address=${process.env.NEXT_PUBLIC_ADDRESS_MEMPOOLS}`).then(res => res.json());
-        console.log(balance)
-        setContractBalance(balance);
-    }
-
-    async function fetchAdmin(){
-        let admin = await mempools.read('owner').then(res => res.result);
-        console.log(admin)
-        setIsAdmin(admin.toLowerCase() === account.toLowerCase());
-    }
-
-    async function handleWithdraw(){
-        await mempools.write('withdrawAllTo', {to_: withdrawTo});
-    }
-
-    async function handleMint(bank_index, index){
-        setMinting(index);
-        try {
-            const price = await mempools.read('PRICE').then(res => res.result);
-
-            let tx;
-            if(LTNT.picked > 0 && !hasStamp)
-                tx = await mempools.contract.mintWithLTNT(LTNT.picked, bank_index, index, {value: ethers.utils.parseEther('0.1')});
-            else
-                tx = await mempools.contract.mint(bank_index, index, {value: ethers.BigNumber.from(price.hex)});
-            await tx.wait();
-            await updateBank(bank_index);
-        }
-        catch(e){
-            console.log(e)
-            setMinting(false);
-        }
-        setMinting(false);
-        setMintPool(false);
-    }
+    
 
     async function populatePools(bank_index, update = true){
         banks[bank_index].pools.map((_,pool_index) => populatePool(bank_index, pool_index, update));        
@@ -354,21 +383,6 @@ export default function Mempools_index({page, ...p}){
                 return newPools;
             });
         }
-
-    }
-
-    async function updateBank(bank_index){
-        
-        const new_bank = await mempools.read('getBank', {index_: bank_index}).then(res => res.result);
-
-        if(!new_bank)
-            return null;
-
-        setBanks(banks => {
-            const new_banks = [...banks];
-            new_banks[bank_index] = {...new_bank};
-            return new_banks;    
-        })      
 
     }
 
@@ -396,16 +410,6 @@ export default function Mempools_index({page, ...p}){
     }, []);
 
     useEffect(() => {
-        if(account)
-            fetchAdmin();
-    }, [account])
-
-    useEffect(() => {
-        if(isAdmin)
-            fetchContractBalance();
-    }, [isAdmin])
-
-    useEffect(() => {
         if(selBank !== false && banks[selBank]){
             setBank(banks[selBank]);
             populatePools(selBank, false);
@@ -416,15 +420,6 @@ export default function Mempools_index({page, ...p}){
         }
     }, [selBank])
 
-
-    useEffect(() => {
-        if(banks){
-            for (let i = 0; i < banks.length; i++) {
-                const bank = banks[i];
-                populatePools(i, false);
-            }
-        }
-    }, [banks])
 
     useEffect(() => {
         if(LTNT.picked){
@@ -442,13 +437,9 @@ export default function Mempools_index({page, ...p}){
         
         <Section>
             <h1>Mempools</h1>
-            {isAdmin && <div>
-                Hello admin! 
-                {contractBalance && <> You have {contractBalance} ETH in the contract. Withdraw to <input type="text" ref={wdRef} onChange={e => setWithdrawTo(e.target.value)}/><Button onClick={() => handleWithdraw()}>Withdraw to {withdrawTo}</Button></>}
-            </div>}
         </Section>
 
-        <Section disable={minting}>
+        <Section>
             
             <Grid as={BankSelector}>
                 {fifteen.map((index) => {
@@ -464,12 +455,15 @@ export default function Mempools_index({page, ...p}){
                 })}
             </Grid>
 
-            {banks && banks[selBank] && 
+            {(banks && banks[selBank]) && 
             <Grid as={Bank}>
                 <Grid.Unit as={BankMain} size={{sm: 1/1, lg: mainWidth/100}}>
 
                     {(selPool !== false && pools[banks[selBank].pools[selPool]]) && 
+                    <>
+                        <PoolStats id={banks[selBank].pools[selPool]} />
                         <img src={pools[banks[selBank].pools[selPool]].image}/>
+                    </>
                     }
                     
                     {(selPool === false || (selPool !== false && !pools[banks[selBank].pools[selPool]])) && 
@@ -492,9 +486,6 @@ export default function Mempools_index({page, ...p}){
 
                             return <Grid.Unit as={Pool} size={1/5} key={i} loading={loading}>
                                 {pool && <SelImg src={pool.image} onClick={() => setSelPool(i)}/>}
-                                {!pool && <Mint onClick={() => account ? setMintPool(i) : setConnectIntent(true)}>
-                                {(minting === i) ? <Loader/> : '+'}
-                                </Mint>}
                             </Grid.Unit>
 
                         })}
@@ -529,25 +520,7 @@ export default function Mempools_index({page, ...p}){
         </Section>
 
                 
-        <Section dangerouslySetInnerHTML={{__html: page.content}}/>
-
-        <Modal show={mintPool !== false}>
-            {mintPool !== false && 
-            <ModalInner>
-            <>You are about to generate and mint a pool from bank "{banks[selBank].name}" at slot index {mintPool}. </>
-
-            {(LTNT.picked && !hasStamp) && <Notice>You have activated LTNT #{LTNT.picked} for this mint and the price is reduced to 0.1 ETH</Notice>}
-            {(LTNT.picked && hasStamp) && <Notice>You have activated LTNT (#{LTNT.picked}) - it is already stamped by Mempools and will be ignored</Notice>}
-            {(LTNT.balance > 0 && !LTNT.picked) && <Notice>You have LTNT in your wallet and by <a href="#" onClick={e => {e.preventDefault(); LTNT.setIsPicking(true); setMintPool(false)}}>picking</a> one to stamp, you might be able to mint at a reduced price</Notice>}
-
-            <ModalActions actions={[
-                {label: 'Cancel', callback: () => setMintPool(false)},
-                {label: minting ? <Loader>Minting</Loader> : `Mint (${(LTNT.picked && !hasStamp) ? '0.1' : '0.15'} ETH)`, disabled: minting, callback: () => {!minting && handleMint(selBank, mintPool);}},
-            ]}/>
-            </ModalInner>
-            }
-        </Modal>
-    
+        <Section dangerouslySetInnerHTML={{__html: page.content}}/>    
 
     </Page>
 
