@@ -14,6 +14,7 @@ import { useLTNT } from "components/LTNT/Provider";
 import { useRouter } from "next/dist/client/router";
 import { useMempool } from "hooks/useMempool";
 import useInterval from "hooks/useInterval";
+import Countdown from "react-countdown";
 const fifteen = Array(15).fill(0).map((_, i) => i);
 
 const Filters = () => {
@@ -291,19 +292,23 @@ const PoolStats = styled(({id, ...p}) => {
     const {loading, error, ...mempool} = useMempool(id);
     const [left, setLeft] = useState(0)
 
-    useInterval(() => {
-        if(loading) return setLeft(0)
-        setLeft(prev => {
-            if(prev <= 0) return mempool.epoch_remaining
-            return prev - 1;
-        })
-    }, 1000)
+    useEffect(() => {
+        if(loading) 
+            setLeft(0)
+    }, [loading])
 
     useEffect(() => {
-        return () => {
-            setLeft(0)
+        if(!loading && mempool.epoch_remaining) {
+            setLeft(mempool.epoch_remaining)
+            const interval = setInterval(() => {
+                setLeft(left => left - 1)
+            }, 1000)
+            return () => {
+                clearInterval(interval)
+                setLeft(0)
+            }
         }
-    }, [])
+    }, [loading, mempool.epoch_remaining])
     
     return <div {...p}>
         {loading && <small><Loader></Loader></small>}
@@ -312,7 +317,7 @@ const PoolStats = styled(({id, ...p}) => {
             
             <div style={{display: 'flex', placeContent: 'space-between'}}>
                 <small>{`+`.repeat(mempool.epoch)}</small>
-                {left > 0 && <small>{left}</small>}
+                <small>{left > 0 && left}</small>
                 {/* Epoch length: {moment.duration(mempool.epoch_length, "seconds").humanize(humanizeProps)}
                 Next epoch begins in {moment.duration(mempool.epoch_remaining, "seconds").humanize(humanizeProps)} */}
             </div>
