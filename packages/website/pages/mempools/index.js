@@ -284,6 +284,18 @@ const Progress = styled(p => {
     }
 `
 
+const Left = styled.small`
+user-select: none;
+    cursor: pointer;
+    position: relative;
+    em {
+        position: absolute;
+        font-size: 0.6em;
+        top: -1.1em;
+        right: 0;
+    }
+`
+
 const humanizeProps = {
     M: 1000
 }
@@ -291,6 +303,7 @@ const PoolStats = styled(({id, ...p}) => {
 
     const {loading, error, ...mempool} = useMempool(id);
     const [left, setLeft] = useState(0)
+    const [format, setFormat] = useState('seconds')
 
     useEffect(() => {
         if(loading) 
@@ -299,17 +312,53 @@ const PoolStats = styled(({id, ...p}) => {
 
     useEffect(() => {
         if(!loading && mempool.epoch_remaining) {
+            
             setLeft(mempool.epoch_remaining)
+            
+            let timing = 1000;
+            if(format === 'minutes')
+                timing = 1000*60;
+            else if(format === 'hours')
+                timing = 1000*60*60;
+            else if(format === 'days')
+                timing = 1000*60*60*24;            
+
             const interval = setInterval(() => {
                 setLeft(left => left - 1)
-            }, 1000)
+            }, timing)
+
             return () => {
                 clearInterval(interval)
                 setLeft(0)
             }
+
         }
-    }, [loading, mempool.epoch_remaining])
+    }, [loading, mempool.epoch_remaining, format])
     
+
+    const shiftFormat = () => {
+        if(format === 'seconds')
+            setFormat('minutes')
+        else if(format === 'minutes')
+            setFormat('hours')
+        else if(format === 'hours')
+            setFormat('days')
+        else if(format === 'days')
+            setFormat('seconds')
+    }
+
+    const formatSeconds = (seconds) => {
+        if(format === 'seconds')
+            return seconds
+        else if(format === 'minutes')
+            return Math.round(seconds/60);
+        else if(format === 'hours')
+            return Math.round(seconds/60/60);
+        else if(format === 'days')
+            return Math.round(seconds/60/60/24);
+    }
+
+
     return <div {...p}>
         {loading && <small><Loader></Loader></small>}
         {error && <small>Error fetching stats</small>}
@@ -317,7 +366,10 @@ const PoolStats = styled(({id, ...p}) => {
             
             <div style={{display: 'flex', placeContent: 'space-between'}}>
                 <small>{`+`.repeat(mempool.epoch)}</small>
-                <small>{left > 0 && left}</small>
+                <Left onClick={e => shiftFormat()}>
+                    <em>{format}</em>
+                    {left > 0 && formatSeconds(left)}
+                </Left>
                 {/* Epoch length: {moment.duration(mempool.epoch_length, "seconds").humanize(humanizeProps)}
                 Next epoch begins in {moment.duration(mempool.epoch_remaining, "seconds").humanize(humanizeProps)} */}
             </div>
