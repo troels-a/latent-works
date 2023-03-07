@@ -365,9 +365,10 @@ const PoolStats = styled(({id, ...p}) => {
         {!loading && <div>
             
             <div style={{display: 'flex', placeContent: 'space-between'}}>
+                <small style={{position: 'absolute', top: '0.5em', left: '0.5em'}}>#{id}</small>
                 <small>{`+`.repeat(mempool.epoch)}</small>
                 <Left onClick={e => shiftFormat()}>
-                    <em>{format}</em>
+                    <em>{left > 0 && format}</em>
                     {left > 0 && formatSeconds(left)}
                 </Left>
                 {/* Epoch length: {moment.duration(mempool.epoch_length, "seconds").humanize(humanizeProps)}
