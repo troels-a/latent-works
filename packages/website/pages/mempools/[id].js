@@ -8,6 +8,7 @@ import PoolImage from 'components/Mempools/PoolImage';
 import FlexImg from 'components/FlexImg';
 import styled from 'styled-components';
 import Link from 'next/link';
+import Filters from 'components/Mempools/Filters';
 
 function bankToObject(bank){
     return {
@@ -29,13 +30,13 @@ const PartImage = styled(({src, ...p}) => {
     opacity: 0.5;
     overflow: hidden;
     > img {
-        filter: blur(25px);
+        filter: url(#${p => p.filter}) blur(25px);
     }
     ${p => p.current && `
         opacity: 1;
         background-color: ${p.theme.colors.emph6};
         > img {
-            filter: none;
+            filter: url(#${p => p.filter});
         }
     `}
 
@@ -73,7 +74,7 @@ const PoolInfo = styled.div`
 
 export default function Mempool({id, image, bank, part, part_index, seed, epoch_length, current_epoch}) {
     return <Page theme="dark">
-
+        <Filters />
         <Section>
             <Grid>
                 <Grid.Unit size={1/2}>
@@ -82,7 +83,7 @@ export default function Mempool({id, image, bank, part, part_index, seed, epoch_
                 <Grid.Unit size={1/2} as={PoolInfo}>
                     <Grid>
                     {bank.parts.map((p, i) => <Grid.Unit size={1/4} key={i}>
-                        <PartImage src={p} current={i == part_index} />
+                        <PartImage filter={bank.filter} src={p} current={i == part_index} />
                     </Grid.Unit>)}
                     </Grid>
                     <Grid>
