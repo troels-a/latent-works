@@ -285,7 +285,7 @@ const Progress = styled(p => {
 `
 
 const Left = styled.small`
-user-select: none;
+    user-select: none;
     cursor: pointer;
     position: relative;
     em {
@@ -299,6 +299,7 @@ user-select: none;
 const humanizeProps = {
     M: 1000
 }
+
 const PoolStats = styled(({id, ...p}) => {
 
     const {loading, error, ...mempool} = useMempool(id);

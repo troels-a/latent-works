@@ -17,6 +17,9 @@
     "contracts:compile": "cd packages/contracts; npx hardhat compile --force",
     "mempools:test": "cd packages/contracts; npm run mempools:test",
     "mempools:watch": "cd packages/contracts; npm run mempools:watch",
-    "mempools:deploy": "cd packages/contracts; npx hardhat mempools:deploy --network=$npm_config_network"
+    "mempools:deploy": "cd packages/contracts; npx hardhat mempools:deploy --network=$npm_config_network",
+    "rooms:test": "cd packages/contracts; npm run rooms:test",
+    "rooms:watch": "cd packages/contracts; npm run rooms:watch",
+    "rooms:deploy": "cd packages/contracts; npx hardhat rooms:deploy --network=$npm_config_network"
   }
 }

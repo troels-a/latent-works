@@ -7,6 +7,9 @@
     "develop": "npx hardhat run --network localhost scripts/mempool/deploy-local.js ",
     "mempools:test": "npx hardhat test test/mempools.js",
     "mempools:watch": "npx nodemon --watch sol --watch test -e sol,js --exec \"npm run mempools:test\"",
+    "rooms:test": "npx hardhat test test/rooms.js",
+    "rooms:watch": "npx nodemon --watch sol --watch test -e sol,js --exec \"npm run rooms:test\"",
+    "rooms:deploy": "npx hardhat run --network localhost scripts/rooms/deploy-local.js ",
     "build": "next build",
     "serve": "next build && next export && serve out",
     "start": "next start"

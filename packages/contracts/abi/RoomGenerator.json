@@ -1,0 +1,74 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "rooms_",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "encode_",
+        "type": "bool"
+      }
+    ],
+    "name": "getRoomHTML",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "encode_",
+        "type": "bool"
+      }
+    ],
+    "name": "getRoomImage",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rooms",
+    "outputs": [
+      {
+        "internalType": "contract LWRooms",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

@@ -27,6 +27,7 @@ export function useMempool(id){
     const seed = useSWR(`/api/mempools/getPoolSeed?pool_id_=${id}&append_=___`, fetcher)
     const epoch_length = useSWR(id ? `/api/mempools/getEpochLength?pool_id_=${id}` : null, fetcher)
     const epoch = useSWR(id ? `/api/mempools/getCurrentEpoch?pool_id_=${id}` : null, fetcher)
+    const image = useSWR(id ? `/api/mempools/getPoolImage?pool_id_=${id}&encode_=true` : null, fetcher)
 
     useEffect(() => {
         if(seed.data){
@@ -76,6 +77,7 @@ export function useMempool(id){
         epoch : epoch.data,
         epoch_remaining,
         next_epoch,
+        image: image.data,
     };
 
 }
